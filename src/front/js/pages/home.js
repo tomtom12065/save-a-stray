@@ -1,26 +1,29 @@
-import React, { useContext } from "react";
-import { Context } from "../store/appContext";
-import rigoImageUrl from "../../img/rigo-baby.jpg";
-import "../../styles/home.css";
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import "../../styles/saveAStray.css";
 
 export const Home = () => {
-	const { store, actions } = useContext(Context);
+  const navigate = useNavigate();
 
-	return (
-		<div className="text-center mt-5">
-			<h1>Hello Rigo!!</h1>
-			<p>
-				<img src={rigoImageUrl} />
-			</p>
-			<div className="alert alert-info">
-				{store.message || "Loading message from the backend (make sure your python backend is running)..."}
-			</div>
-			<p>
-				This boilerplate comes with lots of documentation:{" "}
-				<a href="https://start.4geeksacademy.com/starters/react-flask">
-					Read documentation
-				</a>
-			</p>
-		</div>
-	);
+  return (
+    <div className="home-container">
+      <h1 className="title">Save a Stray</h1>
+      <div className="cat-grid">
+        {Array.from({ length: 6 }).map((_, index) => (
+          <div key={index} className="cat-section">
+            <div className="cat-image"></div>
+            <p className="cat-description">Cat {index + 1}</p>
+            <button
+              className="learn-more-btn"
+              onClick={() => navigate(`/catTemplate/${index + 1}`)}  
+            >
+              Learn More
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 };
+
+export default Home;

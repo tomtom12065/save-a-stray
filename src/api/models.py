@@ -17,3 +17,22 @@ class User(db.Model):
             "email": self.email,
             # do not serialize the password, its a security breach
         }
+
+class Cat(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    breed = db.Column(db.String(120), nullable=False)
+    age = db.Column(db.Integer, nullable=False)
+    price = db.Column(db.Float, nullable=False)
+
+    def __repr__(self):
+        return f'<Cat {self.name}>'
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "breed": self.breed,
+            "age": self.age,
+            "price": self.price
+        }

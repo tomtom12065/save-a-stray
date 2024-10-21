@@ -1,54 +1,71 @@
 const getState = ({ getStore, getActions, setStore }) => {
-	return {
-		store: {
-			message: null,
-			demo: [
-				{
-					title: "FIRST",
-					background: "white",
-					initial: "white"
-				},
-				{
-					title: "SECOND",
-					background: "white",
-					initial: "white"
-				}
-			]
-		},
-		actions: {
-			// Use getActions to call a function within a fuction
-			exampleFunction: () => {
-				getActions().changeColor(0, "green");
-			},
+    return {
+        store: {
+            message: null,
+            // Initialize with an empty array for cats
+            cats: [],
+        },
+        actions: {
+            // Example function that changes color (for demo purposes)
+            exampleFunction: () => {
+                getActions().changeColor(0, "green");
+            },
 
-			getMessage: async () => {
-				try{
-					// fetching data from the backend
-					const resp = await fetch(process.env.BACKEND_URL + "/api/hello")
-					const data = await resp.json()
-					setStore({ message: data.message })
-					// don't forget to return something, that is how the async resolves
-					return data;
-				}catch(error){
-					console.log("Error loading message from backend", error)
-				}
-			},
-			changeColor: (index, color) => {
-				//get the store
-				const store = getStore();
+            // Fetch a message from the backend
+            getMessage: async () => {
+                try {
+                    const resp = await fetch(`${process.env.BACKEND_URL}/api/hello`);
+                    const data = await resp.json();
+                    setStore({ message: data.message });
+                    return data; // Resolve the async function
+                } catch (error) {
+                    console.error("Error loading message from backend", error);
+                }
+            },
 
-				//we have to loop the entire demo array to look for the respective index
-				//and change its color
-				const demo = store.demo.map((elm, i) => {
-					if (i === index) elm.background = color;
-					return elm;
-				});
+            // Post cat data from the upload form
+            postCatData: async (cat) => {
+                try {
+                    const resp = await fetch(`${process.env.BACKEND_URL}/api/add-cat`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(cat),
+                    });
 
-				//reset the global store
-				setStore({ demo: demo });
-			}
-		}
-	};
+                    if (!resp.ok) {
+                        throw new Error("Error posting cat data");
+                    }
+
+                    const data = await resp.json();
+                    console.log("Cat added:", data);
+
+                    // Update the store after posting
+                    const store = getStore();
+                    setStore({ ...store, message: "Cat added!", cats: [...store.cats, data.cat] });
+
+                    return data;
+                } catch (error) {
+                    console.error("Error posting cat data", error);
+                }
+            },
+
+            // Change color function (for demo purposes)
+            changeColor: (index, color) => {
+                const store = getStore();
+
+                // Loop through the demo array to change the background color at the specified index
+                const demo = store.demo.map((elm, i) => {
+                    if (i === index) elm.background = color;
+                    return elm;
+                });
+
+                // Update the global store
+                setStore({ demo: demo });
+            },
+        },
+    };
 };
 
 export default getState;
