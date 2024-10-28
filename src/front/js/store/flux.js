@@ -1,71 +1,73 @@
 const getState = ({ getStore, getActions, setStore }) => {
-    return {
-        store: {
-            message: null,
-            // Initialize with an empty array for cats
-            cats: [],
-        },
-        actions: {
-            // Example function that changes color (for demo purposes)
-            exampleFunction: () => {
-                getActions().changeColor(0, "green");
+  return {
+    store: {
+      message: null,
+      cats: [], // Holds the list of cats with their owner information
+    },
+    actions: {
+      // Fetch a welcome message from the backend
+      getMessage: async () => {
+        try {
+          const resp = await fetch(`${process.env.BACKEND_URL}/api/hello`);
+          const data = await resp.json();
+          setStore({ message: data.message });
+          return data;
+        } catch (error) {
+          console.error("Error loading message from backend", error);
+        }
+      },
+
+      // POST a new cat to the backend
+      postCatData: async (cat) => {
+        try {
+          const resp = await fetch(`${process.env.BACKEND_URL}/api/add-cat`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
             },
+            body: JSON.stringify({
+              name: cat.name,
+              breed: cat.breed,
+              price: cat.price,
+              age: cat.age,
+              // user_id: cat.user_id, // Added user_id to associate the cat with a user
+            }),
+          });
 
-            // Fetch a message from the backend
-            getMessage: async () => {
-                try {
-                    const resp = await fetch(`${process.env.BACKEND_URL}/api/hello`);
-                    const data = await resp.json();
-                    setStore({ message: data.message });
-                    return data; // Resolve the async function
-                } catch (error) {
-                    console.error("Error loading message from backend", error);
-                }
-            },
+          const data = await resp.json();
 
-            // Post cat data from the upload form
-            postCatData: async (cat) => {
-                try {
-                    const resp = await fetch(`${process.env.BACKEND_URL}/api/add-cat`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify(cat),
-                    });
+          if (!resp.ok) {
+            throw new Error(data.error || "Error posting cat data");
+          }
 
-                    if (!resp.ok) {
-                        throw new Error("Error posting cat data");
-                    }
+          // Add the newly created cat to the cats list in the store
+          setStore({ cats: [...getStore().cats, data.cat], message: "Cat added!" });
 
-                    const data = await resp.json();
-                    console.log("Cat added:", data);
+          return { status: resp.status, data: data };
+        } catch (error) {
+          console.error("Error posting cat data", error);
+          return { status: 500, error: error.message };
+        }
+      },
 
-                    // Update the store after posting
-                    const store = getStore();
-                    setStore({ ...store, message: "Cat added!", cats: [...store.cats, data.cat] });
+      // GET all cats, including their owner information
+      getCats: async () => {
+        try {
+          const resp = await fetch(`${process.env.BACKEND_URL}/api/cats`);
+          const data = await resp.json();
 
-                    return data;
-                } catch (error) {
-                    console.error("Error posting cat data", error);
-                }
-            },
+          if (!resp.ok) {
+            throw new Error(data.error || "Error fetching cats");
+          }
 
-            // Change color function (for demo purposes)
-            changeColor: (index, color) => {
-                const store = getStore();
-
-                // Loop through the demo array to change the background color at the specified index
-                const demo = store.demo.map((elm, i) => {
-                    if (i === index) elm.background = color;
-                    return elm;
-                });
-
-                // Update the global store
-                setStore({ demo: demo });
-            },
-        },
-    };
+          // Update the cats array in the store with data from the backend
+          setStore({ cats: data.cats });
+        } catch (error) {
+          console.error("Error fetching cats", error);
+        }
+      },
+    },
+  };
 };
 
 export default getState;

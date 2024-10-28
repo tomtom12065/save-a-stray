@@ -1,19 +1,18 @@
-"""
-This module takes care of starting the API Server, Loading the DB and Adding the endpoints
-"""
+# app.py
 
 import os
 from flask import Flask, request, jsonify, send_from_directory
 from flask_migrate import Migrate
+from flask_cors import CORS  # Import CORS
 from api.utils import APIException, generate_sitemap
 from api.models import db
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
 
-# Initialize Flask app
 app = Flask(__name__)
 app.url_map.strict_slashes = False
+CORS(app)  # Enable CORS for the app
 
 # Database configuration
 db_url = os.getenv("DATABASE_URL")
@@ -41,7 +40,7 @@ def handle_invalid_usage(error):
 # Serve the sitemap and static files
 @app.route('/')
 def sitemap():
-    return generate_sitemap(app)  # Change as needed for production
+    return generate_sitemap(app)
 
 @app.route('/<path:path>', methods=['GET'])
 def serve_any_other_file(path):

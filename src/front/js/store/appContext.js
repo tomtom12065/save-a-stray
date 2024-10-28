@@ -1,36 +1,46 @@
+// appContext.js
+
 import React, { useState, useEffect } from "react";
 import getState from "./flux.js";
 
-// Initialize context with a default value of null
 export const Context = React.createContext(null);
 
-// Function to inject the global store into components
-const injectContext = PassedComponent => {
-    const StoreWrapper = props => {
-        const [state, setState] = useState(
-            getState({
-                getStore: () => state.store,
-                getActions: () => state.actions,
-                setStore: updatedStore =>
-                    setState({
-                        store: { ...state.store, ...updatedStore },
-                        actions: { ...state.actions },
-                    }),
-            })
-        );
+const injectContext = (PassedComponent) => {
+  const StoreWrapper = (props) => {
+    const [state, setState] = useState({
+      store: null,
+      actions: null,
+    });
 
-        useEffect(() => {
-            // Fetch initial message from the backend when the app loads
-            state.actions.getMessage();
-        }, []);
+    useEffect(() => {
+      const stateData = getState({
+        getStore: () => state.store,
+        getActions: () => state.actions,
+        setStore: (updatedStore) =>
+          setState((prevState) => ({
+            store: { ...prevState.store, ...updatedStore },
+            actions: { ...prevState.actions },
+          })),
+      });
 
-        return (
-            <Context.Provider value={state}>
-                <PassedComponent {...props} />
-            </Context.Provider>
-        );
-    };
-    return StoreWrapper;
+      setState({
+        store: stateData.store,
+        actions: stateData.actions,
+      });
+
+      // Fetch initial data if necessary
+      stateData.actions.getMessage();
+    }, []);
+
+    if (!state.store || !state.actions) return null;
+
+    return (
+      <Context.Provider value={state}>
+        <PassedComponent {...props} />
+      </Context.Provider>
+    );
+  };
+  return StoreWrapper;
 };
 
 export default injectContext;

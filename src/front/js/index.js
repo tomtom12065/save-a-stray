@@ -1,12 +1,12 @@
-//import react into the bundle
+// index.js
+
 import React from "react";
 import ReactDOM from "react-dom";
-
-//include your index.scss file into the bundle
+import injectContext from "./store/appContext"; // Import injectContext
 import "../styles/index.css";
-
-//import your own components
 import Layout from "./layout";
 
-//render your react application
-ReactDOM.render(<Layout />, document.querySelector("#app"));
+// Wrap Layout with injectContext
+const App = injectContext(Layout);
+
+ReactDOM.render(<App />, document.querySelector("#app"));
