@@ -6,5 +6,8 @@
     },
     "[python]": {
         "editor.defaultFormatter": "ms-vsliveshare.vsliveshare"
+    },
+    "[javascript]": {
+        "editor.defaultFormatter": "vscode.typescript-language-features"
     }
 }

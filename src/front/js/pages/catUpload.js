@@ -1,5 +1,3 @@
-// CatUpload.js
-
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Context } from '../store/appContext';
@@ -9,21 +7,30 @@ export default function CatUpload() {
   const { actions } = useContext(Context);
   const navigate = useNavigate();
   const [cat, setCat] = useState({ name: '', breed: '', age: '', price: '' });
-
+  
   const onSubmit = async (event) => {
     event.preventDefault();
     try {
       const catData = {
-        
         age: Number(cat.age),
         price: Number(cat.price),
         breed: cat.breed,
-        name:cat.name
+        name: cat.name,
       };
 
-      console.log("Submitting cat data:", catData);
+      // Retrieve token from localStorage
+      const token = localStorage.getItem("token");
+      console.log(token)
+      if (!token) {
+        alert("User is not authenticated. Please log in.");
+        return;
+      }
 
-      const response = await actions.postCatData(catData);
+      console.log("Submitting cat data:", catData);
+      console.log("Token used for posting cat data:", token);
+
+      // Pass catData and token to the action
+      const response = await actions.postCatData(catData, token);
 
       console.log("Response from postCatData:", response);
 
@@ -32,7 +39,8 @@ export default function CatUpload() {
       } else {
         alert(`Failed to add cat: ${response.error || "Please try again."}`);
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error("Error submitting cat data", error);
       alert("An unexpected error occurred.");
     }
