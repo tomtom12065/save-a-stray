@@ -7,6 +7,7 @@ const Register = () => {
   const { actions } = useContext(Context);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [username,setUsername] = useState("");
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
@@ -16,12 +17,13 @@ const Register = () => {
       const userData = {
         email: email,
         password: password,
+        username:username
       };
 
       console.log("Submitting user data:", userData);
 
       const response = await actions.registerUser(userData);
-
+      console.log("test 3");
       if (response.status === 201) {
         navigate("/"); // Redirect on successful registration
       } else {
@@ -52,6 +54,13 @@ const Register = () => {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
+        <label>Username</label>
+        <input
+          type= "text"
+            value = {username}
+          onChange={(e)=> setUsername(e.target.value)}
+          required
+          />
         <button type="submit">Register</button>
       </form>
     </div>

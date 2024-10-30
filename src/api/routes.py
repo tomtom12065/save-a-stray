@@ -79,9 +79,10 @@ def register_user():
     data = request.get_json()
     email = data.get("email")
     password = data.get("password")
+    username = data.get("username")
     
-    if not email or not password:
-        return jsonify({"error": "Email and password are required"}), 400
+    if not email or not password or not username:
+        return jsonify({"error": "Email,password,and username are required"}), 400
 
     salt = generate_salt()
     hashed_password = hash_password(password, salt)
@@ -91,7 +92,7 @@ def register_user():
         return jsonify({"error": "User already exists"}), 409
 
     # Create a new user
-    new_user = User(email=email, password=hashed_password, is_active=True, salt=salt)
+    new_user = User(username= username,email=email, password=hashed_password, is_active=True, salt=salt)
 
     try:
         db.session.add(new_user)
