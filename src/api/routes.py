@@ -1,12 +1,14 @@
 # routes.py
 
-from flask import request, jsonify, Blueprint
+from flask import request, jsonify, Blueprint 
 from api.models import db, Cat, User
 from api.utils import APIException
 from werkzeug.security import generate_password_hash
 from flask_jwt_extended import create_access_token ,jwt_required, get_jwt_identity
 import secrets
 import hashlib
+
+
 
 api = Blueprint('api', __name__)
 
