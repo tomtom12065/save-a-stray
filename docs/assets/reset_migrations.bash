@@ -1,13 +1,13 @@
-# rm -R -f ./migrations &&
-# pipenv run init &&
-# dropdb -h localhost -U gitpod example || true &&
-# createdb -h localhost -U gitpod example || true &&
-# psql -h localhost example -U gitpod -c 'CREATE EXTENSION unaccent;' || true &&
-# pipenv run migrate &&
-# pipenv run upgrade
-#!/bin/bash
+rm -R -f ./migrations &&
+pipenv run init &&
+dropdb -h localhost -U gitpod example || true &&
+createdb -h localhost -U gitpod example || true &&
+psql -h localhost example -U gitpod -c 'CREATE EXTENSION unaccent;' || true &&
+pipenv run migrate &&
+pipenv run upgrade
+!/bin/bash
 
-# Stop on first error
+Stop on first error
 set -e
 
 echo "Removing old migrations folder..."

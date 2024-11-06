@@ -21,58 +21,107 @@ const getState = ({ getStore, setStore }) => {
         }
       },
 
-      registerUser: async (userData) => {
+      register_user: async (userData) => {
         try {
-          console.log(userData);
-          const resp = await fetch(`${process.env.BACKEND_URL}/api/register`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(userData),
-          });
-          const data = await resp.json();
-          
-          if (!resp.ok) {
-            return { success: false, message: data.error || "Error registering user" };
-          }
-          console.log(user);
-          setStore({ user: data.user });
-         
-          return { success: true, message: "User registered successfully", status: 201 };
-
-        }
-         catch (error) {
-          console.error("Error registering user", error);
-          return { success: false, message: error.message };
-        }
-      },
-
-      loginUser: async (userData) => {
-        try {
-          const resp = await fetch(`${process.env.BACKEND_URL}/api/login`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(userData),
-          });
-      
-          const data = await resp.json();
-      
-          if (!resp.ok) {
-            return { success: false, message: data.error || "Error logging in" };
-          }
-      
-          setStore({ user: data.user, token: data.token });
-          localStorage.setItem("token", data.token); // Persist token
-          return { success: true, message: "Login successful" };
-          
+            console.log("Starting registration process in register_user.");
+            
+            console.log("Registering user - Input Data:", userData);
+            console.log("Type of userData:", typeof userData); // Should be "object"
+    
+            const url = `${process.env.BACKEND_URL}/api/register`;
+            console.log("URL for registration:", url);
+    
+            // Convert user data to JSON string
+            const bodyData = JSON.stringify(userData);
+            console.log("Data to be sent in body (JSON string):", bodyData);
+            console.log("Type of bodyData:", typeof bodyData); // Should be "string"
+    
+            const resp = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: bodyData,
+            });
+    
+            // Check if response was received and log status
+            console.log("Fetch response received. Status:", resp.status);
+            if (!resp.ok) {
+                console.log("Fetch request failed. Response status:", resp.status);
+                const errorData = await resp.json();
+                console.log("Error data received from server:", errorData);
+                return { success: false, message: errorData.error || "Error registering user" };
+            }
+    
+            const data = await resp.json();
+            console.log("Data parsed from JSON response:", data);
+            console.log("Type of data:", typeof data); // Should be "object"
+    
+            // Checks that user data is present in the response
+            if (data && data.user) {
+                console.log("User registered successfully:", data.user);
+                setStore({ user: data.user });
+                return { success: true, message: "User registered successfully", status: 201 };
+            } else {
+                console.log("No user data received in response.");
+                return { success: false, message: "No user data received from server" };
+            }
         } catch (error) {
-          console.error("Error logging in", error);
-          return { success: false, message: error.message };
+            console.error("Error occurred during registration process:", error);
+            return { success: false, message: error.message };
         }
-      },
+    }
+    ,
+    
+
+    loginUser: async (userData) => {
+      console.log("loginUser called with userData:", userData);
+    
+      try {
+        const backendUrl = process.env.BACKEND_URL;
+        console.log("Backend URL:", backendUrl);
+    
+        const endpoint = `${backendUrl}/api/login`;
+        console.log("Login endpoint:", endpoint);
+    
+        const requestOptions = {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(userData),
+        };
+        console.log("Request options:", requestOptions);
+    
+        const resp = await fetch(endpoint, requestOptions);
+        console.log("Fetch response received:", resp);
+    
+        const data = await resp.json();
+        console.log("Response JSON data:", data);
+    
+        console.log("Response status OK?", resp.ok);
+        if (!resp.ok) {
+          const errorMessage = data.error || "Error logging in";
+          console.error("Login failed:", errorMessage);
+          return { success: false, message: errorMessage };
+        }
+    
+        console.log("Login successful. Data received:", data);
+    
+        // Assuming setStore is a state management function
+        setStore({ user: data.user, token: data.token });
+        console.log("Store updated with user and token:", { user: data.user, token: data.token });
+    
+        localStorage.setItem("token", data.token);
+        console.log("Token saved to localStorage:", data.token);
+    
+        return { success: true, message: "Login successful" };
+      } catch (error) {
+        console.error("An error occurred during login:", error);
+        return { success: false, message: error.message };
+      }
+    },
+    
 
       postCatData: async (cat) => {
         const data = JSON.stringify({ name: cat.name, breed: cat.breed, age: cat.age, price: cat.price });

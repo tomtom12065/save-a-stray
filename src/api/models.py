@@ -10,7 +10,8 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=False, nullable=False)
     password =db.Column(db.String(240), unique=False, nullable=False)
     salt = db.Column(db.String(120), nullable=False)
-    is_active = db.Column(db.Boolean, nullable=False)
+    is_active = db.Column(db.Boolean, nullable=False),
+    username = db.Column(db.String(250) ,unique=True, nullable=False)
     
     # Relationship connecting User to their cats, with back_populates for bidirectionality
     cats = db.relationship('Cat', back_populates='owner', lazy='select')
@@ -23,7 +24,8 @@ class User(db.Model):
             "id": self.id,
             "email": self.email,
             "cats": [cat.serialize() for cat in self.cats],  # Serializing associated cats
-            "is_active": self.is_active
+            "is_active": self.is_active,
+            "username":self.username
         }
 
 
@@ -32,9 +34,9 @@ class Cat(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
-    breed = db.Column(db.String(50), nullable=True)
+    breed = db.Column(db.String(50), nullable=False)
     age = db.Column(db.Integer, nullable=False)
-    price = db.Column(db.Float, nullable=True)
+    price = db.Column(db.Float, nullable=False, default=0.0)
     
     # Foreign key linking each cat to a specific user (owner)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)

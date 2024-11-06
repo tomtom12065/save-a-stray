@@ -14,7 +14,7 @@ const Login = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const response = await actions.loginUser({ email, password });
+    const response = await actions.loginUser({ email, password,username });
 
     if (response.success) {
       navigate("/"); // Redirect to home on success
@@ -39,6 +39,12 @@ const Login = () => {
         <input
           type="password"
           value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+         <input
+          type="text"
+          value={username}
           onChange={(e) => setPassword(e.target.value)}
           required
         />

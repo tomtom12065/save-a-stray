@@ -22,7 +22,7 @@ const Register = () => {
 
       console.log("Submitting user data:", userData);
 
-      const response = await actions.registerUser(userData);
+      const response = await actions.register_user(userData);
       console.log("test 3");
       if (response.status === 201) {
         navigate("/"); // Redirect on successful registration
