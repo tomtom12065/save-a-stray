@@ -150,4 +150,4 @@ def login():
     access_token = create_access_token(identity=user.id)
     print("Login successful. Generated access token:", access_token)
 
-    return jsonify(user=user.serialize(), token=access_token), 200
+    return jsonify({"user":user.serialize(), "token":access_token ,"success": True}), 200

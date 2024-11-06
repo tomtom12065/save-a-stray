@@ -13,6 +13,7 @@ const Register = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setError(null);
     try {
       const userData = {
         email: email,
