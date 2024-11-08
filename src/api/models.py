@@ -11,7 +11,7 @@ class User(db.Model):
     password =db.Column(db.String(240), unique=False, nullable=False)
     salt = db.Column(db.String(120), nullable=False)
     is_active = db.Column(db.Boolean, nullable=False)
-    username = db.Column(db.String(250) ,unique=True, nullable=False)
+    username = db.Column(db.String(250) ,unique=False, nullable=False)
     
     # Relationship connecting User to their cats, with back_populates for bidirectionality
     cats = db.relationship('Cat', back_populates='owner', lazy='select')

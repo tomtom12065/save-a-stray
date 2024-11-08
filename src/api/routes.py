@@ -16,6 +16,7 @@ def handle_hello():
     return jsonify({"message": "Hello! I'm a message that came from the backend."}), 200
 
 # DELETE a cat by ID
+# potentially check if user has necessary token 
 @api.route('/delete-cat/<int:cat_id>', methods=['DELETE'])
 @jwt_required()
 def delete_cat(cat_id):
@@ -32,6 +33,7 @@ def delete_cat(cat_id):
         return jsonify({"error": str(e)}), 500
 
 # POST a new cat
+
 @api.route('/add-cat', methods=['POST'])
 @jwt_required()  # Requires a valid JWT token for access
 def add_cat():
@@ -151,3 +153,10 @@ def login():
     print("Login successful. Generated access token:", access_token)
 
     return jsonify({"user":user.serialize(), "token":access_token ,"success": True}), 200
+@api.route('/user-cats', methods=['GET'])
+@jwt_required()
+def get_user_cats():
+    current_user_id = get_jwt_identity()
+    user_cats = Cat.query.filter_by(user_id=current_user_id).all()
+    cats_serialized = [cat.serialize() for cat in user_cats]
+    return jsonify({"cats": cats_serialized}), 200

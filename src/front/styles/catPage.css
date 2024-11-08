@@ -1,62 +1,97 @@
-/* Container for the entire page */
-.cat-page-container {
-    padding: 20px;
-    max-width: 900px;
-    margin: 0 auto;
-    text-align: center;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* Cat's name styling */
-  .cat-name {
-    font-size: 2rem;
-    color: #333;
-    margin-bottom: 20px;
-  }
-  
-  /* Grid for cat images */
-  .cat-images-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 3 columns */
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-  
-  /* Placeholder for cat images (red box) */
-  .cat-image {
-    background-color: red; /* Red background for now */
-    height: 150px;
-    width: 100%;
-    border-radius: 10px;
-  }
-  
-  /* Cat description */
-  .cat-description {
-    font-size: 1.2rem;
-    color: #555;
-    margin-bottom: 20px;
-  }
-  
-  /* Button for adding cat to cart */
-  .add-to-cart-btn {
-    padding: 10px 20px;
-    background-color: #5eb0ef; /* Soft blue */
-    color: white;
-    border: none;
-    border-radius: 25px;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: background-color 0.3s ease;
-  }
-  
-  .add-to-cart-btn:hover {
-    background-color: #3a99d8; /* Darker blue on hover */
-  }
-  
-  .add-to-cart-btn:disabled {
-    background-color: grey;
-    cursor: not-allowed;
-  }
-  
+body{
+  background-color: grey;
+}
+/* Container for the home page */
+.home-container {
+  padding: 2rem;
+  background-color: #f0f9ff;
+}
+
+/* Page title styling */
+.title {
+  font-family: 'Arial', sans-serif;
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 1.25rem;
+}
+
+/* Grid layout for the cat sections */
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.25rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Styling each cat section */
+.cat-section {
+  background-color: white;
+  padding: 1.25rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.25rem 0.625rem rgba(0, 0, 0, 0.1);
+}
+
+/* Cat image placeholder */
+.cat-image {
+  background-color: #d9534f;
+  height: 150px;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Description for each cat */
+.cat-description {
+  font-size: 1.1rem;
+  color: #666;
+  margin-bottom: 0.625rem;
+}
+
+/* Button styles */
+.learn-more-btn,
+.delete-cat-btn {
+  padding: 0.625rem 1.25rem;
+  border: none;
+  border-radius: 1.5rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.learn-more-btn {
+  background-color: #5eb0ef;
+  color: white;
+}
+
+.learn-more-btn:hover {
+  background-color: #3a99d8;
+}
+
+.delete-cat-btn {
+  background-color: #e74c3c;
+  color: white;
+  margin-top: 0.5rem;
+}
+
+.delete-cat-btn:hover {
+  background-color: #c0392b;
+}
+
+.delete-cat-btn:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+}
+
+/* Upload cat button */
+.upload-cat-btn {
+  padding: 0.625rem 1.25rem;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 1.5rem;
+  cursor: pointer;
+  margin-top: 2rem;
+}
+
+.upload-cat-btn:hover {
+  background-color: #388e3c;
+}

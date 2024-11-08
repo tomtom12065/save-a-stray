@@ -1,13 +1,13 @@
 const getState = ({ getStore, setStore }) => {
   // Helper function to retrieve token
-  const getToken = () => getStore().token || localStorage.getItem("token");
-
+  const getToken = () => localStorage.getItem("token");
+  console.log(getStore.token)
   return {
     store: {
       message: null,
       cats: [],
       user: null,
-      token: null,
+      token: localStorage.getItem("token")
     },
     actions: {
       getMessage: async () => {
@@ -113,6 +113,7 @@ const getState = ({ getStore, setStore }) => {
           console.log("Store updated with user and token:", { user: data.user, token: data.token });
 
           localStorage.setItem("token", data.token);
+          // potentially also adding user to local storage if so then have to clear it out when logging out
           console.log("Token saved to localStorage:", data.token);
 
           return { success: true, message: "Login successful" };
@@ -259,10 +260,28 @@ const getState = ({ getStore, setStore }) => {
         } catch (error) {
           console.error("Error fetching cats", error);
         }
+      }, 
+      // grab info from local strorage use jwwt manager to get token 
+      getCats2: async () => {
+        try {
+          const resp = await fetch(`${process.env.BACKEND_URL}/api/cats`);
+          const data = await resp.json();
+
+          if (!resp.ok) {
+            throw new Error(data.error || "Error fetching cats");
+          }
+
+          setStore({ cats: data.cats });
+        } catch (error) {
+          console.error("Error fetching cats", error);
+        }
       },
 
+      // make a conditional
       deleteCat: async (catId) => {
+      //  user.getToken()?
         const token = getToken();
+
         if (!token) {
           console.error("Token is missing. Please log in.");
           return { success: false, message: "User is not authenticated" };
@@ -282,10 +301,55 @@ const getState = ({ getStore, setStore }) => {
             throw new Error(data.error || "Error deleting cat");
           }
 
+          // Update the store to remove the deleted cat
           const updatedCats = getStore().cats.filter((cat) => cat.id !== catId);
-          setStore({ cats: updatedCats, message: "Cat deleted!" });
+          console.log("Updated cats after deletion:", updatedCats);
+
+          setStore((prev) => ({
+            ...prev,
+            cats: updatedCats,
+            message: "Cat deleted successfully!",
+          }));
+
+          // Return success response
+          return { success: true, message: "Cat deleted successfully" };
+
         } catch (error) {
-          console.error("Error deleting cat", error);
+          console.error("Error deleting cat:", error);
+          return { success: false, message: error.message || "Error deleting cat" };
+        }
+      },
+      logout: () => {
+        console.log("Logging out...");
+        localStorage.removeItem("token"); // Remove token from localStorage
+        setStore({ user: null, token: null }); // Reset user and token in store
+      },
+      getUserCats: async () => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          console.error("Token is missing. Please log in.");
+          return { success: false, message: "User is not authenticated" };
+        }
+      
+        try {
+          const resp = await fetch(`${process.env.BACKEND_URL}/api/user-cats`, {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json"
+            }
+          });
+      
+          const data = await resp.json();
+          if (!resp.ok) {
+            throw new Error(data.error || "Error fetching user cats");
+          }
+      
+          setStore({ cats: data.cats });
+          return { success: true };
+        } catch (error) {
+          console.error("Error fetching user cats:", error);
+          return { success: false, message: error.message };
         }
       },
     },

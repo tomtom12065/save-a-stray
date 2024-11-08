@@ -59,3 +59,34 @@
   .learn-more-btn:hover {
     background-color: #3a99d8; /* Darker blue on hover */
   }
+  /* saveAStray.css */
+
+/* Delete Button Styles */
+.delete-cat-btn {
+  background-color: #e74c3c; /* Red color for danger */
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  margin-top: 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.delete-cat-btn:hover {
+  background-color: #c0392b;
+}
+
+.delete-cat-btn:disabled {
+  background-color: #bdc3c7; /* Grey color when disabled */
+  cursor: not-allowed;
+}
+
+/* Optional: Style for feedback messages */
+.message {
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 4px;
+  background-color: #dff0d8; /* Light green for success */
+  color: #3c763d;
+}
