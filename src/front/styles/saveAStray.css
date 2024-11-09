@@ -90,3 +90,24 @@
   background-color: #dff0d8; /* Light green for success */
   color: #3c763d;
 }
+.sidebar-toggle-btn {
+  background-color: #f7349f;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  gap: 10px;
+  position: absolute;
+}
+
+.sidebar-toggle-btn:hover {
+  background-color: #0056b3;
+}
+

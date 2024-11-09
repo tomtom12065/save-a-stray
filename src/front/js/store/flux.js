@@ -76,14 +76,14 @@ const getState = ({ getStore, setStore }) => {
 
       loginUser: async (userData) => {
         console.log("loginUser called with userData:", userData);
-
+      
         try {
           const backendUrl = process.env.BACKEND_URL;
           console.log("Backend URL:", backendUrl);
-
+      
           const endpoint = `${backendUrl}/api/login`;
           console.log("Login endpoint:", endpoint);
-
+      
           const requestOptions = {
             method: "POST",
             headers: {
@@ -92,36 +92,38 @@ const getState = ({ getStore, setStore }) => {
             body: JSON.stringify(userData),
           };
           console.log("Request options:", requestOptions);
-
+      
           const resp = await fetch(endpoint, requestOptions);
           console.log("Fetch response received:", resp);
-
+      
           const data = await resp.json();
           console.log("Response JSON data:", data);
-
+      
           console.log("Response status OK?", resp.ok);
           if (!resp.ok) {
             const errorMessage = data.error || "Error logging in";
             console.error("Login failed:", errorMessage);
             return { success: false, message: errorMessage };
           }
-
+      
           console.log("Login successful. Data received:", data);
-
-          // Assuming setStore is a state management function
-          setStore({ user: data.user, token: data.token });
-          console.log("Store updated with user and token:", { user: data.user, token: data.token });
-
-          localStorage.setItem("token", data.token);
-          // potentially also adding user to local storage if so then have to clear it out when logging out
-          console.log("Token saved to localStorage:", data.token);
-
+      
+          // Update the store with the user data and tokens
+          setStore({ user: data.user, token: data.access_token });
+          console.log("Store updated with user and token:", { user: data.user, token: data.access_token });
+      
+          // Save the tokens to localStorage
+          localStorage.setItem("token", data.access_token);
+          localStorage.setItem("refresh_token", data.refresh_token);
+          console.log("Tokens saved to localStorage:", data.access_token, data.refresh_token);
+      
           return { success: true, message: "Login successful" };
         } catch (error) {
           console.error("An error occurred during login:", error);
           return { success: false, message: error.message };
         }
       },
+      
 
 
       postCatData: async (cat) => {
@@ -279,14 +281,13 @@ const getState = ({ getStore, setStore }) => {
 
       // make a conditional
       deleteCat: async (catId) => {
-      //  user.getToken()?
-        const token = getToken();
-
+        const token = localStorage.getItem("token");
+      
         if (!token) {
           console.error("Token is missing. Please log in.");
           return { success: false, message: "User is not authenticated" };
         }
-
+      
         try {
           const resp = await fetch(`${process.env.BACKEND_URL}/api/delete-cat/${catId}`, {
             method: "DELETE",
@@ -295,30 +296,33 @@ const getState = ({ getStore, setStore }) => {
               "Authorization": `Bearer ${token}`
             },
           });
-
+      
+          const data = await resp.json();
+      
+          if (resp.status === 403) {
+            console.error("Unauthorized: You do not own this cat.");
+            return { success: false, message: "You are not authorized to delete this cat." };
+          }
+      
           if (!resp.ok) {
-            const data = await resp.json();
             throw new Error(data.error || "Error deleting cat");
           }
-
+      
           // Update the store to remove the deleted cat
           const updatedCats = getStore().cats.filter((cat) => cat.id !== catId);
-          console.log("Updated cats after deletion:", updatedCats);
-
           setStore((prev) => ({
             ...prev,
             cats: updatedCats,
             message: "Cat deleted successfully!",
           }));
-
-          // Return success response
+      
           return { success: true, message: "Cat deleted successfully" };
-
         } catch (error) {
           console.error("Error deleting cat:", error);
           return { success: false, message: error.message || "Error deleting cat" };
         }
       },
+      
       logout: () => {
         console.log("Logging out...");
         localStorage.removeItem("token"); // Remove token from localStorage
@@ -352,6 +356,33 @@ const getState = ({ getStore, setStore }) => {
           return { success: false, message: error.message };
         }
       },
+      refreshToken: async () => {
+        const refreshToken = localStorage.getItem("refresh_token");
+        if (!refreshToken) return;
+      
+        try {
+          const resp = await fetch(`${process.env.BACKEND_URL}/api/refresh`, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${refreshToken}`,
+              "Content-Type": "application/json"
+            }
+          });
+      
+          const data = await resp.json();
+          if (resp.ok) {
+            // Update the access token in localStorage and the store
+            localStorage.setItem("token", data.access_token);
+            setStore({ token: data.access_token });
+            console.log("Access token refreshed successfully.");
+          } else {
+            console.error("Failed to refresh token:", data.error);
+          }
+        } catch (error) {
+          console.error("Error refreshing token:", error);
+        }
+      }
+      
     },
   };
 };

@@ -4,7 +4,7 @@ from flask import request, jsonify, Blueprint
 from api.models import db, Cat, User
 from api.utils import APIException
 from werkzeug.security import generate_password_hash
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity,create_refresh_token
 import secrets
 import hashlib
 
@@ -20,10 +20,19 @@ def handle_hello():
 @api.route('/delete-cat/<int:cat_id>', methods=['DELETE'])
 @jwt_required()
 def delete_cat(cat_id):
+    # Get the current user ID from the JWT token
+    current_user_id = get_jwt_identity()
+
+    # Fetch the cat from the database
     cat = Cat.query.get(cat_id)
     if not cat:
         return jsonify({"error": "Cat not found"}), 404
 
+    # Check if the current user is the owner of the cat
+    if cat.user_id != current_user_id:
+        return jsonify({"error": "Unauthorized: You do not own this cat"}), 403
+
+    # Delete the cat if the user is the owner
     try:
         db.session.delete(cat)
         db.session.commit()
@@ -119,14 +128,11 @@ def register_user():
 
 
 # User login
-@api.route('/login', methods=['POST'])
-
+@api.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
-    email, password = data.get("email"), data.get("password")
-    
-    # Log incoming request data
-    print("Received login request with email:", email)
+    email = data.get("email")
+    password = data.get("password")
 
     # Verify user existence
     user = User.query.filter_by(email=email).first()
@@ -134,29 +140,20 @@ def login():
         print("User not found for email:", email)
         return jsonify({"error": "Invalid email or password"}), 401
 
-    # Log found user data
-    print("User found:", user.serialize())
-
-    # Hash the input password with the stored salt and compare
+    # Verify the password using your hashing function
     hashed_attempt = hash_password(password, user.salt)
-    
-    # Log the hashed password attempt and the actual stored password
-    print("Hashed attempt:", hashed_attempt)
-    print("Stored password:", user.password)
-
     if hashed_attempt != user.password:
         print("Password mismatch for user:", email)
         return jsonify({"error": "Invalid password"}), 401
 
-    # Generate JWT token on successful authentication
-    access_token = create_access_token(identity=user.id)
-    print("Login successful. Generated access token:", access_token)
+    # Create access and refresh tokens
+    access_token = create_access_token(identity=user.id, additional_claims={"role": user.username})
+    refresh_token = create_refresh_token(identity=user.id)
 
-    return jsonify({"user":user.serialize(), "token":access_token ,"success": True}), 200
-@api.route('/user-cats', methods=['GET'])
-@jwt_required()
-def get_user_cats():
-    current_user_id = get_jwt_identity()
-    user_cats = Cat.query.filter_by(user_id=current_user_id).all()
-    cats_serialized = [cat.serialize() for cat in user_cats]
-    return jsonify({"cats": cats_serialized}), 200
+    # Include the serialized user data in the response
+    return jsonify({
+        "user": user.serialize(),
+        "access_token": access_token,
+        "refresh_token": refresh_token
+    }), 200
+
