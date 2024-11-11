@@ -356,32 +356,74 @@ const getState = ({ getStore, setStore }) => {
           return { success: false, message: error.message };
         }
       },
-      refreshToken: async () => {
-        const refreshToken = localStorage.getItem("refresh_token");
-        if (!refreshToken) return;
-      
-        try {
-          const resp = await fetch(`${process.env.BACKEND_URL}/api/refresh`, {
-            method: "POST",
-            headers: {
-              "Authorization": `Bearer ${refreshToken}`,
-              "Content-Type": "application/json"
-            }
-          });
-      
-          const data = await resp.json();
-          if (resp.ok) {
-            // Update the access token in localStorage and the store
-            localStorage.setItem("token", data.access_token);
-            setStore({ token: data.access_token });
-            console.log("Access token refreshed successfully.");
-          } else {
-            console.error("Failed to refresh token:", data.error);
-          }
-        } catch (error) {
-          console.error("Error refreshing token:", error);
+    
+      resetPassword: async (newPassword, token) => {
+    //  put at top so everyone can access
+        const baseApiUrl = process.env.BACKEND_URL;
+        if (!token) {
+            console.error("Token is missing. Please provide a valid token.");
+            return { success: false, message: "Token is required." };
         }
-      }
+    
+        try {
+            const response = await fetch(`${baseApiUrl}/api/reset-password`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    new_password: newPassword,
+                }),
+            });
+    
+            const data = await response.json();
+    
+            if (response.ok) {
+                console.log("Password reset successfully.");
+                return { success: true, message: "Password has been reset successfully." };
+            } else {
+                console.error("Error resetting password:", data.error || "Unknown error.");
+                return { success: false, message: data.error || "Error resetting password." };
+            }
+        } catch (error) {
+            console.error("Network error while resetting password:", error);
+            return { success: false, message: "An error occurred while resetting the password." };
+        }
+    },
+    
+    requestPasswordReset: async (email) => {
+        const baseApiUrl = process.env.BACKEND_URL;
+    
+        if (!email) {
+            console.error("Email is required.");
+            return { success: false, message: "Email is required." };
+        }
+    
+        try {
+            const response = await fetch(`${baseApiUrl}/api/request_reset`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ email }),
+            });
+    
+            const data = await response.json();
+    
+            if (response.ok) {
+                console.log("Password reset link sent successfully.");
+                return { success: true, message: "If your email is in our system, you will receive a password reset link." };
+            } else {
+                console.error("Error sending password reset link:", data.error || "Unknown error.");
+                return { success: false, message: data.error || "Failed to send password reset link." };
+            }
+        } catch (error) {
+            console.error("Network error while requesting password reset:", error);
+            return { success: false, message: "An error occurred while sending the reset email." };
+        }
+    },
+    
       
     },
   };

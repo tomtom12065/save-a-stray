@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { Context } from "../store/appContext";
 import "../../styles/saveAStray.css";
 import Sidebar from "../component/sidebar";
-import "../../styles/sidebar.css";
+// import "../../styles/sidebar.css";
 
 export const Home = () => {
   const navigate = useNavigate();
@@ -44,7 +44,7 @@ export const Home = () => {
       <button className="sidebar-toggle-btn" onClick={toggleSidebar}>
         ☰ Menu
       </button>
-      <button className="sidebar-toggle-btn" onClick={handleLogout}>logout</button>
+    
       <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
       <h1 className="title">Save a Stray</h1>

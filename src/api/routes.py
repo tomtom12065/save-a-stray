@@ -1,5 +1,5 @@
 # routes.py
-
+import os
 from flask import request, jsonify, Blueprint 
 from api.models import db, Cat, User
 from api.utils import APIException
@@ -7,6 +7,8 @@ from werkzeug.security import generate_password_hash
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity,create_refresh_token
 import secrets
 import hashlib
+import requests
+from datetime import timedelta
 
 api = Blueprint('api', __name__)
 
@@ -157,3 +159,67 @@ def login():
         "refresh_token": refresh_token
     }), 200
 
+###########################################################################################33
+def send_email(email, subject, token):
+    try:
+        # Define the reset link using the frontend URL
+        reset_link = f"{os.environ.get('FRONTEND_URL')}/request_reset?token={token}"
+        response = requests.post(
+            os.environ.get('MAILGUN_API_URL'),
+            auth=("api", os.environ.get('MAILGUN_API_KEY')),
+            data={
+                "from": f"Support <support@{os.environ.get('MAILGUN_DOMAIN')}>",
+                "to": [email],
+                "subject": subject,
+                "text": f"Click here to reset your password: {reset_link}",
+                "html": f"<html><body><a href='{reset_link}'>Reset Password Link</a></body></html>"
+            }
+        )
+
+        # Check if the email was sent successfully
+        if response.status_code != 200:
+            print(f"Email sending failed: {response.text}")
+            return False
+        return True
+    except Exception as error:
+        print(f"Error sending email: {error}")
+        return False
+
+# Route to request a password reset
+@api.route('/request_reset', methods=['POST'])
+def request_reset():
+    email = request.json.get('email')
+    user = User.query.filter_by(email=email).first()
+
+    if user:
+        # Create a token with a 1-hour expiration time
+        token = create_access_token(identity=email, expires_delta=timedelta(hours=1))
+        email_sent = send_email(user.email, 'Password Reset Request', token)
+
+        if email_sent:
+            return jsonify({'message': 'If your email is in our system, you will receive a password reset link.'}), 200
+        else:
+            return jsonify({"error": "Failed to send email. Please try again later."}), 500
+
+    return jsonify({"message": "If your email is in our system, you will receive a password reset link."}), 200
+
+# Route to reset the password
+@api.route('/reset-password', methods=['PUT'])
+@jwt_required()
+def reset_password():
+    email = get_jwt_identity()
+    user = User.query.filter_by(id=email).first_or_404()
+    new_password = request.json.get('new_password')
+
+    if not new_password:
+        return jsonify({"error": "New password is required."}), 400
+
+    # Hash the new password using the existing hash_password function
+    user.password = hash_password(new_password, user.salt)
+
+    try:
+        db.session.commit()
+        return jsonify({'message': 'Password has been reset successfully.'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500

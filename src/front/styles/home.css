@@ -1,5 +1,6 @@
 body{
-  grey
+  background-color: blue; /* Light pastel blue background */
+
 }
 .home-container {
     text-align: center;
