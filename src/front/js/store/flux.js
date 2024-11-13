@@ -1,13 +1,13 @@
 const getState = ({ getStore, setStore }) => {
   // Helper function to retrieve token
-  const getToken = () => localStorage.getItem("token");
+  const getToken = () => sessionStorage.getItem("token");
   console.log(getStore.token)
   return {
     store: {
       message: null,
       cats: [],
       user: null,
-      token: localStorage.getItem("token")
+      token: sessionStorage.getItem("token")
     },
     actions: {
       getMessage: async () => {
@@ -21,7 +21,7 @@ const getState = ({ getStore, setStore }) => {
         }
       },
 
-      register_user: async (userData) => {
+      registerUser: async (userData) => {
         try {
           console.log("Starting registration process in register_user.");
 
@@ -76,14 +76,14 @@ const getState = ({ getStore, setStore }) => {
 
       loginUser: async (userData) => {
         console.log("loginUser called with userData:", userData);
-      
+
         try {
           const backendUrl = process.env.BACKEND_URL;
           console.log("Backend URL:", backendUrl);
-      
+
           const endpoint = `${backendUrl}/api/login`;
           console.log("Login endpoint:", endpoint);
-      
+
           const requestOptions = {
             method: "POST",
             headers: {
@@ -92,38 +92,38 @@ const getState = ({ getStore, setStore }) => {
             body: JSON.stringify(userData),
           };
           console.log("Request options:", requestOptions);
-      
+
           const resp = await fetch(endpoint, requestOptions);
           console.log("Fetch response received:", resp);
-      
+
           const data = await resp.json();
           console.log("Response JSON data:", data);
-      
+
           console.log("Response status OK?", resp.ok);
           if (!resp.ok) {
             const errorMessage = data.error || "Error logging in";
             console.error("Login failed:", errorMessage);
             return { success: false, message: errorMessage };
           }
-      
+
           console.log("Login successful. Data received:", data);
-      
+
           // Update the store with the user data and tokens
           setStore({ user: data.user, token: data.access_token });
           console.log("Store updated with user and token:", { user: data.user, token: data.access_token });
-      
-          // Save the tokens to localStorage
-          localStorage.setItem("token", data.access_token);
-          localStorage.setItem("refresh_token", data.refresh_token);
-          console.log("Tokens saved to localStorage:", data.access_token, data.refresh_token);
-      
+
+          // Save the tokens to sessionStorage
+          sessionStorage.setItem("token", data.access_token);
+          sessionStorage.setItem("refresh_token", data.refresh_token);
+          console.log("Tokens saved to sessionStorage:", data.access_token, data.refresh_token);
+
           return { success: true, message: "Login successful" };
         } catch (error) {
           console.error("An error occurred during login:", error);
           return { success: false, message: error.message };
         }
       },
-      
+
 
 
       postCatData: async (cat) => {
@@ -132,7 +132,7 @@ const getState = ({ getStore, setStore }) => {
         const response = await fetch(`${process.env.BACKEND_URL}/api/add-cat`, {
           method: "POST",
           headers: {
-            "Authorization": "Bearer " + localStorage.getItem("token"),
+            "Authorization": "Bearer " + sessionStorage.getItem("token"),
             "Content-Type": "application/json"
           },
           body: data
@@ -205,7 +205,7 @@ const getState = ({ getStore, setStore }) => {
       //postCatData redone:
       postCatData2: async (cat) => {
         try {
-          const token = localStorage.getItem("token");
+          const token = sessionStorage.getItem("token");
           if (!token) {
             return { success: false, message: "User is not authenticated" };
           }
@@ -252,42 +252,35 @@ const getState = ({ getStore, setStore }) => {
       getCats: async () => {
         try {
           const resp = await fetch(`${process.env.BACKEND_URL}/api/cats`);
-          const data = await resp.json();
+          console.log("Response status:", resp.status);
+          console.log("Backend URL:", process.env.BACKEND_URL);
 
           if (!resp.ok) {
-            throw new Error(data.error || "Error fetching cats");
+            const errorText = await resp.text();
+            console.error("Error response text:", errorText);
+            throw new Error(`Error: ${resp.status} ${resp.statusText}`);
           }
 
-          setStore({ cats: data.cats });
-        } catch (error) {
-          console.error("Error fetching cats", error);
-        }
-      }, 
-      // grab info from local strorage use jwwt manager to get token 
-      getCats2: async () => {
-        try {
-          const resp = await fetch(`${process.env.BACKEND_URL}/api/cats`);
           const data = await resp.json();
-
-          if (!resp.ok) {
-            throw new Error(data.error || "Error fetching cats");
-          }
-
+          console.log("Fetched cats data:", data);
           setStore({ cats: data.cats });
+          return { success: true };
         } catch (error) {
-          console.error("Error fetching cats", error);
+          // console.error("Error fetching cats:", error);
+          return { success: false, message: error.message };
         }
       },
 
+
       // make a conditional
       deleteCat: async (catId) => {
-        const token = localStorage.getItem("token");
-      
+        const token = sessionStorage.getItem("token");
+
         if (!token) {
           console.error("Token is missing. Please log in.");
           return { success: false, message: "User is not authenticated" };
         }
-      
+
         try {
           const resp = await fetch(`${process.env.BACKEND_URL}/api/delete-cat/${catId}`, {
             method: "DELETE",
@@ -296,18 +289,18 @@ const getState = ({ getStore, setStore }) => {
               "Authorization": `Bearer ${token}`
             },
           });
-      
+
           const data = await resp.json();
-      
+
           if (resp.status === 403) {
             console.error("Unauthorized: You do not own this cat.");
             return { success: false, message: "You are not authorized to delete this cat." };
           }
-      
+
           if (!resp.ok) {
             throw new Error(data.error || "Error deleting cat");
           }
-      
+
           // Update the store to remove the deleted cat
           const updatedCats = getStore().cats.filter((cat) => cat.id !== catId);
           setStore((prev) => ({
@@ -315,116 +308,107 @@ const getState = ({ getStore, setStore }) => {
             cats: updatedCats,
             message: "Cat deleted successfully!",
           }));
-      
+
           return { success: true, message: "Cat deleted successfully" };
         } catch (error) {
           console.error("Error deleting cat:", error);
           return { success: false, message: error.message || "Error deleting cat" };
         }
       },
-      
+
       logout: () => {
         console.log("Logging out...");
-        localStorage.removeItem("token"); // Remove token from localStorage
+        sessionStorage.removeItem("token"); // Remove token from sessionStorage
         setStore({ user: null, token: null }); // Reset user and token in store
       },
-      getUserCats: async () => {
-        const token = localStorage.getItem("token");
+      getSelfCats: async () => {
+        const response = await fetch(process.env.BACKEND_URL + "/api/user-cats", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + sessionStorage.getItem("token"),
+          },
+        });
+
+        if (response.status !== 200) return false;
+
+        const responseBody = await response.json();
+        setStore({ cats: responseBody }); // Fixed casing on `responseBody`
+
+        return true;
+      },
+
+     
+
+
+      resetPassword: async (newPassword, token) => {
+        //  put at top so everyone can access
+        const baseApiUrl = process.env.BACKEND_URL;
         if (!token) {
-          console.error("Token is missing. Please log in.");
-          return { success: false, message: "User is not authenticated" };
+          console.error("Token is missing. Please provide a valid token.");
+          return { success: false, message: "Token is required." };
         }
-      
+
         try {
-          const resp = await fetch(`${process.env.BACKEND_URL}/api/user-cats`, {
-            method: "GET",
+          const response = await fetch(`${baseApiUrl}/api/reset-password`, {
+            method: "PUT",
             headers: {
-              "Authorization": `Bearer ${token}`,
-              "Content-Type": "application/json"
-            }
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              new_password: newPassword,
+            }),
           });
-      
-          const data = await resp.json();
-          if (!resp.ok) {
-            throw new Error(data.error || "Error fetching user cats");
+
+          const data = await response.json();
+
+          if (response.ok) {
+            console.log("Password reset successfully.");
+            return { success: true, message: "Password has been reset successfully." };
+          } else {
+            console.error("Error resetting password:", data.error || "Unknown error.");
+            return { success: false, message: data.error || "Error resetting password." };
           }
-      
-          setStore({ cats: data.cats });
-          return { success: true };
         } catch (error) {
-          console.error("Error fetching user cats:", error);
-          return { success: false, message: error.message };
+          console.error("Network error while resetting password:", error);
+          return { success: false, message: "An error occurred while resetting the password." };
         }
       },
-    
-      resetPassword: async (newPassword, token) => {
-    //  put at top so everyone can access
+
+      requestPasswordReset: async (email) => {
         const baseApiUrl = process.env.BACKEND_URL;
-        if (!token) {
-            console.error("Token is missing. Please provide a valid token.");
-            return { success: false, message: "Token is required." };
-        }
-    
-        try {
-            const response = await fetch(`${baseApiUrl}/api/reset-password`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    new_password: newPassword,
-                }),
-            });
-    
-            const data = await response.json();
-    
-            if (response.ok) {
-                console.log("Password reset successfully.");
-                return { success: true, message: "Password has been reset successfully." };
-            } else {
-                console.error("Error resetting password:", data.error || "Unknown error.");
-                return { success: false, message: data.error || "Error resetting password." };
-            }
-        } catch (error) {
-            console.error("Network error while resetting password:", error);
-            return { success: false, message: "An error occurred while resetting the password." };
-        }
-    },
-    
-    requestPasswordReset: async (email) => {
-        const baseApiUrl = process.env.BACKEND_URL;
-    
+
         if (!email) {
-            console.error("Email is required.");
-            return { success: false, message: "Email is required." };
+          console.error("Email is required.");
+          return { success: false, message: "Email is required." };
         }
-    
+
         try {
-            const response = await fetch(`${baseApiUrl}/api/request_reset`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ email }),
-            });
-    
-            const data = await response.json();
-    
-            if (response.ok) {
-                console.log("Password reset link sent successfully.");
-                return { success: true, message: "If your email is in our system, you will receive a password reset link." };
-            } else {
-                console.error("Error sending password reset link:", data.error || "Unknown error.");
-                return { success: false, message: data.error || "Failed to send password reset link." };
-            }
+          const response = await fetch(`${baseApiUrl}/api/request_reset`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            console.log("Password reset link sent successfully.");
+            return { success: true, message: "If your email is in our system, you will receive a password reset link." };
+          } else {
+            console.error("Error sending password reset link:", data.error || "Unknown error.");
+            return { success: false, message: data.error || "Failed to send password reset link." };
+          }
         } catch (error) {
-            console.error("Network error while requesting password reset:", error);
-            return { success: false, message: "An error occurred while sending the reset email." };
+          console.error("Network error while requesting password reset:", error);
+          return { success: false, message: "An error occurred while sending the reset email." };
         }
-    },
-    
-      
+      },
+
+
     },
   };
 };

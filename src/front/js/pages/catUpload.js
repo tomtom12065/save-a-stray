@@ -9,7 +9,7 @@ export default function CatUpload() {
   const [cat, setCat] = useState({ name: '', breed: '', age: '', price: '' });
   const [error, setError] = useState('');
   // potential to use session storage however fear for timeouts plan accordingly
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
   // const onSubmit = async (event) => {
   //   event.preventDefault();
   //   try {
@@ -21,7 +21,7 @@ export default function CatUpload() {
 
   //     };
 
-  //     // Retrieve token from localStorage
+  //     // Retrieve token from sessionStorage
 
   //     // console.log(token)
   //     // if (!token) {

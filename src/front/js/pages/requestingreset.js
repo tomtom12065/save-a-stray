@@ -24,7 +24,7 @@ export const Sendtoken = () => {
             });
 
             const data = await response.json();
-
+            console.log(data)
             if (response.ok) {
                 setSuccessMessage("If your email is in our system, you will receive a password reset link.");
                 setErrorMessage("");

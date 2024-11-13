@@ -38,7 +38,7 @@ const Layout = () => {
           <Route element={<Register />} path="/register" />
           <Route element={<CatUpload />} path="/cat-upload" />
           <Route element={<Login />} path="/login" />
-          <Route element ={<Sendtoken/>} path ="requesting-reset"/>
+          <Route element ={<Sendtoken/>} path ="/requesting-reset"/>
           <Route element= {<ResetPassword/>} path="/reset-Password"/>
           <Route element={<YourCats />} path="/your-cats" /> {/* Route for YourCats */}
           <Route element={<h1>Not found!</h1>} path="*" />

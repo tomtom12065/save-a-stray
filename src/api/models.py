@@ -49,10 +49,17 @@ class Cat(db.Model):
 
     def serialize(self):
         return {
-            "id": self.id,
-            "name": self.name,
-            "breed": self.breed,
-            "age": self.age,
-            "price": self.price,
-            "owner_id": self.user_id
-        }
+        "id": self.id,
+        "name": self.name,
+        "breed": self.breed,
+        "age": self.age,
+        "price": self.price,
+        "user_id": self.user_id,  # Foreign key reference
+        "owner": {
+            "id": self.owner.id,
+            "email": self.owner.email,
+            "username": self.owner.username
+        } if self.owner else None  # Include owner details if available
+    }
+
+        

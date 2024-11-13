@@ -17,7 +17,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
   // Navigate to the reset password request page
   const handlePasswordResetRequest = () => {
     toggleSidebar();  // Close sidebar after navigation
-    navigate("/request_reset");
+    navigate("/requesting-reset");
   };
 
   // Navigate to the upload cat page
@@ -28,6 +28,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
   // Navigate to the login page
   const handleLogin = () => {
+    actions.loginUser
     toggleSidebar();  // Close sidebar after navigation
     navigate("/login");
   };

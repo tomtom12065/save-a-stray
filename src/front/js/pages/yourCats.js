@@ -7,11 +7,10 @@ const YourCats = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!store.cats || store.cats.length === 0) {
-      // Load cats if they are not already in the store
-      actions.getCats();
-    }
-  }, [store.cats, actions]);
+
+    actions.getSelfCats();
+
+  }, []);
 
   // Check if the user is logged in
   if (!store.user || !store.user.id) {
@@ -19,7 +18,7 @@ const YourCats = () => {
   }
 
   // Filter cats owned by the current user
-  const userCats = store.cats.filter(cat => cat.owner_id === store.user.id);
+  const userCats = store.cats;
 
   return (
     <div className="container mt-4">
