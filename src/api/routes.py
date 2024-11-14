@@ -270,50 +270,75 @@ def login():
 @api.route('/request_reset', methods=['POST'])
 def request_reset():
     try:
+        print("Received request for password reset.")
         email = request.json.get('email')
+        print(f"Email received: {email}")
+
         if not email:
+            print("Email is missing in the request.")
             return jsonify({"error": "Email is required"}), 400
             
+        # Attempt to find the user by email
         user = User.query.filter_by(email=email).first()
-        
+        print(f"User found: {user is not None}")
+
         if user:
             try:
                 # Create a token with a 1-hour expiration time
+                print("Creating token for password reset.")
                 token = create_access_token(identity=email, expires_delta=timedelta(hours=1))
+                print(f"Token created: {token}")
+
+                frontend_url = os.getenv('FRONTEND_URL')
+                print(f"Frontend URL from environment: {frontend_url}")
+
+                if not frontend_url:
+                    print("FRONTEND_URL environment variable is missing.")
+                    return jsonify({"error": "Server configuration error."}), 500
                 
-                reset_link = f"{os.getenv('FRONTEND_URL')}/reset-Password?token={token}"
+                reset_link = f"{frontend_url}/reset-Password?token={token}"
+                print(f"Reset link created: {reset_link}")
+
                 email_body = f"Click here to reset your password:\n{reset_link}"
-                
-                email_sent = send_email(
-                    email,
-                    email_body,
-                    "Password Recovery"
-                )
-                
+                print(f"Email body created.")
+
+                # Send the email and log the email details
+                print(f"Attempting to send email to: {email}")
+                email_sent = send_email(email, email_body, "Password Recovery")
+                print(f"Email sent status: {email_sent}")
+
                 if email_sent:
+                    print("Email was sent successfully.")
                     return jsonify({
                         'message': 'If your email is in our system, you will receive a password reset link.'
                     }), 200
                 else:
+                    print("Failed to send email. Returning 500 error.")
                     return jsonify({
                         "error": "Failed to send email. Please try again later."
                     }), 500
             except Exception as e:
+                print(f"Exception in password reset process: {str(e)}")
                 logging.error(f"Error in password reset process: {str(e)}")
                 return jsonify({
                     "error": "An error occurred during the password reset process."
                 }), 500
                 
         # Return the same message whether the user exists or not for security
+        print("User not found or returning default message for security.")
+        print("Returning success response to frontend.")
         return jsonify({
             "message": "If your email is in our system, you will receive a password reset link."
         }), 200
         
     except Exception as e:
+        print(f"Unexpected exception in request_reset: {str(e)}")
         logging.error(f"Unexpected error in request_reset: {str(e)}")
         return jsonify({
             "error": "An unexpected error occurred. Please try again later."
         }), 500
+
+
 # # Route to reset the password
 @api.route('/reset-password', methods=['PUT'])
 @jwt_required()

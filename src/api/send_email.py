@@ -23,4 +23,5 @@ def send_email(recipient, body, subject):
     except smtplib.SMTPException as e: 
         #log the exception e
         raise Exception(f"failed to send email: {str(e)}")
+    return(True)
 		
