@@ -6,50 +6,62 @@ import "../../styles/catPage.css";
 export default function CatUpload() {
   const { actions } = useContext(Context);
   const navigate = useNavigate();
-  const [cat, setCat] = useState({ name: '', breed: '', age: '', price: '' });
+  const [cat, setCat] = useState({ name: '', breed: '', age: '', price: '', imageUrl: '' });
   const [error, setError] = useState('');
-  // potential to use session storage however fear for timeouts plan accordingly
+  const [isUploading, setIsUploading] = useState(false);
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+  const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET;
+
   const token = sessionStorage.getItem("token");
-  // const onSubmit = async (event) => {
-  //   event.preventDefault();
-  //   try {
-  //     const catData = {
-  //       age: Number(cat.age),
-  //       price: Number(cat.price),
-  //       breed: cat.breed,
-  //       name: cat.name,
 
-  //     };
+  // Cloudinary Image Upload Function
+  const uploadImage = async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", uploadPreset);
+    formData.append("folder", "cats"); // Uploads the image to the 'cats' folder
 
-  //     // Retrieve token from sessionStorage
+    try {
+      const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+        method: "POST",
+        body: formData,
+      });
 
-  //     // console.log(token)
-  //     // if (!token) {
-  //     //   alert("User is not authenticated. Please log in.");
-  //     //   return;
-  //     // }
+      const data = await response.json();
+      if (data.secure_url) {
+        console.log("Uploaded image URL:", data.secure_url);
+        return data.secure_url;
+      } else {
+        console.error("Upload error:", data.error.message);
+        return null;
+      }
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      return null;
+    }
+  };
 
-  //     console.log("Submitting cat data:", catData);
-  //     console.log("Token used for posting cat data:", token);
+  // Handle Image Change
+  const handleImageChange = async (event) => {
+    const file = event.target.files[0];
 
-  //     // Pass catData and token to the action
-  //     const response = await actions.postCatData(catData);
+    if (!file) {
+      setError("Please select an image file.");
+      return;
+    }
 
-  //     console.log("Response from postCatData:", response);
+    setIsUploading(true);
+    const imageUrl = await uploadImage(file);
+    setIsUploading(false);
 
-  //     if (response.status) {
-  //       navigate("/");
-  //     } else {
-  //       alert(`Failed to add cat: ${response.error || "Please try again."}`);
-  //     }
-  //   }
-  //   catch (error) {
-  //     console.error("Error submitting cat data", error);
-  //     alert("An unexpected error occurred.");
-  //   }
-  // };
+    if (imageUrl) {
+      setCat({ ...cat, imageUrl });
+    } else {
+      setError("Failed to upload image. Please try again.");
+    }
+  };
 
-  // onSubmit redone:
+  // Handle Form Submission
   const onSubmit = async (event) => {
     event.preventDefault();
     setError('');
@@ -60,18 +72,19 @@ export default function CatUpload() {
         price: Number(cat.price),
         breed: cat.breed,
         name: cat.name,
+        imageUrl: cat.imageUrl,
       };
 
       console.log("Submitting cat data:", catData);
 
-      const response = await actions.postCatData2(catData);
+      const response = await actions.postCatData(catData);
       console.log("Response from postCatData:", response);
 
       if (response.success) {
         navigate("/");
       } else {
         setError(response.message || "Failed to add cat");
-        alert(`Failed to add cat: ${response.error || "Please try again."}`);
+        alert(`Failed to add cat: ${response.message || "Please try again."}`);
       }
     } catch (error) {
       console.error("Error submitting cat data:", error);
@@ -111,7 +124,14 @@ export default function CatUpload() {
           onChange={(e) => setCat({ ...cat, price: e.target.value })}
           required
         />
-        <button type="submit">Upload Cat</button>
+        <label>Upload Image:</label>
+        <input
+          type="file"
+          onChange={handleImageChange}
+          accept="image/*"
+        />
+        {isUploading && <p>Uploading image...</p>}
+        <button type="submit" disabled={isUploading}>Upload Cat</button>
       </form>
     </div>
   );

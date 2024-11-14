@@ -54,7 +54,13 @@ export const Home = () => {
           store.cats.map((cat) => (
             <div key={cat.id} className="cat-section">
               <div className="cat-image">
-                {/* Display cat image if available */}
+              <div className="cat-image">
+                {cat.imageUrl ? (
+                  <img src={cat.imageUrl} alt={cat.name} className="cat-thumbnail" />
+                ) : (
+                  <p>No image available</p>
+                )}
+              </div>
               </div>
               <p className="cat-description">{cat.name}</p>
               <button

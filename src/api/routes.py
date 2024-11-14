@@ -10,6 +10,15 @@ import secrets
 import hashlib
 import logging
 
+import cloudinary.uploader
+import cloudinary
+
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+)
+
 from datetime import timedelta
 
 api = Blueprint('api', __name__)
@@ -344,7 +353,7 @@ def request_reset():
 @jwt_required()
 def reset_password():
     email = get_jwt_identity()
-    user = User.query.filter_by(id=email).first_or_404()
+    user = User.query.filter_by(email=email).first_or_404()
     new_password = request.json.get('new_password')
 
     if not new_password:
@@ -358,4 +367,19 @@ def reset_password():
         return jsonify({'message': 'Password has been reset successfully.'}), 200
     except Exception as e:
         db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+    
+
+@api.route('/upload_image', methods=['POST'])
+def upload_image():
+    file_to_upload = request.files['file']
+
+    try:
+        # Perform a signed upload
+        upload_result = cloudinary.uploader.upload(file_to_upload)
+        return jsonify({
+            "success": True,
+            "url": upload_result['secure_url']
+        }), 200
+    except Exception as e:
         return jsonify({"error": str(e)}), 500

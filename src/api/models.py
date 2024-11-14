@@ -37,7 +37,7 @@ class Cat(db.Model):
     breed = db.Column(db.String(50), nullable=False)
     age = db.Column(db.Integer, nullable=False)
     price = db.Column(db.Float, nullable=False, default=0.0)
-    
+    image_url = db.Column(db.String(255), nullable=True)
     # Foreign key linking each cat to a specific user (owner)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     
@@ -54,6 +54,7 @@ class Cat(db.Model):
         "breed": self.breed,
         "age": self.age,
         "price": self.price,
+        "image_url": self.image_url,
         "user_id": self.user_id,  # Foreign key reference
         "owner": {
             "id": self.owner.id,

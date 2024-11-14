@@ -147,12 +147,12 @@ const getState = ({ getStore, setStore }) => {
           return {
             success: true,
             message: "Cat added successfully",
-            data: responseData.cat
+            data: response.cat
           };
         } else {
           return {
             success: false,
-            message: responseData.error || "Failed to add cat"
+            message: response.error || "Failed to add cat"
           };
         }
         // look into getting this catch back into the code
@@ -209,45 +209,55 @@ const getState = ({ getStore, setStore }) => {
           if (!token) {
             return { success: false, message: "User is not authenticated" };
           }
-
+      
+          // Step 1: Upload the image to Cloudinary
+          const imageUrl = await uploadImage(cat.imageFile);
+          if (!imageUrl) {
+            return { success: false, message: "Image upload failed. Please try again." };
+          }
+      
+          // Step 2: Prepare the cat data with the uploaded image URL
           const data = JSON.stringify({
             name: cat.name,
             breed: cat.breed,
             age: cat.age,
-            price: cat.price
+            price: cat.price,
+            imageUrl: imageUrl, // Include the image URL from Cloudinary
           });
-
+      
+          // Step 3: Make the API request to add the cat data
           const response = await fetch(`${process.env.BACKEND_URL}/api/add-cat`, {
             method: "POST",
             headers: {
               "Authorization": `Bearer ${token}`,
-              "Content-Type": "application/json"
+              "Content-Type": "application/json",
             },
-            body: data
+            body: data,
           });
-
+      
           const responseData = await response.json();
-
+      
           if (response.status === 201) {
             return {
               success: true,
               message: "Cat added successfully",
-              data: responseData.cat
+              data: responseData.cat,
             };
           } else {
             return {
               success: false,
-              message: responseData.error || "Failed to add cat"
+              message: responseData.error || "Failed to add cat",
             };
           }
         } catch (error) {
           console.error("Error posting cat data:", error);
           return {
             success: false,
-            message: "An unexpected error occurred"
+            message: "An unexpected error occurred",
           };
         }
       },
+      
 
       getCats: async () => {
         try {
@@ -407,10 +417,12 @@ const getState = ({ getStore, setStore }) => {
           return { success: false, message: "An error occurred while sending the reset email." };
         }
       },
+      
 
 
     },
   };
+  
 };
 
 export default getState;
