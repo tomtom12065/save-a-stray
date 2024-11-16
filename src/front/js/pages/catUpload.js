@@ -15,31 +15,7 @@ export default function CatUpload() {
   const token = sessionStorage.getItem("token");
 
   // Cloudinary Image Upload Function
-  const uploadImage = async (file) => {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", uploadPreset);
-    formData.append("folder", "cats"); // Uploads the image to the 'cats' folder
-
-    try {
-      const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await response.json();
-      if (data.secure_url) {
-        console.log("Uploaded image URL:", data.secure_url);
-        return data.secure_url;
-      } else {
-        console.error("Upload error:", data.error.message);
-        return null;
-      }
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      return null;
-    }
-  };
+ 
 
   // Handle Image Change
   const handleImageChange = async (event) => {
@@ -50,8 +26,10 @@ export default function CatUpload() {
       return;
     }
 
+    console.log("File from catUpload before uploadimage ", file)
+
     setIsUploading(true);
-    const imageUrl = await uploadImage(file);
+    const imageUrl = await actions.uploadImage(file);
     setIsUploading(false);
 
     if (imageUrl) {
@@ -77,7 +55,7 @@ export default function CatUpload() {
 
       console.log("Submitting cat data:", catData);
 
-      const response = await actions.postCatData(catData);
+      const response = await actions.postCatData2(catData);
       console.log("Response from postCatData:", response);
 
       if (response.success) {

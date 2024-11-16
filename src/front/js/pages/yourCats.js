@@ -18,7 +18,7 @@ const YourCats = () => {
   }
 
   // Filter cats owned by the current user
-  const userCats = store.cats;
+  const userCats = store.selfcats;
 
   return (
     <div className="container mt-4">

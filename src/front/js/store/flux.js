@@ -1,4 +1,7 @@
-const getState = ({ getStore, setStore }) => {
+
+
+const getState = ({ getStore, getActions ,setStore }) => {
+//  getaction lets you use functions within the flux in other functions
   // Helper function to retrieve token
   const getToken = () => sessionStorage.getItem("token");
   console.log(getStore.token)
@@ -7,6 +10,7 @@ const getState = ({ getStore, setStore }) => {
       message: null,
       cats: [],
       user: null,
+      selfcats: [],
       token: sessionStorage.getItem("token")
     },
     actions: {
@@ -127,7 +131,7 @@ const getState = ({ getStore, setStore }) => {
 
 
       postCatData: async (cat) => {
-        const data = JSON.stringify({ name: cat.name, breed: cat.breed, age: cat.age, price: cat.price });
+        const data = JSON.stringify({ name: cat.name, breed: cat.breed, age: cat.age, price: cat.price, image_url: cat.imageUrl });
 
         const response = await fetch(`${process.env.BACKEND_URL}/api/add-cat`, {
           method: "POST",
@@ -201,7 +205,35 @@ const getState = ({ getStore, setStore }) => {
       //     return { status: 500, error: error.message };
       //   }
       // },
-
+       uploadImage: async (file) => {
+        const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET;
+        const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", uploadPreset);
+        formData.append("folder", "cats"); // Uploads the image to the 'cats' folder
+        console.log(file, "file");
+        console.log(formData, "formData");
+        
+        try {
+          const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+            method: "POST",
+            body: formData,
+          });
+    
+          const data = await response.json();
+          if (data.secure_url) {
+            console.log("Uploaded image URL:", data.secure_url);
+            return data.secure_url;
+          } else {
+            console.error("Upload error:", data.error.message);
+            return null;
+          }
+        } catch (error) {
+          console.error("Error uploading image:", error);
+          return null;
+        }
+      },
       //postCatData redone:
       postCatData2: async (cat) => {
         try {
@@ -209,22 +241,25 @@ const getState = ({ getStore, setStore }) => {
           if (!token) {
             return { success: false, message: "User is not authenticated" };
           }
-      
-          // Step 1: Upload the image to Cloudinary
-          const imageUrl = await uploadImage(cat.imageFile);
-          if (!imageUrl) {
-            return { success: false, message: "Image upload failed. Please try again." };
+          
+          if (!cat.imageUrl) {
+            // Step 1: Upload the image to Cloudinary
+            const imageUrl = await getActions().uploadImage(cat.image_url);
+            if (!imageUrl) {
+              return { success: false, message: "Image upload failed. Please try again." };
+            }
           }
-      
+          
+
           // Step 2: Prepare the cat data with the uploaded image URL
           const data = JSON.stringify({
             name: cat.name,
             breed: cat.breed,
             age: cat.age,
             price: cat.price,
-            imageUrl: imageUrl, // Include the image URL from Cloudinary
+            image_url: cat.imageUrl, // Include the image URL from Cloudinary
           });
-      
+
           // Step 3: Make the API request to add the cat data
           const response = await fetch(`${process.env.BACKEND_URL}/api/add-cat`, {
             method: "POST",
@@ -234,9 +269,9 @@ const getState = ({ getStore, setStore }) => {
             },
             body: data,
           });
-      
+
           const responseData = await response.json();
-      
+
           if (response.status === 201) {
             return {
               success: true,
@@ -257,7 +292,7 @@ const getState = ({ getStore, setStore }) => {
           };
         }
       },
-      
+
 
       getCats: async () => {
         try {
@@ -343,13 +378,13 @@ const getState = ({ getStore, setStore }) => {
         if (response.status !== 200) return false;
 
         const responseBody = await response.json();
-        setStore({ cats: responseBody }); // Fixed casing on `responseBody`
+        setStore({ selfcats: responseBody }); // Fixed casing on `responseBody`
 
         return true;
       },
 
-     
 
+      
 
       resetPassword: async (newPassword, token) => {
         //  put at top so everyone can access
@@ -417,12 +452,12 @@ const getState = ({ getStore, setStore }) => {
           return { success: false, message: "An error occurred while sending the reset email." };
         }
       },
-      
+
 
 
     },
   };
-  
+
 };
 
 export default getState;

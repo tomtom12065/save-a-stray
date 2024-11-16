@@ -1,113 +1,156 @@
-.home-container {
-    text-align: center;
-    padding: 20px;
-    background-color: #f0f9ff; /* Light pastel blue background */
-  }
-  
-  .title {
-    font-family: 'Arial', sans-serif;
-    font-size: 2.5rem;
-    color: #333;
-    margin-bottom: 20px;
-  }
-  
-  /* Grid layout for the cat sections */
-  .cat-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  
-  /* Styling each cat section */
-  .cat-section {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* Placeholder for the cat image */
-  .cat-image {
-    background-color: red; /* Placeholder for image */
-    height: 150px;
-    width: 100%;
-    border-radius: 10px;
-    margin-bottom: 15px;
-  }
-  
-  /* Description below each cat image */
-  .cat-description {
-    font-size: 1.1rem;
-    color: #666;
-    margin-bottom: 10px;
-  }
-  
-  /* Button styling */
-  .learn-more-btn {
-    padding: 10px 20px;
-    background-color: #5eb0ef; /* Soft blue button */
-    color: white;
-    border: none;
-    border-radius: 25px;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: background-color 0.3s ease;
-  }
-  
-  .learn-more-btn:hover {
-    background-color: #3a99d8; /* Darker blue on hover */
-  }
-  /* saveAStray.css */
-
-/* Delete Button Styles */
-.delete-cat-btn {
-  background-color: #e74c3c; /* Red color for danger */
-  color: white;
-  border: none;
-  padding: 8px 12px;
-  margin-top: 8px;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: background-color 0.3s ease;
+/* Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.delete-cat-btn:hover {
-  background-color: #c0392b;
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f2f2f2;
+  color: #333;
+  padding: 20px;
 }
 
-.delete-cat-btn:disabled {
-  background-color: #bdc3c7; /* Grey color when disabled */
-  cursor: not-allowed;
+h1.title {
+  text-align: center;
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 20px;
 }
 
-/* Optional: Style for feedback messages */
-.message {
-  padding: 10px;
-  margin: 10px 0;
-  border-radius: 4px;
-  background-color: #dff0d8; /* Light green for success */
-  color: #3c763d;
-}
+/* Menu Button */
 .sidebar-toggle-btn {
-  background-color: #f7349f;
-  color: white;
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background-color: #007bff;
+  color: #fff;
   border: none;
   padding: 10px 15px;
+  font-size: 1.2rem;
   border-radius: 5px;
   cursor: pointer;
-  font-size: 1.2rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.3s ease;
-  top: 10px;
-  left: 10px;
-  display: flex;
-  gap: 10px;
-  position: absolute;
 }
 
 .sidebar-toggle-btn:hover {
   background-color: #0056b3;
+}
+
+/* Cat Grid */
+/* .cat-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+} */
+
+/* Cat Card */
+.cat-card {
+  flex: 1 1 300px;
+  max-width: 500px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.cat-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+.cat-card .card-body {
+  padding: 15px;
+}
+
+.cat-card .card-title {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.cat-card .card-text {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 15px;
+}
+
+/* Buttons */
+.cat-card .btn {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: #fff;
+  border: none;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  h1.title {
+    font-size: 2rem;
+  }
+
+  .cat-card {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+
+  .sidebar-toggle-btn {
+    font-size: 1rem;
+    padding: 8px 12px;
+  }
+}
+.short-card {
+  height: 400px; /* Set a fixed height for all cards */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+.short-card .card-img-top {
+  height: 180px; /* Consistent image height */
+  width: 100%;
+  object-fit: cover;
+  border-radius: 10px 10px 0 0;
+}
+
+.short-card .card-body {
+  flex-grow: 1;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.short-card .card-text {
+  flex-grow: 1;
+}
+
+.short-card .btn {
+  margin-bottom: 5px;
 }
 

@@ -51,8 +51,9 @@ def get_cats():
 def get_self_cats():
     """Retrieve all cats for the authenticated user."""
     try:
+       
         current_user = get_jwt_identity()
-        user = User.query.filter_by(email=current_user).first()
+        user = User.query.filter_by(id=current_user).first()
         
         if not user:
             return jsonify({"error": "User not found"}), 404
@@ -96,15 +97,15 @@ def delete_cat(cat_id):
 @jwt_required()  # Requires a valid JWT token for access
 def add_cat():
     data = request.get_json()
-    name, breed, age, price = data.get("name"), data.get("breed"), data.get("age"), data.get("price")
+    name, breed, age, price,image_url= data.get("name"), data.get("breed"), data.get("age"), data.get("price"),data.get("image_url")
 
     # Check for required fields
-    if not all([name, breed, age, price]):
+    if not all([name, breed, age, price,image_url]):
         return jsonify({'error': 'Missing required fields'}), 400
 
     # Link the cat to the authenticated user
     current_user_id = get_jwt_identity()
-    new_cat = Cat(name=name, breed=breed, age=age, price=price, user_id=current_user_id)
+    new_cat = Cat(name=name, breed=breed, age=age, price=price,image_url=image_url, user_id=current_user_id)
 
     try:
         db.session.add(new_cat)
@@ -383,3 +384,7 @@ def upload_image():
         }), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+
+
+
