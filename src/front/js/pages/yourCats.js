@@ -1,16 +1,16 @@
 import React, { useContext, useEffect } from "react";
 import { Context } from "../store/appContext";
 import { useNavigate } from "react-router-dom";
+import CatCard from "../component/catCard"; // Assuming the CatCard component exists
 
 const YourCats = () => {
   const { store, actions } = useContext(Context);
   const navigate = useNavigate();
 
+  // Fetch the cats when the component mounts
   useEffect(() => {
-
-    actions.getSelfCats();
-
-  }, []);
+    actions.getSelfCats(); // Get the user's cats using the Flux action
+  }, [actions]);
 
   // Check if the user is logged in
   if (!store.user || !store.user.id) {
@@ -24,32 +24,16 @@ const YourCats = () => {
     <div className="container mt-4">
       <h2 className="text-center mb-4">Your Cats</h2>
 
-      {userCats.length > 0 ? (
-        <div className="row">
-          {userCats.map(cat => (
-            <div key={cat.id} className="col-md-4 mb-4">
-              <div className="card">
-                <div className="card-body">
-                  <h5 className="card-title">{cat.name}</h5>
-                  <p className="card-text">
-                    <strong>Breed:</strong> {cat.breed} <br />
-                    <strong>Age:</strong> {cat.age} years <br />
-                    <strong>Price:</strong> ${cat.price.toFixed(2)}
-                  </p>
-                  <button
-                    className="btn btn-primary"
-                    onClick={() => navigate(`/cat-template/${cat.id}`)}
-                  >
-                    View Details
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-center">You don't own any cats yet.</p>
-      )}
+      {/* Display the cats in a grid layout */}
+      <div className="row cat-grid">
+        {userCats.length > 0 ? (
+          userCats.map((cat) => (
+            <CatCard key={cat.id} cat={cat} onDelete={() => handleDeleteCat(cat.id)} />
+          ))
+        ) : (
+          <p className="text-center">You don't own any cats yet.</p>
+        )}
+      </div>
     </div>
   );
 };
