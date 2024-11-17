@@ -205,76 +205,15 @@ def login():
 
 
 
+# GET a single cat by ID
+@api.route('/cat/<int:cat_id>', methods=['GET'])
+def get_single_cat(cat_id):
+    cat = Cat.query.get(cat_id)
+    if not cat:
+        return jsonify({"error": "Cat not found"}), 404
 
+    return jsonify({"cat": cat.serialize()}), 200
 
-
-
-
-
-
-
-
-###########################################################################################33
-# def send_email(email, subject, token):
-#     try:
-#         # Define the reset link using the frontend URL
-#         reset_link = f"{os.environ.get('FRONTEND_URL')}/request_reset?token={token}"
-#         response = requests.post(
-#             os.environ.get('MAILGUN_API_URL'),
-#             auth=("api", os.environ.get('MAILGUN_API_KEY')),
-#             data={
-#                 "from": f"Support <support@{os.environ.get('MAILGUN_DOMAIN')}>",
-#                 "to": [email],
-#                 "subject": subject,
-#                 "text": f"Click here to reset your password: {reset_link}",
-#                 "html": f"<html><body><a href='{reset_link}'>Reset Password Link</a></body></html>"
-#             }
-#         )
-# new send email without third party api
-# def send_email(recipient, body, subject):
-#     try:
-#         with smtplib.SMTP_SSL(MAIL_SERVER, MAIL_PORT) as server:
-#             server.login(MAIL_USERNAME, MAIL_PASSWORD)
-#             smg = EmailMessage()
-#             smg["Subject"] = subject
-#             smg["From"] = MAIL_USERNAME
-#             smg["To"] = recipient
-#             smg.set_content(body)
-#             server.send_message(smg)
-#     except smtplib.SMTPException as e: 
-#         #log the exception e
-#         raise Exception(f"failed to send email: {str(e)}")
-
-#         # Check if the email was sent successfully
-#         if response.status_code != 200:
-#             print(f"Email sending failed: {response.text}")
-#             return False
-#         return True
-#     except Exception as error:
-#         print(f"Error sending email: {error}")
-#         return False
-
-
-
-# Route to request a password reset
-# @api.route('/request_reset', methods=['POST'])
-# def request_reset():
-#     email = request.json.get('email')
-#     user = User.query.filter_by(email=email).first()
-
-#     if user:
-#         # Create a token with a 1-hour expiration time
-#         token = create_access_token(identity=email, expires_delta=timedelta(hours=1))
-#         # email_sent = send_email(user.email, 'Password Reset Request', token)
-#         email_value = f"click here to reset your password.\n{os.getenv('FRONTEND_URL')}/reset-Password?token={token}"
-#         email_sent= send_email(email, email_value, "Password Recovery")
-#         if email_sent:
-#             return jsonify({'message': 'If your email is in our system, you will receive a password reset link.'}), 200
-                    
-#         else:
-#             return jsonify({"error": "Failed to send email. Please try again later."}), 500
-
-#     return jsonify({"message": "If your email is in our system, you will receive a password reset link."}), 200
 
 
 @api.route('/request_reset', methods=['POST'])

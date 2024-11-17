@@ -1,7 +1,5 @@
-
-
 const getState = ({ getStore, getActions ,setStore }) => {
-//  getaction lets you use functions within the flux in other functions
+  //  getaction lets you use functions within the flux in other functions
   // Helper function to retrieve token
   const getToken = () => sessionStorage.getItem("token");
   console.log(getStore.token)
@@ -13,7 +11,9 @@ const getState = ({ getStore, getActions ,setStore }) => {
       selfcats: [],
       token: sessionStorage.getItem("token")
     },
+
     actions: {
+      // **Message Actions**
       getMessage: async () => {
         try {
           const resp = await fetch(`${process.env.BACKEND_URL}/api/hello`);
@@ -25,21 +25,22 @@ const getState = ({ getStore, getActions ,setStore }) => {
         }
       },
 
+      // **User Authentication Actions**
       registerUser: async (userData) => {
         try {
           console.log("Starting registration process in register_user.");
-
+  
           console.log("Registering user - Input Data:", userData);
           console.log("Type of userData:", typeof userData); // Should be "object"
-
+  
           const url = `${process.env.BACKEND_URL}/api/register`;
           console.log("URL for registration:", url);
-
+  
           // Convert user data to JSON string
           const bodyData = JSON.stringify(userData);
           console.log("Data to be sent in body (JSON string):", bodyData);
           console.log("Type of bodyData:", typeof bodyData); // Should be "string"
-
+  
           const resp = await fetch(url, {
             method: "POST",
             headers: {
@@ -47,7 +48,7 @@ const getState = ({ getStore, getActions ,setStore }) => {
             },
             body: bodyData,
           });
-
+  
           // Check if response was received and log status
           console.log("Fetch response received. Status:", resp.status);
           if (!resp.ok) {
@@ -56,11 +57,11 @@ const getState = ({ getStore, getActions ,setStore }) => {
             console.log("Error data received from server:", errorData);
             return { success: false, message: errorData.error || "Error registering user" };
           }
-
+  
           const data = await resp.json();
           console.log("Data parsed from JSON response:", data);
           console.log("Type of data:", typeof data); // Should be "object"
-
+  
           // Checks that user data is present in the response
           if (data && data.user) {
             console.log("User registered successfully:", data.user);
@@ -74,20 +75,18 @@ const getState = ({ getStore, getActions ,setStore }) => {
           console.error("Error occurred during registration process:", error);
           return { success: false, message: error.message };
         }
-      }
-      ,
-
-
+      },
+  
       loginUser: async (userData) => {
         console.log("loginUser called with userData:", userData);
-
+  
         try {
           const backendUrl = process.env.BACKEND_URL;
           console.log("Backend URL:", backendUrl);
-
+  
           const endpoint = `${backendUrl}/api/login`;
           console.log("Login endpoint:", endpoint);
-
+  
           const requestOptions = {
             method: "POST",
             headers: {
@@ -96,43 +95,48 @@ const getState = ({ getStore, getActions ,setStore }) => {
             body: JSON.stringify(userData),
           };
           console.log("Request options:", requestOptions);
-
+  
           const resp = await fetch(endpoint, requestOptions);
           console.log("Fetch response received:", resp);
-
+  
           const data = await resp.json();
           console.log("Response JSON data:", data);
-
+  
           console.log("Response status OK?", resp.ok);
           if (!resp.ok) {
             const errorMessage = data.error || "Error logging in";
             console.error("Login failed:", errorMessage);
             return { success: false, message: errorMessage };
           }
-
+  
           console.log("Login successful. Data received:", data);
-
+  
           // Update the store with the user data and tokens
           setStore({ user: data.user, token: data.access_token });
           console.log("Store updated with user and token:", { user: data.user, token: data.access_token });
-
+  
           // Save the tokens to sessionStorage
           sessionStorage.setItem("token", data.access_token);
           sessionStorage.setItem("refresh_token", data.refresh_token);
           console.log("Tokens saved to sessionStorage:", data.access_token, data.refresh_token);
-
+  
           return { success: true, message: "Login successful" };
         } catch (error) {
           console.error("An error occurred during login:", error);
           return { success: false, message: error.message };
         }
       },
+  
+      logout: () => {
+        console.log("Logging out...");
+        sessionStorage.removeItem("token"); // Remove token from sessionStorage
+        setStore({ user: null, token: null }); // Reset user and token in store
+      },
 
-
-
+      // **Cat Actions**
       postCatData: async (cat) => {
         const data = JSON.stringify({ name: cat.name, breed: cat.breed, age: cat.age, price: cat.price, image_url: cat.imageUrl });
-
+  
         const response = await fetch(`${process.env.BACKEND_URL}/api/add-cat`, {
           method: "POST",
           headers: {
@@ -141,12 +145,7 @@ const getState = ({ getStore, getActions ,setStore }) => {
           },
           body: data
         });
-
-        // if (response.status !== 201) return false;
-        // const responseBody = await response.json();
-        // console.log(responseBody);
-        // return true;
-
+  
         if (response.status === 201) {
           return {
             success: true,
@@ -159,53 +158,165 @@ const getState = ({ getStore, getActions ,setStore }) => {
             message: response.error || "Failed to add cat"
           };
         }
-        // look into getting this catch back into the code
-        // } catch(error) {
-        //   console.error("Error posting cat data:", error);
-        //   return {
-        //     success: false,
-        //     message: "An unexpected error occurred"
-        //   };
-        // }
       },
-      //   const token = getToken();
-      //   if (!token) {
-      //     console.error("Token is missing. Please log in.");
-      //     return { success: false, message: "User is not authenticated" };
-      //   }
+  
+      postCatData2: async (cat) => {
+        try {
+          const token = sessionStorage.getItem("token");
+          if (!token) {
+            return { success: false, message: "User is not authenticated" };
+          }
+          
+          if (!cat.imageUrl) {
+            // Step 1: Upload the image to Cloudinary
+            const imageUrl = await getActions().uploadImage(cat.image_url);
+            if (!imageUrl) {
+              return { success: false, message: "Image upload failed. Please try again." };
+            }
+          }
+  
+          // Step 2: Prepare the cat data with the uploaded image URL
+          const data = JSON.stringify({
+            name: cat.name,
+            breed: cat.breed,
+            age: cat.age,
+            price: cat.price,
+            image_url: cat.imageUrl, // Include the image URL from Cloudinary
+          });
+  
+          // Step 3: Make the API request to add the cat data
+          const response = await fetch(`${process.env.BACKEND_URL}/api/add-cat`, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: data,
+          });
+  
+          const responseData = await response.json();
+  
+          if (response.status === 201) {
+            return {
+              success: true,
+              message: "Cat added successfully",
+              data: responseData.cat,
+            };
+          } else {
+            return {
+              success: false,
+              message: responseData.error || "Failed to add cat",
+            };
+          }
+        } catch (error) {
+          console.error("Error posting cat data:", error);
+          return {
+            success: false,
+            message: "An unexpected error occurred",
+          };
+        }
+      },
+  
+      getCats: async () => {
+        try {
+          const resp = await fetch(`${process.env.BACKEND_URL}/api/cats`);
+          console.log("Response status:", resp.status);
+          console.log("Backend URL:", process.env.BACKEND_URL);
+  
+          if (!resp.ok) {
+            const errorText = await resp.text();
+            console.error("Error response text:", errorText);
+            throw new Error(`Error: ${resp.status} ${resp.statusText}`);
+          }
+  
+          const data = await resp.json();
+          console.log("Fetched cats data:", data);
+          setStore({ cats: data.cats });
+          return { success: true };
+        } catch (error) {
+          console.error("Error fetching cats:", error);
+          return { success: false, message: error.message };
+        }
+      },
+      getSelfCats: async () => {
+        const response = await fetch(process.env.BACKEND_URL + "/api/user-cats", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + sessionStorage.getItem("token"),
+          },
+        });
 
-      //   console.log("Token used for posting cat data:", token);
+        if (response.status !== 200) return false;
 
-      //   try {
-      //     const resp = await fetch(`${process.env.BACKEND_URL}/api/add-cat`, {
-      //       method: "POST",
-      //       headers: {
-      //         "Content-Type": "application/json",
-      //       //  can use userid to make more better readable lines of code
-      //         "Authorization": `Bearer ${token}` 
-      //       },
-      //       body: JSON.stringify(cat),
-      //     });
+        const responseBody = await response.json();
+        setStore({ selfcats: responseBody }); // Fixed casing on `responseBody`
 
-      //     const data = await resp.json();
+        return true;
+      },
+      getCatById: async (catId) => {
+        try {
+          const resp = await fetch(`${process.env.BACKEND_URL}/api/cat/${catId}`);
+          const data = await resp.json();
+      
+          if (resp.ok) {
+            setStore({ singleCat: data.cat });  // Store the fetched cat in singleCat
+          } else {
+            console.error("Cat not found");
+            setStore({ singleCat: null });  // In case the cat isn't found
+          }
+        } catch (error) {
+          console.error("Error fetching single cat:", error);
+          setStore({ singleCat: null });  // Handle error and set singleCat to null
+        }
+      },
 
-      //     if (!resp.ok) {
-      //       throw new Error(data.error || "Error posting cat data");
-      //     }
+  
+      deleteCat: async (catId) => {
+        const token = sessionStorage.getItem("token");
+  
+        if (!token) {
+          console.error("Token is missing. Please log in.");
+          return { success: false, message: "User is not authenticated" };
+        }
+  
+        try {
+          const resp = await fetch(`${process.env.BACKEND_URL}/api/delete-cat/${catId}`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`
+            },
+          });
+  
+          const data = await resp.json();
+  
+          if (resp.status === 403) {
+            console.error("Unauthorized: You do not own this cat.");
+            return { success: false, message: "You are not authorized to delete this cat." };
+          }
+  
+          if (!resp.ok) {
+            throw new Error(data.error || "Error deleting cat");
+          }
+  
+          // Update the store to remove the deleted cat
+          const updatedCats = getStore().cats.filter((cat) => cat.id !== catId);
+          setStore((prev) => ({
+            ...prev,
+            cats: updatedCats,
+            message: "Cat deleted successfully!",
+          }));
+  
+          return { success: true, message: "Cat deleted successfully" };
+        } catch (error) {
+          console.error("Error deleting cat:", error);
+          return { success: false, message: error.message || "Error deleting cat" };
+        }
+      },
 
-      //     if (data.cat) {
-      //       setStore({ cats: [...getStore().cats, data.cat], message: "Cat added!" });
-      //     } else {
-      //       throw new Error("Invalid cat data received");
-      //     }
-
-      //     return { status: resp.status, data: data };
-      //   } catch (error) {
-      //     console.error("Error posting cat data", error);
-      //     return { status: 500, error: error.message };
-      //   }
-      // },
-       uploadImage: async (file) => {
+      // **Image Upload Actions**
+      uploadImage: async (file) => {
         const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET;
         const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
         const formData = new FormData();
@@ -234,138 +345,8 @@ const getState = ({ getStore, getActions ,setStore }) => {
           return null;
         }
       },
-      //postCatData redone:
-      postCatData2: async (cat) => {
-        try {
-          const token = sessionStorage.getItem("token");
-          if (!token) {
-            return { success: false, message: "User is not authenticated" };
-          }
-          
-          if (!cat.imageUrl) {
-            // Step 1: Upload the image to Cloudinary
-            const imageUrl = await getActions().uploadImage(cat.image_url);
-            if (!imageUrl) {
-              return { success: false, message: "Image upload failed. Please try again." };
-            }
-          }
-          
-
-          // Step 2: Prepare the cat data with the uploaded image URL
-          const data = JSON.stringify({
-            name: cat.name,
-            breed: cat.breed,
-            age: cat.age,
-            price: cat.price,
-            image_url: cat.imageUrl, // Include the image URL from Cloudinary
-          });
-
-          // Step 3: Make the API request to add the cat data
-          const response = await fetch(`${process.env.BACKEND_URL}/api/add-cat`, {
-            method: "POST",
-            headers: {
-              "Authorization": `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            body: data,
-          });
-
-          const responseData = await response.json();
-
-          if (response.status === 201) {
-            return {
-              success: true,
-              message: "Cat added successfully",
-              data: responseData.cat,
-            };
-          } else {
-            return {
-              success: false,
-              message: responseData.error || "Failed to add cat",
-            };
-          }
-        } catch (error) {
-          console.error("Error posting cat data:", error);
-          return {
-            success: false,
-            message: "An unexpected error occurred",
-          };
-        }
-      },
-
-
-      getCats: async () => {
-        try {
-          const resp = await fetch(`${process.env.BACKEND_URL}/api/cats`);
-          console.log("Response status:", resp.status);
-          console.log("Backend URL:", process.env.BACKEND_URL);
-
-          if (!resp.ok) {
-            const errorText = await resp.text();
-            console.error("Error response text:", errorText);
-            throw new Error(`Error: ${resp.status} ${resp.statusText}`);
-          }
-
-          const data = await resp.json();
-          console.log("Fetched cats data:", data);
-          setStore({ cats: data.cats });
-          return { success: true };
-        } catch (error) {
-          // console.error("Error fetching cats:", error);
-          return { success: false, message: error.message };
-        }
-      },
-
-
-      // make a conditional
-      deleteCat: async (catId) => {
-        const token = sessionStorage.getItem("token");
-
-        if (!token) {
-          console.error("Token is missing. Please log in.");
-          return { success: false, message: "User is not authenticated" };
-        }
-
-        try {
-          const resp = await fetch(`${process.env.BACKEND_URL}/api/delete-cat/${catId}`, {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`
-            },
-          });
-
-          const data = await resp.json();
-
-          if (resp.status === 403) {
-            console.error("Unauthorized: You do not own this cat.");
-            return { success: false, message: "You are not authorized to delete this cat." };
-          }
-
-          if (!resp.ok) {
-            throw new Error(data.error || "Error deleting cat");
-          }
-
-          // Update the store to remove the deleted cat
-          const updatedCats = getStore().cats.filter((cat) => cat.id !== catId);
-          setStore((prev) => ({
-            ...prev,
-            cats: updatedCats,
-            message: "Cat deleted successfully!",
-          }));
-
-          return { success: true, message: "Cat deleted successfully" };
-        } catch (error) {
-          console.error("Error deleting cat:", error);
-          return { success: false, message: error.message || "Error deleting cat" };
-        }
-      },
-
-      logout: () => {
-        console.log("Logging out...");
-        sessionStorage.removeItem("token"); // Remove token from sessionStorage
-        setStore({ user: null, token: null }); // Reset user and token in store
-      },
+  
+      // **Self-Cat Actions**
       getSelfCats: async () => {
         const response = await fetch(process.env.BACKEND_URL + "/api/user-cats", {
           method: "GET",
@@ -383,11 +364,8 @@ const getState = ({ getStore, getActions ,setStore }) => {
         return true;
       },
 
-
-      
-
+      // **Password Reset Actions**
       resetPassword: async (newPassword, token) => {
-        //  put at top so everyone can access
         const baseApiUrl = process.env.BACKEND_URL;
         if (!token) {
           console.error("Token is missing. Please provide a valid token.");
@@ -452,12 +430,8 @@ const getState = ({ getStore, getActions ,setStore }) => {
           return { success: false, message: "An error occurred while sending the reset email." };
         }
       },
-
-
-
     },
   };
-
 };
 
 export default getState;

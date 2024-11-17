@@ -1,32 +1,49 @@
-// CatTemplate.js
-
-import React, { useState, useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useParams } from "react-router-dom";
 import { Context } from "../store/appContext";
-import "../../styles/catPage.css";
+import "../../styles/catTemplate.css";
 
 const CatTemplate = () => {
-  const { id } = useParams();
-  const { store } = useContext(Context);
-  const cat = store.cats.find((cat) => cat.id === parseInt(id));
+  const { id } = useParams(); // Get the cat ID from the URL
+  const { store, actions } = useContext(Context);
+  const [loading, setLoading] = useState(true);
 
-  const [addedToCart, setAddedToCart] = useState(false);
+  // Fetch the cat data when the component mounts
+  useEffect(() => {
+    actions.getCatById(id); // Fetch the cat by ID
+  }, [id, actions]);
 
-  if (!cat) {
-    return <p>Cat not found.</p>;
+  useEffect(() => {
+    if (store.singleCat) {
+      setLoading(false); // Set loading to false once the cat data is available
+    }
+  }, [store.singleCat]);
+
+  if (loading) {
+    return <p>Loading...</p>; // Show loading message while the cat data is being fetched
   }
 
-  const handleAddToCart = () => {
-    setAddedToCart(true);
-    // Show feedback to the user
-  };
+  const cat = store.singleCat;
+
+  if (!cat) {
+    return <p>Cat not found.</p>; // Handle case where the cat is not found
+  }
+
+  // Cloudinary URL with transformation for resizing
+  const cloudinaryUrl = cat.image_url
+    ? `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/w_300,h_200,c_fill/${cat.image_url}`
+    : "https://via.placeholder.com/300x200"; // Fallback if no image
 
   return (
     <div className="cat-page-container">
       <h1 className="cat-name">{cat.name}</h1>
 
       <div className="cat-images-grid">
-      
+        <img
+          className="img-fluid w-60 w-sm-75 w-md-50 w-lg-25"
+          src={cloudinaryUrl} // Use the dynamically generated Cloudinary URL
+          alt={cat.name}
+        />
       </div>
 
       <p className="cat-description">
@@ -37,10 +54,9 @@ const CatTemplate = () => {
 
       <button
         className="add-to-cart-btn"
-        onClick={handleAddToCart}
-        disabled={addedToCart}
+        onClick={() => alert("Added to cart!")}
       >
-        {addedToCart ? "Added to Cart" : "Add to Cart"}
+        Add to Cart
       </button>
     </div>
   );
