@@ -79,14 +79,14 @@ const getState = ({ getStore, getActions ,setStore }) => {
   
       loginUser: async (userData) => {
         console.log("loginUser called with userData:", userData);
-  
+      
         try {
           const backendUrl = process.env.BACKEND_URL;
           console.log("Backend URL:", backendUrl);
-  
+      
           const endpoint = `${backendUrl}/api/login`;
           console.log("Login endpoint:", endpoint);
-  
+      
           const requestOptions = {
             method: "POST",
             headers: {
@@ -95,38 +95,40 @@ const getState = ({ getStore, getActions ,setStore }) => {
             body: JSON.stringify(userData),
           };
           console.log("Request options:", requestOptions);
-  
+      
           const resp = await fetch(endpoint, requestOptions);
           console.log("Fetch response received:", resp);
-  
+      
           const data = await resp.json();
           console.log("Response JSON data:", data);
-  
+      
           console.log("Response status OK?", resp.ok);
           if (!resp.ok) {
             const errorMessage = data.error || "Error logging in";
             console.error("Login failed:", errorMessage);
             return { success: false, message: errorMessage };
           }
-  
+      
           console.log("Login successful. Data received:", data);
-  
+      
           // Update the store with the user data and tokens
           setStore({ user: data.user, token: data.access_token });
+          
           console.log("Store updated with user and token:", { user: data.user, token: data.access_token });
-  
+      
           // Save the tokens to sessionStorage
           sessionStorage.setItem("token", data.access_token);
           sessionStorage.setItem("refresh_token", data.refresh_token);
+          setStore({ user: data.user, token: data.access_token });
           console.log("Tokens saved to sessionStorage:", data.access_token, data.refresh_token);
-  
+          
           return { success: true, message: "Login successful" };
         } catch (error) {
           console.error("An error occurred during login:", error);
           return { success: false, message: error.message };
         }
       },
-  
+      
       logout: () => {
         console.log("Logging out...");
         sessionStorage.removeItem("token"); // Remove token from sessionStorage

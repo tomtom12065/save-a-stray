@@ -46,6 +46,7 @@ def get_cats():
         return jsonify({"error": "Internal server error", "details": str(e)}), 500
 
 
+
 @api.route('/user-cats', methods=['GET'])
 @jwt_required()
 def get_self_cats():
@@ -201,7 +202,20 @@ def login():
         "access_token": access_token,
         "refresh_token": refresh_token
     }), 200
-
+@api.route('/api/user', methods=['GET'])
+@jwt_required()
+def get_user():
+    # Get the identity of the current user with JWT
+    current_user_id = get_jwt_identity()
+    
+    # Fetch user data from the database
+    user = User.query.get(current_user_id)
+    
+    if user:
+        # Serialize user data and return it
+        return jsonify(user.serialize())
+    else:
+        return jsonify({"error": "User not found"}), 404
 
 
 
