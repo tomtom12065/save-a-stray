@@ -1,4 +1,6 @@
 /* sidebar.css */
+/* aria controls to toggle sidebar */
+
 
 .sidebar {
   position: fixed;
@@ -12,7 +14,8 @@
   padding: 20px;
   transform: translateX(-100%); /* Initially hidden on the left */
   transition: transform 0.3s ease;
-  z-index: 1050;
+  z-index: 1000;
+  
 }
 
 .sidebar.open {
@@ -28,6 +31,7 @@
   left: 15px; /* Close button on the left */
   cursor: pointer;
   color: #e58be1; /* Match sidebar text color */
+  z-index:1000;
 }
 
 h2 {

@@ -31,6 +31,7 @@ const CatTemplate = () => {
 
   // Cloudinary URL with transformation for resizing
   const cloudinaryUrl = cat.image_url
+  console.log(cat.image_url)
     ? `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/w_300,h_200,c_fill/${cat.image_url}`
     : "https://via.placeholder.com/300x200"; // Fallback if no image
 
@@ -40,7 +41,7 @@ const CatTemplate = () => {
 
       <div className="cat-images-grid">
         <img
-          className="img-fluid w-60 w-sm-75 w-md-50 w-lg-25"
+          className="img-fluid w-50 p-3 w-sm-75 w-md-50 w-lg-25"
           src={cloudinaryUrl} // Use the dynamically generated Cloudinary URL
           alt={cat.name}
         />
