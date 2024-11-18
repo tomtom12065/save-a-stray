@@ -34,7 +34,16 @@ const CatTemplate = () => {
   console.log(cat.image_url)
     ? `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/w_300,h_200,c_fill/${cat.image_url}`
     : "https://via.placeholder.com/300x200"; // Fallback if no image
-
+    const handleDeleteCat = (catId, catName) => {
+      // Ask for confirmation with the cat's name
+      const confirmDelete = window.confirm(`Are you sure you want to delete ${catName}?`);
+  
+      if (confirmDelete) {
+        actions.deleteCat(catId).then(() => {
+          actions.getSelfCats(); // Re-fetch the cats after deleting one to update the UI
+        });
+      }
+    };
   return (
     <div className="cat-page-container">
       <h1 className="cat-name">{cat.name}</h1>
@@ -56,9 +65,14 @@ const CatTemplate = () => {
       <button
         className="add-to-cart-btn"
         onClick={() => alert("Added to cart!")}
-      >
+     >
         Add to Cart
+       
       </button>
+      <button
+          className="btn btn-danger mt-2"
+          onClick={() => handleDeleteCat(cat.id,cat.name)}
+        >delete</button>
     </div>
   );
 };
