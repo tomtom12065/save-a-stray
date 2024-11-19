@@ -49,7 +49,7 @@ const Layout = () => {
             <Route index element={<Home />} />
 
 
-            <Route path="/your-cats" element={<YourCats />} />
+            <Route path="/profile" element={<ProfilePage />} />
 
             <Route path="/cat-template/:id" element={<CatTemplate />} />
             <Route path="/register" element={<Register />} />

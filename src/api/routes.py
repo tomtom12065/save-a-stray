@@ -4,6 +4,7 @@ from flask import request, jsonify, Blueprint
 from api.models import db, Cat, User
 from api.send_email import send_email
 from api.utils import APIException
+
 from werkzeug.security import generate_password_hash
 from flask_jwt_extended import (
     create_access_token,
@@ -17,6 +18,7 @@ import logging
 import cloudinary.uploader
 import cloudinary
 from datetime import timedelta
+from datetime import datetime
 
 cloudinary.config(
     cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
@@ -35,25 +37,7 @@ api = Blueprint("api", __name__)
 def handle_hello():
     return jsonify({"message": "Hello! I'm a message that came from the backend."}), 200
 
-@api.route('/user', methods=['GET'])
-@jwt_required()
-def get_user_data():
-    try:
-        # Get the identity of the current user from the JWT token
-        current_user_id = get_jwt_identity()
-        
-        # Fetch user data from the database
-        user = User.query.get(current_user_id)
-        
-        if user:
-            # Serialize the user data and return it
-            return jsonify(user.serialize()), 200
-        else:
-            # If the user is not found, return a 404 error
-            return jsonify({"error": "User not found"}), 404
-    except Exception as e:
-        # Handle any server errors
-        return jsonify({"error": "An error occurred while retrieving user data", "details": str(e)}), 500
+
     
 @api.route("/cats", methods=["GET"])
 def get_cats():
@@ -90,16 +74,6 @@ def get_single_cat(cat_id):
         return jsonify({"error": "Cat not found"}), 404
     return jsonify({"cat": cat.serialize()}), 200
 
-
-@api.route("/api/user", methods=["GET"])
-@jwt_required()
-def get_user():
-    current_user_id = get_jwt_identity()
-    user = User.query.get(current_user_id)
-    if user:
-        return jsonify(user.serialize())
-    else:
-        return jsonify({"error": "User not found"}), 404
 
 
 # ---------------------------------------------
@@ -179,28 +153,27 @@ def login():
 
 
 
+
+
 @api.route('/user', methods=['GET'])
 @jwt_required()
-def get_user():
-    print("🔍 [get_user] Received GET request at /api/user")
+def get_user_data():
     try:
-        # Get the user ID from the JWT token
+        # Get the identity of the current user from the JWT token
         current_user_id = get_jwt_identity()
-        print(f"🔍 [get_user] Current user ID from JWT: {current_user_id}")
-
+        
         # Fetch user data from the database
         user = User.query.get(current_user_id)
+        
         if user:
-            user_data = user.serialize()
-            print("✅ [get_user] User data fetched successfully:", user_data)
-            return jsonify(user_data), 200
+            # Serialize the user data and return it
+            return jsonify(user.serialize()), 200
         else:
-            print("🚫 [get_user] User not found")
+            # If the user is not found, return a 404 error
             return jsonify({"error": "User not found"}), 404
     except Exception as e:
-        print("💥 [get_user] Exception occurred:", str(e))
-        return jsonify({"error": str(e)}), 500
-
+        # Handle any server errors
+        return jsonify({"error": "An error occurred while retrieving user data", "details": str(e)}), 500
 
 
 # GET a single cat by ID
@@ -285,3 +258,35 @@ def delete_cat(cat_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+    
+
+    ##########################################################to be organized
+    api.route('/messages', methods=['POST'])
+@jwt_required()
+def send_message():
+    data = request.get_json()
+    sender_id = get_jwt_identity()
+    recipient_id = data.get('recipient_id')
+    text = data.get('text')
+
+    if not recipient_id or not text:
+        return jsonify({"error": "Recipient and text are required"}), 400
+
+    message = Message(sender_id=sender_id, recipient_id=recipient_id, text=text)
+    db.session.add(message)
+    db.session.commit()
+
+    return jsonify(message.serialize()), 201
+
+@api.route('/messages/<int:user_id>', methods=['GET'])
+@jwt_required()
+def get_messages(user_id):
+    current_user_id = get_jwt_identity()
+
+    # Fetch conversation between the current user and the recipient
+    messages = Message.query.filter(
+        ((Message.sender_id == current_user_id) & (Message.recipient_id == user_id)) |
+        ((Message.sender_id == user_id) & (Message.recipient_id == current_user_id))
+    ).order_by(Message.timestamp).all()
+
+    return jsonify([message.serialize() for message in messages]), 200

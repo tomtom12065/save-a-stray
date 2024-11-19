@@ -115,60 +115,57 @@ const getState = ({ getStore, getActions ,setStore }) => {
           return { success: false, message: error.message };
         }
       },
-      getUserData: async (token) => {
-        const store = getStore();
-        const url = `${process.env.BACKEND_URL}/api/user`;
+      // getUserData: async (token) => {
+      //   const store = getStore();
+      //   const url = `${process.env.BACKEND_URL}/api/user`;
 
-        console.log("🔍 [getUserData] Received token:", token);
-        console.log("🔍 [getUserData] Backend URL:", store.backendURL);
+      //   console.log("🔍 [getUserData] Received token:", token);
+      //   console.log("🔍 [getUserData] Backend URL:", store.backendURL);
       
-        if (!token || typeof token !== "string") {
-          console.error("🚫 [getUserData] Invalid token provided:", token);
-          return;
-        }
+      //   if (!token || typeof token !== "string") {
+      //     console.error("🚫 [getUserData] Invalid token provided:", token);
+      //     return;
+      //   }
       
-        try {
-          console.log("🛠️ [getUserData] Sending GET request to:", `${store.backendURL}/api/user`);
+      //   try {
+      //     console.log("🛠️ [getUserData] Sending GET request to:", `${store.backendURL}/api/user`);
       
-          const response = await fetch(url, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`,
-            },
-          });
+      //     const response = await fetch(url, {
+      //       method: "GET",
+      //       headers: {
+      //         "Content-Type": "application/json",
+      //         "Authorization": `Bearer ${token}`,
+      //       },
+      //     });
       
-          console.log("🔍 [getUserData] Response status:", response.status);
-          console.log("🔍 [getUserData] Response headers:", response.headers);
+      //     console.log("🔍 [getUserData] Response status:", response.status);
+      //     console.log("🔍 [getUserData] Response headers:", response.headers);
       
-          const contentType = response.headers.get("content-type");
-          console.log("🔍 [getUserData] Content-Type:", contentType);
+      //     const contentType = response.headers.get("content-type");
+      //     console.log("🔍 [getUserData] Content-Type:", contentType);
       
-          if (contentType && contentType.includes("application/json")) {
-            const userData = await response.json();
-            console.log("✅ [getUserData] User data fetched successfully:", userData);
-            setStore({ user: userData });
-          } else {
-            const errorText = await response.text();
-            console.error("🚫 [getUserData] Response is not JSON. Received:", errorText);
-            setStore({ user: null });
-          }
-        } catch (error) {
-          console.error("💥 [getUserData] Error while fetching user data:", error);
-          setStore({ user: null });
-        }
-      },
+      //     if (contentType && contentType.includes("application/json")) {
+      //       const userData = await response.json();
+      //       console.log("✅ [getUserData] User data fetched successfully:", userData);
+      //       setStore({ user: userData });
+      //     } else {
+      //       const errorText = await response.text();
+      //       console.error("🚫 [getUserData] Response is not JSON. Received:", errorText);
+      //       setStore({ user: null });
+      //     }
+      //   } catch (error) {
+      //     console.error("💥 [getUserData] Error while fetching user data:", error);
+      //     setStore({ user: null });
+      //   }
+      // },
       
   
       loginUser: async (userData) => {
-        console.log("loginUser called with userData:", userData);
-      
         try {
-          const backendUrl = process.env.BACKEND_URL;
-          console.log("Backend URL:", backendUrl);
+          console.log("loginUser called with userData:", userData);
       
+          const backendUrl = process.env.BACKEND_URL;
           const endpoint = `${backendUrl}/api/login`;
-          console.log("Login endpoint:", endpoint);
       
           const requestOptions = {
             method: "POST",
@@ -177,15 +174,10 @@ const getState = ({ getStore, getActions ,setStore }) => {
             },
             body: JSON.stringify(userData),
           };
-          console.log("Request options:", requestOptions);
       
           const resp = await fetch(endpoint, requestOptions);
-          console.log("Fetch response received:", resp);
-      
           const data = await resp.json();
-          console.log("Response JSON data:", data);
       
-          console.log("Response status OK?", resp.ok);
           if (!resp.ok) {
             const errorMessage = data.error || "Error logging in";
             console.error("Login failed:", errorMessage);
@@ -195,22 +187,20 @@ const getState = ({ getStore, getActions ,setStore }) => {
           console.log("Login successful. Data received:", data);
       
           // Update the store with the user data and tokens
-          setStore({ user: data.user, token: data.access_token });
-          
-          console.log("Store updated with user and token:", { user: data.user, token: data.access_token });
+          setStore({ user: data.user, token: data.token });
+          console.log("Store updated with user and token:", { user: data.user, token: data.token });
       
-          // Save the tokens to sessionStorage
-          localStorage.setItem("token", data.access_token);
-          localStorage.setItem("refresh_token", data.refresh_token);
-          setStore({ user: data.user, token: data.access_token });
-          console.log("Tokens saved to sessionStorage:", data.access_token, data.refresh_token);
-          
+          // Save the token to sessionStorage for persistence
+          localStorage.setItem("token", data.token);
+          console.log("Token saved to sessionStorage:", data.token);
+      
           return { success: true, message: "Login successful" };
         } catch (error) {
-          console.error("An error occurred during login:", error);
+          console.error("An error occurred during login:", data.token);
           return { success: false, message: error.message };
         }
-      },
+      }
+      ,
       
 
       logout: () => {
@@ -220,31 +210,7 @@ const getState = ({ getStore, getActions ,setStore }) => {
       },
 
       // **Cat Actions**###############################################################3
-      postCatData: async (cat) => {
-        const data = JSON.stringify({ name: cat.name, breed: cat.breed, age: cat.age, price: cat.price, image_url: cat.imageUrl });
-  
-        const response = await fetch(`${process.env.BACKEND_URL}/api/add-cat`, {
-          method: "POST",
-          headers: {
-            "Authorization": "Bearer " + sessionStorage.getItem("token"),
-            "Content-Type": "application/json"
-          },
-          body: data
-        });
-  
-        if (response.status === 201) {
-          return {
-            success: true,
-            message: "Cat added successfully",
-            data: response.cat
-          };
-        } else {
-          return {
-            success: false,
-            message: response.error || "Failed to add cat"
-          };
-        }
-      },
+   
   
       postCatData2: async (cat) => {
         try {
@@ -308,13 +274,13 @@ const getState = ({ getStore, getActions ,setStore }) => {
           const resp = await fetch(`${process.env.BACKEND_URL}/api/cats`);
           console.log("Response status:", resp.status);
           console.log("Backend URL:", process.env.BACKEND_URL);
-  
+      
           if (!resp.ok) {
             const errorText = await resp.text();
             console.error("Error response text:", errorText);
             throw new Error(`Error: ${resp.status} ${resp.statusText}`);
           }
-  
+      
           const data = await resp.json();
           console.log("Fetched cats data:", data);
           setStore({ cats: data.cats });
@@ -324,6 +290,7 @@ const getState = ({ getStore, getActions ,setStore }) => {
           return { success: false, message: error.message };
         }
       },
+      
       getSelfCats: async () => {
         try {
           const token = localStorage.getItem("token");
@@ -483,9 +450,52 @@ const getState = ({ getStore, getActions ,setStore }) => {
           return null;
         }
       },
-  
-      // **Self-Cat Actions**$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-  
+  //send messages#############################################################################################3
+      getMessages: async (recipientId) => {
+        const token = sessionStorage.getItem("token");
+        if (!token) return { success: false, message: "User not authenticated" };
+      
+        try {
+          const response = await fetch(`${process.env.BACKEND_URL}/messages/${recipientId}`, {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json"
+            }
+          });
+      
+          if (!response.ok) throw new Error("Error fetching messages");
+          const data = await response.json();
+          return { success: true, messages: data };
+        } catch (error) {
+          console.error("Error fetching messages:", error);
+          return { success: false, message: error.message };
+        }
+      },
+      
+      sendMessage: async (recipientId, text) => {
+        const token = sessionStorage.getItem("token");
+        if (!token) return { success: false, message: "User not authenticated" };
+      
+        try {
+          const response = await fetch(`${process.env.BACKEND_URL}/messages`, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ recipient_id: recipientId, text })
+          });
+      
+          if (!response.ok) throw new Error("Error sending message");
+          const data = await response.json();
+          return { success: true, message: data };
+        } catch (error) {
+          console.error("Error sending message:", error);
+          return { success: false, message: error.message };
+        }
+      },
+        
       // **Password Reset Actions**
       resetPassword: async (newPassword, token) => {
         const baseApiUrl = process.env.BACKEND_URL;

@@ -8,29 +8,31 @@ const ChatBox = ({ recipient }) => {
 
   // Mock function to fetch existing messages (replace with real backend call)
   useEffect(() => {
-    // Simulate fetching chat history
     const fetchMessages = async () => {
-      // You would replace this mock data with a backend API call
-      const mockMessages = [
-        { sender: "me", text: "Hello!" },
-        { sender: recipient, text: "Hi, how can I help you?" },
-      ];
-      setMessages(mockMessages);
+      const response = await actions.getMessages(recipient.id);
+      if (response.success) {
+        setMessages(response.messages);
+      } else {
+        console.error("Failed to fetch messages:", response.message);
+      }
     };
+  
     fetchMessages();
   }, [recipient]);
+  
 
-  // Handle sending a message
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (inputMessage.trim() !== "") {
-      const newMessage = { sender: "me", text: inputMessage };
-      setMessages([...messages, newMessage]);
-      setInputMessage(""); // Clear input field
-
-      // TODO: Send the message to the backend
-      console.log("Message sent to backend:", newMessage);
+      const response = await actions.sendMessage(recipient.id, inputMessage);
+      if (response.success) {
+        setMessages([...messages, response.message]);
+        setInputMessage(""); // Clear input field
+      } else {
+        alert("Failed to send message: " + response.message);
+      }
     }
   };
+  
 
   // Toggle chatbox visibility
   const toggleChatBox = () => {
