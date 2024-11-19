@@ -12,7 +12,7 @@ class User(db.Model):
     salt = db.Column(db.String(120), nullable=False)
     is_active = db.Column(db.Boolean, nullable=False)
     username = db.Column(db.String(250) ,unique=False, nullable=False)
-    
+    profilepic= db.Column(db.String(250), unique = False ,nullable = True)
     # Relationship connecting User to their cats, with back_populates for bidirectionality
     cats = db.relationship('Cat', back_populates='owner', lazy='select')
     
@@ -25,7 +25,8 @@ class User(db.Model):
             "email": self.email,
             "cats": [cat.serialize() for cat in self.cats],  # Serializing associated cats
             "is_active": self.is_active,
-            "username":self.username
+            "username":self.username,
+            "profilepic":self.profilepic
         }
 
 

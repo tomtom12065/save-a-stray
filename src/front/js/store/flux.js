@@ -26,6 +26,40 @@ const getState = ({ getStore, getActions ,setStore }) => {
       },
 
       // **User Authentication Actions**
+     
+      getUserData: async (token) => {
+        try {
+          const response = await fetch(`${process.env.BACKEND_URL}/api/user`, {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
+      
+          if (!response.ok) {
+            const error = await response.json();
+            console.error("Failed to retrieve user data:", error);
+            return { success: false, message: error.error || "User data retrieval failed" };
+          }
+      
+          const data = await response.json();
+          console.log("User data retrieved:", data);
+      
+          // Update the global state with user information
+          setStore({ user: data });
+      
+          return { success: true };
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+          return { success: false, message: error.message };
+        }
+      },
+      
+     
+     
+     
+     
       registerUser: async (userData) => {
         try {
           console.log("Starting registration process in register_user.");
@@ -117,8 +151,8 @@ const getState = ({ getStore, getActions ,setStore }) => {
           console.log("Store updated with user and token:", { user: data.user, token: data.access_token });
       
           // Save the tokens to sessionStorage
-          sessionStorage.setItem("token", data.access_token);
-          sessionStorage.setItem("refresh_token", data.refresh_token);
+          localStorage.setItem("token", data.access_token);
+          localStorage.setItem("refresh_token", data.refresh_token);
           setStore({ user: data.user, token: data.access_token });
           console.log("Tokens saved to sessionStorage:", data.access_token, data.refresh_token);
           
@@ -129,6 +163,7 @@ const getState = ({ getStore, getActions ,setStore }) => {
         }
       },
       
+
       logout: () => {
         console.log("Logging out...");
         sessionStorage.removeItem("token"); // Remove token from sessionStorage
@@ -164,7 +199,7 @@ const getState = ({ getStore, getActions ,setStore }) => {
   
       postCatData2: async (cat) => {
         try {
-          const token = sessionStorage.getItem("token");
+          const token = localStorage.getItem("token");
           if (!token) {
             return { success: false, message: "User is not authenticated" };
           }
@@ -241,21 +276,41 @@ const getState = ({ getStore, getActions ,setStore }) => {
         }
       },
       getSelfCats: async () => {
-        const response = await fetch(process.env.BACKEND_URL + "/api/user-cats", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + sessionStorage.getItem("token"),
-          },
-        });
-
-        if (response.status !== 200) return false;
-
-        const responseBody = await response.json();
-        setStore({ selfcats: responseBody }); // Fixed casing on `responseBody`
-
-        return true;
+        try {
+          const token = localStorage.getItem("token");
+          if (!token) {
+            console.error("No token found. User might not be logged in.");
+            return { success: false, message: "Unauthorized access: No token provided." };
+          }
+      
+          const response = await fetch(`${process.env.BACKEND_URL}/api/user-cats`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          
+      
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Error fetching user's cats:", errorData);
+            return false
+          }
+      
+         const responseBody = await response.json();
+        console.log(responseBody)
+          console.log("User's cats fetched successfully:", responseBody);
+      
+          setStore({ selfcats: responseBody });
+      
+          return true
+        } catch (error) {
+          console.error("Error occurred while fetching user's cats:", error);
+          return { success: false, message: "An error occurred while fetching user's cats." };
+        }
       },
+      
       getCatById: async (catId) => {
         try {
           const resp = await fetch(`${process.env.BACKEND_URL}/api/cat/${catId}`);
@@ -273,7 +328,39 @@ const getState = ({ getStore, getActions ,setStore }) => {
         }
       },
 
-  
+      uploadProfilePic: async (file) => {
+        try {
+          const formData = new FormData();
+          formData.append("file", file);
+      
+          // Use your backend route for image upload
+          const response = await fetch(`${process.env.BACKEND_URL}/api/upload_profile_picture`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`, // Assuming the user is authenticated
+            },
+            body: formData,
+          });
+      
+          if (!response.ok) {
+            const error = await response.json();
+            console.error("Error uploading profile picture:", error);
+            return { success: false, message: error.error || "Failed to upload profile picture" };
+          }
+      
+          const data = await response.json();
+          console.log("Profile picture uploaded successfully:", data);
+      
+          // Update the user's profile picture in the store
+          setStore({ user: { ...getStore().user, image_url: data.url } });
+      
+          return { success: true, message: "Profile picture updated successfully" };
+        } catch (error) {
+          console.error("Error during profile picture upload:", error);
+          return { success: false, message: "An error occurred while uploading the profile picture" };
+        }
+      },
+      
       deleteCat: async (catId) => {
         const token = sessionStorage.getItem("token");
   
@@ -348,23 +435,8 @@ const getState = ({ getStore, getActions ,setStore }) => {
         }
       },
   
-      // **Self-Cat Actions**
-      getSelfCats: async () => {
-        const response = await fetch(process.env.BACKEND_URL + "/api/user-cats", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + sessionStorage.getItem("token"),
-          },
-        });
-
-        if (response.status !== 200) return false;
-
-        const responseBody = await response.json();
-        setStore({ selfcats: responseBody }); // Fixed casing on `responseBody`
-
-        return true;
-      },
+   
+    
 
       // **Password Reset Actions**
       resetPassword: async (newPassword, token) => {
