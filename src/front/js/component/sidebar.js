@@ -54,8 +54,8 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       ) : (
         // Conditional buttons for logged-in users
         <>
-          <button className="sidebar-btn btn btn-primary" onClick={() => navigate("/your-cats")}>
-            View Your Cats
+          <button className="sidebar-btn btn btn-primary" onClick={() => navigate("/profile")}>
+            View your profile
           </button>
           <button className="sidebar-btn btn btn-success mt-2" onClick={handleUploadCat}>
             Upload Cat

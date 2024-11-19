@@ -5,12 +5,12 @@ import Home from "./pages/home";
 import Register from "./pages/register";
 import CatUpload from "./pages/catUpload";
 import CatTemplate from "./pages/catTemplate";
-import YourCats from "./pages/yourCats";
 import Login from "./pages/login";
 import { ResetPassword } from "./pages/resetpassword";
 import { Sendtoken } from "./pages/requestingreset";
 import Sidebar from "./component/sidebar";
 import { Context } from "./store/appContext";  // Assuming you have a Context for global state
+import ProfilePage from "./pages/profilePage";
 
 const Layout = () => {
   const { actions } = useContext(Context);
