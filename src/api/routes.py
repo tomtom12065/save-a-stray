@@ -202,30 +202,20 @@ def login():
         "access_token": access_token,
         "refresh_token": refresh_token
     }), 200
-
-
-
-@api.route('/user', methods=['GET'])
+@api.route('/api/user', methods=['GET'])
 @jwt_required()
 def get_user():
-    print("🔍 [get_user] Received GET request at /api/user")
-    try:
-        # Get the user ID from the JWT token
-        current_user_id = get_jwt_identity()
-        print(f"🔍 [get_user] Current user ID from JWT: {current_user_id}")
-
-        # Fetch user data from the database
-        user = User.query.get(current_user_id)
-        if user:
-            user_data = user.serialize()
-            print("✅ [get_user] User data fetched successfully:", user_data)
-            return jsonify(user_data), 200
-        else:
-            print("🚫 [get_user] User not found")
-            return jsonify({"error": "User not found"}), 404
-    except Exception as e:
-        print("💥 [get_user] Exception occurred:", str(e))
-        return jsonify({"error": str(e)}), 500
+    # Get the identity of the current user with JWT
+    current_user_id = get_jwt_identity()
+    
+    # Fetch user data from the database
+    user = User.query.get(current_user_id)
+    
+    if user:
+        # Serialize user data and return it
+        return jsonify(user.serialize())
+    else:
+        return jsonify({"error": "User not found"}), 404
 
 
 
