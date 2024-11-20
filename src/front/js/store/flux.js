@@ -9,8 +9,7 @@ const getState = ({ getStore, getActions ,setStore }) => {
       cats: [],
       user: null,
       selfcats: [],
-      token: sessionStorage.getItem("token"),
-      currentUser: null
+      token: sessionStorage.getItem("token")
     },
 
     actions: {
@@ -26,7 +25,7 @@ const getState = ({ getStore, getActions ,setStore }) => {
         }
       },
 
-      // **User Authentication Actions**########################################################################333
+      // **User Authentication Actions**
       registerUser: async (userData) => {
         try {
           console.log("Starting registration process in register_user.");
@@ -49,10 +48,6 @@ const getState = ({ getStore, getActions ,setStore }) => {
             },
             body: bodyData,
           });
-          // In src/front/js/store/flux.js
-
-
-
   
           // Check if response was received and log status
           console.log("Fetch response received. Status:", resp.status);
@@ -81,50 +76,6 @@ const getState = ({ getStore, getActions ,setStore }) => {
           return { success: false, message: error.message };
         }
       },
-      getUserData: async (token) => {
-        const store = getStore();
-        const url = `${process.env.BACKEND_URL}/api/user`;
-
-        console.log("🔍 [getUserData] Received token:", token);
-        console.log("🔍 [getUserData] Backend URL:", store.backendURL);
-      
-        if (!token || typeof token !== "string") {
-          console.error("🚫 [getUserData] Invalid token provided:", token);
-          return;
-        }
-      
-        try {
-          console.log("🛠️ [getUserData] Sending GET request to:", `${store.backendURL}/api/user`);
-      
-          const response = await fetch(url, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`,
-            },
-          });
-      
-          console.log("🔍 [getUserData] Response status:", response.status);
-          console.log("🔍 [getUserData] Response headers:", response.headers);
-      
-          const contentType = response.headers.get("content-type");
-          console.log("🔍 [getUserData] Content-Type:", contentType);
-      
-          if (contentType && contentType.includes("application/json")) {
-            const userData = await response.json();
-            console.log("✅ [getUserData] User data fetched successfully:", userData);
-            setStore({ user: userData });
-          } else {
-            const errorText = await response.text();
-            console.error("🚫 [getUserData] Response is not JSON. Received:", errorText);
-            setStore({ user: null });
-          }
-        } catch (error) {
-          console.error("💥 [getUserData] Error while fetching user data:", error);
-          setStore({ user: null });
-        }
-      },
-      
   
       loginUser: async (userData) => {
         console.log("loginUser called with userData:", userData);
@@ -166,8 +117,8 @@ const getState = ({ getStore, getActions ,setStore }) => {
           console.log("Store updated with user and token:", { user: data.user, token: data.access_token });
       
           // Save the tokens to sessionStorage
-          localStorage.setItem("token", data.access_token);
-          localStorage.setItem("refresh_token", data.refresh_token);
+          sessionStorage.setItem("token", data.access_token);
+          sessionStorage.setItem("refresh_token", data.refresh_token);
           setStore({ user: data.user, token: data.access_token });
           console.log("Tokens saved to sessionStorage:", data.access_token, data.refresh_token);
           
@@ -184,7 +135,7 @@ const getState = ({ getStore, getActions ,setStore }) => {
         setStore({ user: null, token: null }); // Reset user and token in store
       },
 
-      // **Cat Actions**###############################################################3
+      // **Cat Actions**
       postCatData: async (cat) => {
         const data = JSON.stringify({ name: cat.name, breed: cat.breed, age: cat.age, price: cat.price, image_url: cat.imageUrl });
   
@@ -294,7 +245,7 @@ const getState = ({ getStore, getActions ,setStore }) => {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": "Bearer " + localStorage.getItem("token"),
+            "Authorization": "Bearer " + sessionStorage.getItem("token"),
           },
         });
 
@@ -366,7 +317,7 @@ const getState = ({ getStore, getActions ,setStore }) => {
         }
       },
 
-      // **Image Upload Actions**3##########################################################################
+      // **Image Upload Actions**
       uploadImage: async (file) => {
         const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET;
         const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
@@ -397,8 +348,24 @@ const getState = ({ getStore, getActions ,setStore }) => {
         }
       },
   
-      // **Self-Cat Actions**$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-  
+      // **Self-Cat Actions**
+      getSelfCats: async () => {
+        const response = await fetch(process.env.BACKEND_URL + "/api/user-cats", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + sessionStorage.getItem("token"),
+          },
+        });
+
+        if (response.status !== 200) return false;
+
+        const responseBody = await response.json();
+        setStore({ selfcats: responseBody }); // Fixed casing on `responseBody`
+
+        return true;
+      },
+
       // **Password Reset Actions**
       resetPassword: async (newPassword, token) => {
         const baseApiUrl = process.env.BACKEND_URL;

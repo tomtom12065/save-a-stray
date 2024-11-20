@@ -16,23 +16,24 @@ const Layout = () => {
   const { actions } = useContext(Context);
   const basename = process.env.BASENAME || "";
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(null); 
   // Check if user is logged in by checking localStorage for the token
   useEffect(() => {
-    // Retrieve the token from localStorage
-    const token = localStorage.getItem("token");
-    console.log("🔍 [useEffect] Token from localStorage:", token);
-  
-    // Call getUserData with the token
-    if (token) {
-      console.log("🛠️ [useEffect] Calling actions.getUserData with token:", token);
-      actions.getUserData(token);
+    const token = localStorage.getItem("token");  // Retrieve token from localStorage
+    const storedUser = localStorage.getItem("user");  // Retrieve user info from localStorage
+
+    if (token && storedUser) {
+      // If token and user data exist, we re-run the login action
+      const parsedUser = JSON.parse(storedUser);
+      actions.loginUser(parsedUser);  // Trigger the login action with the stored user data
+
+   
+      setUser(parsedUser);
     } else {
-      console.error("🚫 [useEffect] No token found. Please log in.");
+      setIsLoggedIn(false);  // If no token or user info, set logged-in state to false
+      setUser(null);  // Reset user info
     }
   }, [actions]);
-  
-  
 
   // Ensure the backend URL is configured
   if (!process.env.BACKEND_URL || process.env.BACKEND_URL === "") {
@@ -43,13 +44,17 @@ const Layout = () => {
     <div>
       <BrowserRouter basename={basename}>
         <Sidebar /> {/* Sidebar component always visible */}
-
+        
         <div className="main-content">
           <Routes>
             <Route index element={<Home />} />
 
-
-            <Route path="/your-cats" element={<YourCats />} />
+            {/* Protected route for logged-in users */}
+            {isLoggedIn ? (
+              <Route path="/your-cats" element={<YourCats />} />
+            ) : (
+              <Route path="/your-cats" element={<Login />} />
+            )}
 
             <Route path="/cat-template/:id" element={<CatTemplate />} />
             <Route path="/register" element={<Register />} />
