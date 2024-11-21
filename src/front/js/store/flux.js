@@ -1,15 +1,15 @@
 const getState = ({ getStore, getActions ,setStore }) => {
   //  getaction lets you use functions within the flux in other functions
   // Helper function to retrieve token
-  const getToken = () => sessionStorage.getItem("token");
+  const getToken = () => localStorage.getItem("token");
   console.log(getStore.token)
   return {
     store: {
       message: null,
       cats: [],
-      user: null,
+      user: JSON.parse(localStorage.getItem("user")) || null,
       selfcats: [],
-      token: sessionStorage.getItem("token")
+      token: localStorage.getItem("token") || null,
     },
 
     actions: {
@@ -110,17 +110,14 @@ const getState = ({ getStore, getActions ,setStore }) => {
           }
       
           console.log("Login successful. Data received:", data);
-      
-          // Update the store with the user data and tokens
-          setStore({ user: data.user, token: data.access_token });
-          
           console.log("Store updated with user and token:", { user: data.user, token: data.access_token });
       
-          // Save the tokens to sessionStorage
-          sessionStorage.setItem("token", data.access_token);
-          sessionStorage.setItem("refresh_token", data.refresh_token);
+          // Save the tokens to localStorage
+          localStorage.setItem("token", data.access_token);
+          localStorage.setItem("refresh_token", data.refresh_token);
+          localStorage.setItem("user", JSON.stringify(data.user));
           setStore({ user: data.user, token: data.access_token });
-          console.log("Tokens saved to sessionStorage:", data.access_token, data.refresh_token);
+          console.log("Tokens saved to localStorage:", data.access_token, data.refresh_token);
           
           return { success: true, message: "Login successful" };
         } catch (error) {
@@ -131,7 +128,9 @@ const getState = ({ getStore, getActions ,setStore }) => {
       
       logout: () => {
         console.log("Logging out...");
-        sessionStorage.removeItem("token"); // Remove token from sessionStorage
+        localStorage.removeItem("token"); // Remove token from local
+        localStorage.removeItem("refresh_token");
+        localStorage.removeItem("user"); 
         setStore({ user: null, token: null }); // Reset user and token in store
       },
 
@@ -142,7 +141,7 @@ const getState = ({ getStore, getActions ,setStore }) => {
         const response = await fetch(`${process.env.BACKEND_URL}/api/add-cat`, {
           method: "POST",
           headers: {
-            "Authorization": "Bearer " + sessionStorage.getItem("token"),
+            "Authorization": "Bearer " + localStorage.getItem("token"),
             "Content-Type": "application/json"
           },
           body: data
@@ -164,7 +163,7 @@ const getState = ({ getStore, getActions ,setStore }) => {
   
       postCatData2: async (cat) => {
         try {
-          const token = sessionStorage.getItem("token");
+          const token = localStorage.getItem("token");
           if (!token) {
             return { success: false, message: "User is not authenticated" };
           }
@@ -245,7 +244,7 @@ const getState = ({ getStore, getActions ,setStore }) => {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": "Bearer " + sessionStorage.getItem("token"),
+            "Authorization": "Bearer " + localStorage.getItem("token"),
           },
         });
 
@@ -275,7 +274,7 @@ const getState = ({ getStore, getActions ,setStore }) => {
 
   
       deleteCat: async (catId) => {
-        const token = sessionStorage.getItem("token");
+        const token = localStorage.getItem("token");
   
         if (!token) {
           console.error("Token is missing. Please log in.");
@@ -354,7 +353,7 @@ const getState = ({ getStore, getActions ,setStore }) => {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": "Bearer " + sessionStorage.getItem("token"),
+            "Authorization": "Bearer " + localStorage.getItem("token"),
           },
         });
 
@@ -401,6 +400,27 @@ const getState = ({ getStore, getActions ,setStore }) => {
         }
       },
 
+      getUserProfile: async (userId) => {
+        try {
+          const token = localStorage.getItem("token");
+          const response = await fetch(`${process.env.BACKEND_URL}/api/user/${userId}`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`,
+            },
+          });
+      
+          if (!response.ok) throw new Error("Failed to fetch user profile");
+      
+          const data = await response.json();
+          return data;
+        } catch (error) {
+          console.error("Error fetching user profile:", error);
+          return null;
+        }
+      },
+      
       requestPasswordReset: async (email) => {
         const baseApiUrl = process.env.BACKEND_URL;
 

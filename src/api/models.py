@@ -28,6 +28,33 @@ class User(db.Model):
             "username":self.username
         }
 
+# 
+# 
+# 
+# # 
+# # 
+# # class ChatMessage(db.Model):
+#     __tablename__ = 'chat_messages'
+
+#     id = db.Column(db.Integer, primary_key=True)
+#     sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+#     recipient_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+#     text = db.Column(db.String(500), nullable=False)
+#     timestamp = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+#     def serialize(self):
+#         return {
+#             "id": self.id,
+#             "sender_id": self.sender_id,
+#             "recipient_id": self.recipient_id,
+#             "text": self.text,
+#             "timestamp": self.timestamp.isoformat()
+#         }
+# # 
+
+
+
+
 
 class Cat(db.Model):
     __tablename__ = 'cats'  # Explicit table name for clarity

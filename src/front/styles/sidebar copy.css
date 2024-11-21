@@ -1,0 +1,82 @@
+/* sidebar.css */
+/* aria controls to toggle sidebar */
+
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0; /* Position on the left side */
+    height: 100%;
+    width: 300px;
+    background-color: #020202; /* Dark background */
+    color: #e58be1; /* Light text color */
+    border-right: 1px solid #96f3f8; /* Right border for separation */
+    padding: 20px;
+    transform: translateX(-100%); /* Initially hidden on the left */
+    transition: transform 0.3s ease;
+    z-index: 1000;
+    
+  }
+  
+  .sidebar.open {
+    transform: translateX(0); /* Slide in when open */
+  }
+  
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    position: absolute;
+    top: 15px;
+    left: 15px; /* Close button on the left */
+    cursor: pointer;
+    color: #e58be1; /* Match sidebar text color */
+    z-index:1000;
+  }
+  
+  h2 {
+    color: #e58be1;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+  }
+  
+  /* Button styles */
+  .sidebar-btn,
+  .login-btn {
+    width: 100%;
+    font-size: 1rem;
+    margin-top: 15px;
+  }
+  
+  .sidebar-btn {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px;
+  }
+  
+  .sidebar-btn:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Login form styles */
+  .login-form {
+    margin-top: 20px;
+  }
+  
+  .login-form label {
+    font-weight: bold;
+  }
+  
+  .login-form .form-control {
+    border-radius: 0.25rem;
+    box-shadow: none;
+  }
+  
+  .error-message {
+    color: red;
+    font-size: 0.9em;
+    margin-top: 10px;
+  }
+  

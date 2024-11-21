@@ -5,13 +5,13 @@ import Home from "./pages/home";
 import Register from "./pages/register";
 import CatUpload from "./pages/catUpload";
 import CatTemplate from "./pages/catTemplate";
-import YourCats from "./pages/yourCats";
+import ProfilePage from "./pages/profilePage";
 import Login from "./pages/login";
 import { ResetPassword } from "./pages/resetpassword";
 import { Sendtoken } from "./pages/requestingreset";
 import Sidebar from "./component/sidebar";
 import { Context } from "./store/appContext";  // Assuming you have a Context for global state
-
+import "../styles/layout.css"
 const Layout = () => {
   const { actions } = useContext(Context);
   const basename = process.env.BASENAME || "";
@@ -21,18 +21,7 @@ const Layout = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");  // Retrieve token from localStorage
     const storedUser = localStorage.getItem("user");  // Retrieve user info from localStorage
-
-    if (token && storedUser) {
-      // If token and user data exist, we re-run the login action
-      const parsedUser = JSON.parse(storedUser);
-      actions.loginUser(parsedUser);  // Trigger the login action with the stored user data
-
-   
-      setUser(parsedUser);
-    } else {
-      setIsLoggedIn(false);  // If no token or user info, set logged-in state to false
-      setUser(null);  // Reset user info
-    }
+    actions.getUserProfile();
   }, [actions]);
 
   // Ensure the backend URL is configured
@@ -41,17 +30,18 @@ const Layout = () => {
   }
 
   return (
-    <div>
+    <div className="app-layout">
       <BrowserRouter basename={basename}>
-        <Sidebar /> {/* Sidebar component always visible */}
+      <div className="layout-container">
+      <Sidebar /> {/* Sidebar component always visible */}
         
-        <div className="main-content">
+        <main className="main-content">
           <Routes>
             <Route index element={<Home />} />
 
             {/* Protected route for logged-in users */}
             {isLoggedIn ? (
-              <Route path="/your-cats" element={<YourCats />} />
+              <Route path="/profile" element={<ProfilePage/>} />
             ) : (
               <Route path="/your-cats" element={<Login />} />
             )}
@@ -64,7 +54,9 @@ const Layout = () => {
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="*" element={<h1>Not found!</h1>} />
           </Routes>
-        </div>
+        </main>
+      </div>
+      
       </BrowserRouter>
     </div>
   );

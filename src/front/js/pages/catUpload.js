@@ -12,7 +12,7 @@ export default function CatUpload() {
   const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
   const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET;
 
-  const token = sessionStorage.getItem("token");
+  const token = localStorage.getItem("token");
 
   // Cloudinary Image Upload Function
  

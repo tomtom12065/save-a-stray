@@ -117,6 +117,13 @@ def add_cat():
         return jsonify({"error": str(e)}), 500
 
 
+@api.route('/user/<int:user_id>', methods=['GET'])
+@jwt_required()
+def get_user_profile(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    return jsonify(user.serialize())
 
 # Helper functions for password hashing with salt
 def generate_salt():
@@ -202,6 +209,40 @@ def login():
         "access_token": access_token,
         "refresh_token": refresh_token
     }), 200
+
+
+@api.route('/api/chat/<int:sender_id>/<int:recipient_id>', methods=['GET'])
+@jwt_required()
+def get_chat_messages(sender_id, recipient_id):
+    messages = ChatMessage.query.filter(
+        ((ChatMessage.sender_id == sender_id) & (ChatMessage.recipient_id == recipient_id)) |
+        ((ChatMessage.sender_id == recipient_id) & (ChatMessage.recipient_id == sender_id))
+    ).order_by(ChatMessage.timestamp).all()
+
+    return jsonify({"messages": [message.serialize() for message in messages]}), 200
+
+# Send a new message
+@api.route('/api/chat/send', methods=['POST'])
+@jwt_required()
+def send_chat_message():
+    data = request.get_json()
+    sender_id = get_jwt_identity()
+    recipient_id = data.get('recipientId')
+    text = data.get('text')
+
+    if not text or not recipient_id:
+        return jsonify({"error": "Text and recipient ID are required"}), 400
+
+    try:
+        new_message = ChatMessage(sender_id=sender_id, recipient_id=recipient_id, text=text)
+        db.session.add(new_message)
+        db.session.commit()
+        return jsonify({"message": "Message sent successfully", "chat": new_message.serialize()}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+    
+    
 @api.route('/api/user', methods=['GET'])
 @jwt_required()
 def get_user():
