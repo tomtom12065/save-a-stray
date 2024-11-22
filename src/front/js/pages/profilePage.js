@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Context } from '../store/appContext';
 import '../../styles/profilePage.css';
+import ChatBox from '../component/chatbox';
 
 const ProfilePage = () => {
   const { store, actions } = useContext(Context);
@@ -85,6 +86,7 @@ const ProfilePage = () => {
         ) : (
           <p>You have no cats.</p>
         )}
+        <ChatBox></ChatBox>
       </div>
     </div>
   );

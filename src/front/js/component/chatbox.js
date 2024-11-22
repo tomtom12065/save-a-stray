@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Context } from "../store/appContext";
-import "../../styles/chatBox.css";
+import "../../styles/chatbox.css";
 
 const ChatBox = ({ recipientId }) => {
   const { store, actions } = useContext(Context);
-  const senderId = store.user ? store.user.id : null; // Assume the logged-in user's ID is in the store
-  const [messages, setMessages] = useState([]); // Chat messages
+  const senderId = store.user ? store.user.id : null; // Logged-in user's ID from store
+  const [messages, setMessages] = useState([]); // Chat messages state
   const [inputMessage, setInputMessage] = useState(""); // Input message state
   const [isOpen, setIsOpen] = useState(false); // Chatbox visibility toggle
 
+  // Fetch messages on component mount or when sender/recipient changes
   useEffect(() => {
     if (senderId && recipientId) {
       const fetchMessages = async () => {
@@ -23,6 +24,7 @@ const ChatBox = ({ recipientId }) => {
     }
   }, [senderId, recipientId, actions]);
 
+  // Handle sending a message
   const handleSendMessage = async () => {
     if (inputMessage.trim() !== "") {
       const newMessage = { senderId, recipientId, text: inputMessage };
@@ -36,6 +38,7 @@ const ChatBox = ({ recipientId }) => {
     }
   };
 
+  // Toggle chatbox visibility
   const toggleChatBox = () => setIsOpen(!isOpen);
 
   return (

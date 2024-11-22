@@ -1,7 +1,7 @@
 # routes.py
 import os
 from flask import request, jsonify, Blueprint 
-from api.models import db, Cat, User
+from api.models import db, Cat, User, ChatMessage
 from api.send_email import send_email
 from api.utils import APIException
 from werkzeug.security import generate_password_hash
@@ -9,10 +9,16 @@ from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identi
 import secrets
 import hashlib
 import logging
-
 import cloudinary.uploader
 import cloudinary
+#completely overall the routes to deal with the new models
+#try it all in postman
+#make sure to get jwt token(taken care o by layout)gives the sender id
+#need to get the recipient id from the creator 
+#use cat template to put message button
+#use that cat response to get userid and thats how i get recipient id
 
+#
 cloudinary.config(
     cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
     api_key=os.getenv("CLOUDINARY_API_KEY"),
@@ -237,9 +243,12 @@ def login():
     }), 200
 
 
-@api.route('/api/chat/<int:sender_id>/<int:recipient_id>', methods=['GET'])
+@api.route('/api/chat/<int:recipient_id>', methods=['GET'])
 @jwt_required()
-def get_chat_messages(sender_id, recipient_id):
+def get_chat_messages(recipient_id):
+    sender_id = get_jwt_identity()  # Get the sender's ID from the JWT token
+
+    # Fetch messages between sender and recipient, sorted by timestamp
     messages = ChatMessage.query.filter(
         ((ChatMessage.sender_id == sender_id) & (ChatMessage.recipient_id == recipient_id)) |
         ((ChatMessage.sender_id == recipient_id) & (ChatMessage.recipient_id == sender_id))
@@ -247,12 +256,12 @@ def get_chat_messages(sender_id, recipient_id):
 
     return jsonify({"messages": [message.serialize() for message in messages]}), 200
 
-# Send a new message
+
 @api.route('/api/chat/send', methods=['POST'])
 @jwt_required()
 def send_chat_message():
     data = request.get_json()
-    sender_id = get_jwt_identity()
+    sender_id = get_jwt_identity()  # Get sender's ID from the JWT token
     recipient_id = data.get('recipientId')
     text = data.get('text')
 
@@ -266,8 +275,8 @@ def send_chat_message():
         return jsonify({"message": "Message sent successfully", "chat": new_message.serialize()}), 201
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": str(e)}), 500
-    
+        return jsonify({"error": "Failed to send message. Please try again later."}), 500
+
     
 
 

@@ -1,21 +1,41 @@
-from flask_sqlalchemy import SQLAlchemy
+# models.py
 
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
+from sqlalchemy import DateTime
+
+# Initialize SQLAlchemy
 db = SQLAlchemy()
 
 class User(db.Model):
     __tablename__ = 'users'  # Explicit table name for consistency
 
     id = db.Column(db.Integer, primary_key=True)
-#    why does email not work.... apparently unique=true causes the problem
     email = db.Column(db.String(120), unique=False, nullable=False)
-    password =db.Column(db.String(240), unique=False, nullable=False)
+    password = db.Column(db.String(240), unique=False, nullable=False)
     salt = db.Column(db.String(120), nullable=False)
-    is_active = db.Column(db.Boolean, nullable=False)
-    username = db.Column(db.String(250) ,unique=False, nullable=False)
-    
+    is_active = db.Column(db.Boolean, nullable=False, default=True)
+    username = db.Column(db.String(250), unique=False, nullable=False)
+
     # Relationship connecting User to their cats, with back_populates for bidirectionality
-    cats = db.relationship('Cat', back_populates='owner', lazy='select')
-    
+    cats = db.relationship('Cat', back_populates='owner', lazy='select', cascade="all, delete-orphan")
+
+    # Relationships for sent and received messages using back_populates for clarity
+    sent_messages = db.relationship(
+        'ChatMessage',
+        foreign_keys='ChatMessage.sender_id',
+        back_populates='sender',
+        lazy='select',
+        cascade="all, delete-orphan"
+    )
+    received_messages = db.relationship(
+        'ChatMessage',
+        foreign_keys='ChatMessage.recipient_id',
+        back_populates='recipient',
+        lazy='select',
+        cascade="all, delete-orphan"
+    )
+
     def __repr__(self):
         return f'<User {self.email}>'
 
@@ -23,38 +43,10 @@ class User(db.Model):
         return {
             "id": self.id,
             "email": self.email,
-            "cats": [cat.serialize() for cat in self.cats],  # Serializing associated cats
+            "cats": [cat.serialize() for cat in self.cats],
             "is_active": self.is_active,
-            "username":self.username
+            "username": self.username
         }
-
-# 
-# 
-# 
-# # 
-# # 
-# # class ChatMessage(db.Model):
-#     __tablename__ = 'chat_messages'
-
-#     id = db.Column(db.Integer, primary_key=True)
-#     sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-#     recipient_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-#     text = db.Column(db.String(500), nullable=False)
-#     timestamp = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-
-#     def serialize(self):
-#         return {
-#             "id": self.id,
-#             "sender_id": self.sender_id,
-#             "recipient_id": self.recipient_id,
-#             "text": self.text,
-#             "timestamp": self.timestamp.isoformat()
-#         }
-# # 
-
-
-
-
 
 class Cat(db.Model):
     __tablename__ = 'cats'  # Explicit table name for clarity
@@ -65,9 +57,10 @@ class Cat(db.Model):
     age = db.Column(db.Integer, nullable=False)
     price = db.Column(db.Float, nullable=False, default=0.0)
     image_url = db.Column(db.String(255), nullable=True)
+
     # Foreign key linking each cat to a specific user (owner)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    
+
     # Relationship back to User model
     owner = db.relationship('User', back_populates='cats', lazy="select")
 
@@ -76,18 +69,62 @@ class Cat(db.Model):
 
     def serialize(self):
         return {
-        "id": self.id,
-        "name": self.name,
-        "breed": self.breed,
-        "age": self.age,
-        "price": self.price,
-        "image_url": self.image_url,
-        "user_id": self.user_id,  # Foreign key reference
-        "owner": {
-            "id": self.owner.id,
-            "email": self.owner.email,
-            "username": self.owner.username
-        } if self.owner else None  # Include owner details if available
-    }
+            "id": self.id,
+            "name": self.name,
+            "breed": self.breed,
+            "age": self.age,
+            "price": self.price,
+            "image_url": self.image_url,
+            "user_id": self.user_id,  # Foreign key reference
+            "owner": {
+                "id": self.owner.id,
+                "email": self.owner.email,
+                "username": self.owner.username
+            } if self.owner else None  # Include owner details if available
+        }
 
-        
+class ChatMessage(db.Model):
+    __tablename__ = 'chat_messages'  # Explicit table name
+
+    # Primary key
+    id = db.Column(db.Integer, primary_key=True)
+
+    # Foreign keys for sender and recipient, linked to User model
+    sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    recipient_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+    # Message content and timestamp
+    text = db.Column(db.String, nullable=False)
+    timestamp = db.Column(DateTime(timezone=True), default=datetime.utcnow)
+
+    # Relationships to User model using back_populates for bidirectionality
+    sender = db.relationship(
+        'User',
+        foreign_keys=[sender_id],
+        back_populates='sent_messages',
+        lazy='select'
+    )
+    recipient = db.relationship(
+        'User',
+        foreign_keys=[recipient_id],
+        back_populates='received_messages',
+        lazy='select'
+    )
+
+    def __init__(self, sender_id, recipient_id, text):
+        self.sender_id = sender_id
+        self.recipient_id = recipient_id
+        self.text = text
+
+    def __repr__(self):
+        return f'<ChatMessage from {self.sender_id} to {self.recipient_id} at {self.timestamp}>'
+
+    def serialize(self):
+        """Serialize the message to a dictionary format"""
+        return {
+            'id': self.id,
+            'sender_id': self.sender_id,
+            'recipient_id': self.recipient_id,
+            'text': self.text,
+            'timestamp': self.timestamp.isoformat()  # Convert to ISO format string
+        }
