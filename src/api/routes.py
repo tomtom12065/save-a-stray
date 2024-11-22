@@ -53,8 +53,9 @@ def get_self_cats():
     """Retrieve all cats for the authenticated user."""
     try:
        
-        current_user = get_jwt_identity()
-        user = User.query.filter_by(id=current_user).first()
+        current_user_id = get_jwt_identity()
+        # user = User.query.filter_by(id=current_user).first()
+        user = User.query.get(current_user_id)
         
         if not user:
             return jsonify({"error": "User not found"}), 404
@@ -117,13 +118,38 @@ def add_cat():
         return jsonify({"error": str(e)}), 500
 
 
-@api.route('/user/<int:user_id>', methods=['GET'])
+# @api.route('/user/<int:user_id>', methods=['GET'])
+# @jwt_required()
+# def get_user_profile(user_id):
+#     user = User.query.get(user_id)
+#     if not user:
+#         return jsonify({"error": "User not found"}), 404
+#     return jsonify(user.serialize())
+
+
+# routes.py
+@api.route('/user', methods=['GET'])
 @jwt_required()
-def get_user_profile(user_id):
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({"error": "User not found"}), 404
-    return jsonify(user.serialize())
+def get_user():
+    try:
+        print("Route '/api/user' has been called.")
+        current_user_id = get_jwt_identity()
+        print(f"Current user ID from JWT: {current_user_id}")
+
+        user = User.query.get(current_user_id)
+        if user:
+            print(f"User found: {user}")
+            user_data = user.serialize()
+            print(f"Serialized user data: {user_data}")
+            return jsonify(user_data), 200
+        else:
+            print("User not found.")
+            return jsonify({"error": "User not found"}), 404
+    except Exception as e:
+        print(f"Error in get_user: {str(e)}")
+        return jsonify({"error": "Internal server error"}), 500
+
+
 
 # Helper functions for password hashing with salt
 def generate_salt():
@@ -243,20 +269,7 @@ def send_chat_message():
         return jsonify({"error": str(e)}), 500
     
     
-@api.route('/api/user', methods=['GET'])
-@jwt_required()
-def get_user():
-    # Get the identity of the current user with JWT
-    current_user_id = get_jwt_identity()
-    
-    # Fetch user data from the database
-    user = User.query.get(current_user_id)
-    
-    if user:
-        # Serialize user data and return it
-        return jsonify(user.serialize())
-    else:
-        return jsonify({"error": "User not found"}), 404
+
 
 
 

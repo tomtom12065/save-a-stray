@@ -42,6 +42,7 @@ const Sidebar = () => {
               onClick={() => {
                 toggleSidebar();
                 navigate("/login");
+
               }}
             >
               Login
@@ -71,7 +72,7 @@ const Sidebar = () => {
               className="sidebar-btn btn btn-primary" 
               onClick={() => {
                 toggleSidebar();
-                navigate("/your-cats");
+                navigate("/profile");
               }}
             >
               View Your Cats

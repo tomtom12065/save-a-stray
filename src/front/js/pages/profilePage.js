@@ -1,79 +1,89 @@
-import React, { useContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Context } from "../store/appContext";
-import "../../styles/profilePage.css";
+import React, { useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Context } from '../store/appContext';
+import '../../styles/profilePage.css';
 
-const ProfilePage = ({ userId }) => {
+const ProfilePage = () => {
   const { store, actions } = useContext(Context);
   const navigate = useNavigate();
-  const [userProfile, setUserProfile] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+
+  const [isLoading, setIsLoading] = useState(true); // Loading state
+  const [error, setError] = useState(null); // Error state
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      const profile = await actions.getUserProfile(userId);
-      setUserProfile(profile);
-      setIsLoading(false);
+    const fetchUserData = async () => {
+      try {
+        setIsLoading(true);
+
+        // Fetch user profile
+        const userProfile = await actions.getUserProfile();
+        if (!userProfile) {
+          setError('Failed to fetch user profile.');
+          return;
+        }
+
+        // Fetch user's cats
+        const success = await actions.getSelfCats();
+        if (!success) {
+          setError("Failed to fetch your cats.");
+        }
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        setError('An error occurred while fetching data.');
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    fetchUserProfile();
-  }, [userId, actions]);
+    fetchUserData();
+  }, [actions, navigate]);
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
-  if (!userProfile) return <div>User not found.</div>;
+  if (error) {
+    return <div className='error-message'>{error}</div>;
+  }
+
+  if (!store.user) {
+    navigate('/login');
+    return null;
+  }
 
   return (
-    <div className="profile-container">
-      <div className="profile-header">
-        <h2>{userProfile.username}'s Profile</h2>
+    <div className='profile-page'>
+      {/* User Profile Section */}
+      <div className='user-profile'>
+        <h1>{store.user.username}'s Profile</h1>
+        <p>Email: {store.user.email}</p>
+        {/* Add more profile details as needed */}
       </div>
 
-      <div className="profile-details">
-        <p>
-          <strong>Email:</strong> {userProfile.email}
-        </p>
-        <p>
-          <strong>Active:</strong> {userProfile.is_active ? "Yes" : "No"}
-        </p>
-        <p>
-          <strong>Total Cats:</strong> {userProfile.cats.length}
-        </p>
-      </div>
-
-      <div className="cat-grid">
-        <h3>{userProfile.username}'s Cats</h3>
-        {userProfile.cats.length > 0 ? (
-          userProfile.cats.map((cat) => (
-            <div key={cat.id} className="cat-card">
-              <img src={cat.imageUrl} alt={cat.name} className="cat-image" />
-              <div className="cat-details">
-                <h5>{cat.name}</h5>
+      {/* User's Cats Section */}
+      <div className='user-cats'>
+        <h2>Your Cats</h2>
+        {store.selfcats && store.selfcats.length > 0 ? (
+          <ul className='cats-list'>
+            {store.selfcats.map((cat) => (
+              <li key={cat.id} className='cat-item'>
+                <h3>{cat.name}</h3>
                 <p>Breed: {cat.breed}</p>
                 <p>Age: {cat.age}</p>
                 <p>Price: ${cat.price}</p>
-              </div>
-            </div>
-          ))
+                {cat.image_url && (
+                  <img
+                    src={cat.image_url}
+                    alt={`${cat.name}`}
+                    className='cat-image'
+                  />
+                )}
+                {/* Add more cat details or actions (e.g., edit, delete) as needed */}
+              </li>
+            ))}
+          </ul>
         ) : (
-          <p>This user has no cats listed.</p>
-        )}
-      </div>
-
-      <div className="profile-actions">
-        <button
-          className="btn btn-primary"
-          onClick={() => navigate(`/message/${userId}`)}
-        >
-          Message {userProfile.username}
-        </button>
-        {store.user && store.user.id === userId && (
-          <button
-            className="btn btn-secondary"
-            onClick={() => navigate("/edit-profile")}
-          >
-            Edit Profile
-          </button>
+          <p>You have no cats.</p>
         )}
       </div>
     </div>

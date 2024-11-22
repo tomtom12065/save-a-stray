@@ -240,21 +240,41 @@ const getState = ({ getStore, getActions ,setStore }) => {
         }
       },
       getSelfCats: async () => {
-        const response = await fetch(process.env.BACKEND_URL + "/api/user-cats", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + localStorage.getItem("token"),
-          },
-        });
-
-        if (response.status !== 200) return false;
-
-        const responseBody = await response.json();
-        setStore({ selfcats: responseBody }); // Fixed casing on `responseBody`
-
-        return true;
+        try {
+          // Construct the API URL correctly without mismatched quotes or parentheses
+          const response = await fetch(`${process.env.BACKEND_URL}/api/user-cats`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer " + localStorage.getItem("token"),
+            },
+          });
+      
+          // Check if the response status is 200 (OK)
+          if (response.status !== 200) {
+            // Attempt to parse the error message from the response
+            const errorData = await response.json();
+            console.error("Failed to fetch user's cats:", errorData);
+            return false;
+          }
+      
+          // Parse the JSON response body
+          const responseBody = await response.json();
+      
+          // Update the store with the fetched cats
+          setStore({ selfcats: responseBody });
+      
+          // Log the fetched cats directly from the response
+          console.log("Fetched selfcats:", responseBody);
+      
+          return true;
+        } catch (error) {
+          // Handle any unexpected errors during the fetch process
+          console.error("Error in getSelfCats:", error);
+          return false;
+        }
       },
+      
       getCatById: async (catId) => {
         try {
           const resp = await fetch(`${process.env.BACKEND_URL}/api/cat/${catId}`);
@@ -298,7 +318,7 @@ const getState = ({ getStore, getActions ,setStore }) => {
           }
   
           if (!resp.ok) {
-            throw new Error(data.error || "Error deleting cat");
+            throw new Error(data.error || "Error dgetseleting cat");
           }
   
           // Update the store to remove the deleted cat
@@ -347,23 +367,7 @@ const getState = ({ getStore, getActions ,setStore }) => {
         }
       },
   
-      // **Self-Cat Actions**
-      getSelfCats: async () => {
-        const response = await fetch(process.env.BACKEND_URL + "/api/user-cats", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + localStorage.getItem("token"),
-          },
-        });
-
-        if (response.status !== 200) return false;
-
-        const responseBody = await response.json();
-        setStore({ selfcats: responseBody }); // Fixed casing on `responseBody`
-
-        return true;
-      },
+    
 
       // **Password Reset Actions**
       resetPassword: async (newPassword, token) => {
@@ -400,10 +404,18 @@ const getState = ({ getStore, getActions ,setStore }) => {
         }
       },
 
-      getUserProfile: async (userId) => {
+      getUserProfile: async () => {
         try {
           const token = localStorage.getItem("token");
-          const response = await fetch(`${process.env.BACKEND_URL}/api/user/${userId}`, {
+          if (!token) {
+            console.error("No token found");
+            return null;
+          }
+      
+          const BACKEND_URL = process.env.BACKEND_URL;
+          console.log("Fetching user profile from:", `${BACKEND_URL}/api/user`);
+      
+          const response = await fetch(`${BACKEND_URL}/api/user`, {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
@@ -411,15 +423,36 @@ const getState = ({ getStore, getActions ,setStore }) => {
             },
           });
       
-          if (!response.ok) throw new Error("Failed to fetch user profile");
+          const responseText = await response.text();
+          console.log("Response Text:", responseText);
       
-          const data = await response.json();
+          if (!response.ok) {
+            console.error(
+              `Failed to fetch user profile: ${response.status} ${response.statusText}`
+            );
+            console.error("Error details:", responseText);
+            return null;
+          }
+      
+          let data;
+          try {
+            data = JSON.parse(responseText);
+          } catch (parseError) {
+            console.error("Error parsing JSON response:", parseError);
+            console.error("Response Text:", responseText); // Log the response again
+            return null;
+          }
+      
+          setStore({ user: data });
+          console.log("Fetched user profile:", data);
           return data;
         } catch (error) {
           console.error("Error fetching user profile:", error);
           return null;
         }
       },
+      
+      
       
       requestPasswordReset: async (email) => {
         const baseApiUrl = process.env.BACKEND_URL;
