@@ -2,79 +2,72 @@ import React, { useState, useEffect, useContext } from "react";
 import { Context } from "../store/appContext";
 import "../../styles/chatbox.css";
 
-const ChatBox = ({ recipientId }) => {
+const Chatbox = ({ userId }) => {
   const { store, actions } = useContext(Context);
-  const senderId = store.user ? store.user.id : null; // Logged-in user's ID from store
-  const [messages, setMessages] = useState([]); // Chat messages state
-  const [inputMessage, setInputMessage] = useState(""); // Input message state
-  const [isOpen, setIsOpen] = useState(false); // Chatbox visibility toggle
+  const [messages, setMessages] = useState([]);
+  const [messageText, setMessageText] = useState("");
 
-  // Fetch messages on component mount or when sender/recipient changes
+  // Fetch chat messages when the component mounts or userId changes
   useEffect(() => {
-    if (senderId && recipientId) {
-      const fetchMessages = async () => {
-        const response = await actions.getChatMessages(senderId, recipientId);
-        if (response.success) {
-          setMessages(response.messages);
-        } else {
-          console.error(response.message);
-        }
-      };
-      fetchMessages();
-    }
-  }, [senderId, recipientId, actions]);
+    const fetchChatMessages = async () => {
+      console.log("CALLED FUNCTION")
+      const currentUserId = store.user.id; // Assumes the logged-in user is stored in state
+      const fetchedMessages = await actions.getMessages(currentUserId);
+      setMessages(fetchedMessages);
+    };
+
+    // if (userId) {
+      fetchChatMessages();
+    // }
+  }, [userId, store.user.id, actions]);
 
   // Handle sending a message
-  const handleSendMessage = async () => {
-    if (inputMessage.trim() !== "") {
-      const newMessage = { senderId, recipientId, text: inputMessage };
-      setMessages([...messages, newMessage]); // Optimistic UI update
-      setInputMessage("");
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    const currentUserId = store.user.id;
 
-      const response = await actions.sendChatMessage(senderId, recipientId, inputMessage);
-      if (!response.success) {
-        console.error(response.message);
-      }
+    if (messageText.trim() === "") return;
+    console.log(currentUserId, userId, messageText)
+    const response = await actions.sendMessage(currentUserId, store, messageText);
+
+    if (response) {
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { sender_id: currentUserId, receiver_id: userId, message_text: messageText, timestamp: new Date().toISOString() },
+      ]);
+      setMessageText(""); // Clear input
+    } else {
+      alert("Failed to send message.");
     }
   };
 
-  // Toggle chatbox visibility
-  const toggleChatBox = () => setIsOpen(!isOpen);
-
   return (
-    <div className={`chatbox-container ${isOpen ? "open" : "closed"}`}>
-      <div className="chatbox-header" onClick={toggleChatBox}>
-        <span>Chat</span>
-        <button className="chatbox-toggle">{isOpen ? "▼" : "▲"}</button>
+    <div className="chatbox">
+      <h3>Chat with User {userId}</h3>
+      <div className="messages">
+        {messages.length > 0 ? (
+          messages.map((msg, index) => (
+            <div key={index} className={`message ${msg.sender_id === store.user.id ? "sent" : "received"}`}>
+              <p>{msg.text}</p>
+              <small>{new Date(msg.timestamp).toLocaleTimeString()}</small>
+            </div>
+          ))
+        ) : (
+          <p>No messages yet.</p>
+        )}
       </div>
-      {isOpen && (
-        <div className="chatbox-body">
-          <div className="chatbox-messages">
-            {messages.map((msg, index) => (
-              <div
-                key={index}
-                className={`chatbox-message ${msg.sender_id === senderId ? "sent" : "received"}`}
-              >
-                {msg.text}
-              </div>
-            ))}
-          </div>
-          <div className="chatbox-input">
-            <input
-              type="text"
-              placeholder="Type a message..."
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === "Enter") handleSendMessage();
-              }}
-            />
-            <button onClick={handleSendMessage}>Send</button>
-          </div>
-        </div>
-      )}
+      <form onSubmit={handleSendMessage} className="message-form">
+        <input
+          type="text"
+          value={messageText}
+          onChange={(e) => setMessageText(e.target.value)}
+          placeholder="Type your message..."
+          required
+        />
+        <button type="submit">Send</button>
+      </form>
     </div>
   );
 };
 
-export default ChatBox;
+export default Chatbox;

@@ -13,6 +13,7 @@ import { Sendtoken } from "./pages/requestingreset";
 import Sidebar from "./component/sidebar";
 import { Context } from "./store/appContext";
 import "../styles/layout.css";
+import Chatbox from "./component/chatbox";
 
 const Layout = () => {
   const { store, actions } = useContext(Context);
@@ -32,6 +33,8 @@ const Layout = () => {
       <BrowserRouter basename={basename}>
         <div className="layout-container">
           <Sidebar /> {/* Sidebar component always visible */}
+          
+         {store.token ? <Chatbox/> : null}
 
           <main className="main-content">
             <Routes>

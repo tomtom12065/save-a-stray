@@ -212,6 +212,9 @@ def register_user():
 
 
 
+
+
+
 # User login
 @api.route("/login", methods=["POST"])
 def login():
@@ -243,39 +246,39 @@ def login():
     }), 200
 
 
-@api.route('/api/chat/<int:recipient_id>', methods=['GET'])
-@jwt_required()
-def get_chat_messages(recipient_id):
-    sender_id = get_jwt_identity()  # Get the sender's ID from the JWT token
+@api.route("/get_message", methods=["GET"])
+def get_message():
+  
+    recipient_id = request.args.get("recipient_id")
 
-    # Fetch messages between sender and recipient, sorted by timestamp
+    if not recipient_id:
+        return jsonify({"error": "Missing required parameters"}), 400
+
+    # Fetch messages between the two users
     messages = ChatMessage.query.filter(
-        ((ChatMessage.sender_id == sender_id) & (ChatMessage.recipient_id == recipient_id)) |
-        ((ChatMessage.sender_id == recipient_id) & (ChatMessage.recipient_id == sender_id))
-    ).order_by(ChatMessage.timestamp).all()
+        ((ChatMessage.recipient_id == recipient_id)) |
+        ((ChatMessage.sender_id == recipient_id) )
+    ).order_by(ChatMessage.timestamp.asc()).all()
 
-    return jsonify({"messages": [message.serialize() for message in messages]}), 200
+    return jsonify([message.serialize() for message in messages]), 200
 
-
-@api.route('/api/chat/send', methods=['POST'])
-@jwt_required()
-def send_chat_message():
+@api.route("/send_message", methods=["POST"])
+def send_message():
     data = request.get_json()
-    sender_id = get_jwt_identity()  # Get sender's ID from the JWT token
-    recipient_id = data.get('recipientId')
-    text = data.get('text')
 
-    if not text or not recipient_id:
-        return jsonify({"error": "Text and recipient ID are required"}), 400
+    sender_id = data.get("sender_id")
+    recipient_id = data.get("recipient_id")
+    text = data.get("text")
 
-    try:
-        new_message = ChatMessage(sender_id=sender_id, recipient_id=recipient_id, text=text)
-        db.session.add(new_message)
-        db.session.commit()
-        return jsonify({"message": "Message sent successfully", "chat": new_message.serialize()}), 201
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": "Failed to send message. Please try again later."}), 500
+    if not sender_id or not recipient_id or not text:
+        return jsonify({"error": "Missing required fields"}), 400
+
+    # Create a new message
+    new_message = ChatMessage(sender_id=sender_id, recipient_id=recipient_id, text=text)
+    db.session.add(new_message)
+    db.session.commit()
+
+    return jsonify({"message": "Message sent successfully", "data": new_message.serialize()}), 201
 
     
 

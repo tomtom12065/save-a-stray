@@ -29,20 +29,17 @@ const CatTemplate = () => {
     return <p>Cat not found.</p>; // Handle case where the cat is not found
   }
 
-  // Cloudinary URL with transformation for resizing
-  const cloudinaryUrl = cat.image_url
-  console.log(cat.image_url)
-    ? `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/w_300,h_200,c_fill/${cat.image_url}`
-    : "https://via.placeholder.com/300x200"; // Fallback if no image
+  // Use cat.image_url directly for consistency with other methods
+  const imageUrl = cat.image_url || "https://via.placeholder.com/300x200"; // Fallback if no image
 
   return (
     <div className="cat-page-container">
       <h1 className="cat-name">{cat.name}</h1>
 
-      <div className="cat-images-grid">
+      <div className="cat-image-container">
         <img
-          className="img-fluid w-50 p-3 w-sm-75 w-md-50 w-lg-25"
-          src={cloudinaryUrl} // Use the dynamically generated Cloudinary URL
+          className="cat-image"
+          src={imageUrl}
           alt={cat.name}
         />
       </div>

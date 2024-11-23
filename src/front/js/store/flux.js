@@ -25,6 +25,69 @@ const getState = ({ getStore, getActions ,setStore }) => {
         }
       },
 
+
+
+
+
+      getMessages: async (recipientId) => {
+        try {
+            const response = await fetch(
+                `${process.env.BACKEND_URL}/api/get_message?recipient_id=${recipientId}`,
+                {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${localStorage.getItem("token")}`, // Optional if authentication is required
+                    },
+                }
+            );
+    
+            if (!response.ok) {
+                throw new Error("Failed to fetch messages");
+            }
+    
+            const messages = await response.json();
+            setStore({ messages }); // Update store with fetched messages
+            return messages;
+        } catch (error) {
+            console.error("Error fetching messages:", error);
+            return null; // Return null on failure
+        }
+    },
+    
+    sendMessage: async (senderId, recipientId, text) => {
+      try {
+          const response = await fetch(`${process.env.BACKEND_URL}/api/send_message`, {
+              method: "POST",
+              headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${localStorage.getItem("token")}`, // Optional if authentication is required
+              },
+              body: JSON.stringify({
+                  sender_id: senderId,
+                  recipient_id: recipientId,
+                  text: text,
+              }),
+          });
+  
+          if (!response.ok) {
+              throw new Error("Failed to send message");
+          }
+  
+          const result = await response.json();
+          return result; // Return the response on success
+      } catch (error) {
+          console.error("Error sending message:", error);
+          return null; // Return null on failure
+      }
+  },
+  
+
+
+
+
+
+
       // **User Authentication Actions**
       registerUser: async (userData) => {
         try {
@@ -117,6 +180,8 @@ const getState = ({ getStore, getActions ,setStore }) => {
           localStorage.setItem("refresh_token", data.refresh_token);
           localStorage.setItem("user", JSON.stringify(data.user));
           setStore({ user: data.user, token: data.access_token });
+          const actions = getActions()
+          actions.getMessages(data.user.id)
           console.log("Tokens saved to localStorage:", data.access_token, data.refresh_token);
           
           return { success: true, message: "Login successful" };
@@ -452,63 +517,7 @@ const getState = ({ getStore, getActions ,setStore }) => {
         }
       },
       
-      sendChatMessage : async (senderId, recipientId, text) => {
-        try {
-          const response = await fetch(`$(process.env.BACKEND_URL)/chat/messages`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${localStorage.token}`,
-            },
-            body: JSON.stringify({ recipient_id: recipientId, text }),
-          });
       
-          if (!response.ok) {
-            throw new Error('Failed to send message');
-          }
-      
-          const newMessage = await response.json();
-      
-          // Optimistically update the store by adding the new message
-          setStore({
-            ...store,
-            chatMessages: [...store.chatMessages, newMessage],
-          });
-      
-          return { success: true, message: newMessage };
-        } catch (error) {
-          console.error('Error sending message:', error);
-          return { success: false, message: error.message };
-        }
-      },
-
-      getChatMessages : async (senderId, recipientId) => {
-        try {
-          const response = await fetch(`${process.env.BACKEND_URL}/chat/messages?recipient_id=${recipientId}`, {
-            method: 'GET',
-            headers: {
-              Authorization: `Bearer ${store.token}`,
-            },
-          });
-      
-          if (!response.ok) {
-            throw new Error('Failed to fetch messages');
-          }
-      
-          const data = await response.json();
-      
-          // Update the store with the fetched messages
-          setStore({
-            ...store,
-            chatMessages: data,  // Assuming 'chatMessages' is where the chat messages are stored
-          });
-          
-          return { success: true, messages: data };
-        } catch (error) {
-          console.error('Error fetching messages:', error);
-          return { success: false, message: error.message };
-        }
-      },
       
       requestPasswordReset: async (email) => {
         const baseApiUrl = process.env.BACKEND_URL;

@@ -1,0 +1,36 @@
+.profile-cats {
+  margin-top: 20px;
+}
+
+.profile-cats-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.cats-horizontal-grid {
+  display: flex;
+  overflow-x: auto; /* Allow horizontal scrolling if needed */
+  gap: 15px;
+  padding: 10px;
+  scroll-snap-type: x mandatory; /* Ensure smooth snapping */
+}
+
+.cats-horizontal-grid::-webkit-scrollbar {
+  height: 8px; /* Horizontal scrollbar height */
+}
+
+.cats-horizontal-grid::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 4px;
+}
+
+.cats-horizontal-grid::-webkit-scrollbar-track {
+  background: #f4f4f4;
+}
+
+.cat-card-wrapper {
+  flex: 0 0 250px; /* Same width as on Home.js */
+  scroll-snap-align: start; /* Align cards to the scroll position */
+}
