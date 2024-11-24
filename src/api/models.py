@@ -115,7 +115,7 @@ class ChatMessage(db.Model):
         self.sender_id = sender_id
         self.recipient_id = recipient_id
         self.text = text
-        self.read - read
+        self.read = read
 
     def __repr__(self):
         return f'<ChatMessage from {self.sender_id} to {self.recipient_id} at {self.timestamp}>'

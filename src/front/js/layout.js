@@ -1,4 +1,3 @@
-// layout.js
 import React, { useEffect, useContext } from "react";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { BackendURL } from "./component/backendURL";
@@ -11,17 +10,19 @@ import Login from "./pages/login";
 import { ResetPassword } from "./pages/resetpassword";
 import { Sendtoken } from "./pages/requestingreset";
 import Sidebar from "./component/sidebar";
+import Chatbox from "./component/chatbox";
 import { Context } from "./store/appContext";
 import "../styles/layout.css";
-import Chatbox from "./component/chatbox";
 
 const Layout = () => {
   const { store, actions } = useContext(Context);
   const basename = process.env.BASENAME || "";
 
   useEffect(() => {
-    actions.getUserProfile();
-    
+    const token = localStorage.getItem("token");
+    if (token) {
+      actions.getUserProfile(token); // Ensure user profile is fetched if token exists
+    }
   }, [actions]);
 
   // Ensure the backend URL is configured
@@ -34,8 +35,9 @@ const Layout = () => {
       <BrowserRouter basename={basename}>
         <div className="layout-container">
           <Sidebar /> {/* Sidebar component always visible */}
-          
-         {store.token ? <Chatbox/> : null}
+
+          {/* Display Chatbox only if user is logged in */}
+          {store.token && <Chatbox />}
 
           <main className="main-content">
             <Routes>
@@ -46,14 +48,15 @@ const Layout = () => {
                 path="/profile"
                 element={store.token ? <ProfilePage /> : <Navigate to="/login" />}
               />
-              
+
+              {/* Routes for all pages */}
               <Route path="/cat-template/:id" element={<CatTemplate />} />
               <Route path="/register" element={<Register />} />
               <Route path="/cat-upload" element={<CatUpload />} />
               <Route path="/login" element={<Login />} />
               <Route path="/requesting-reset" element={<Sendtoken />} />
               <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="*" element={<h1>Not found!</h1>} />
+              <Route path="*" element={<h1>Page Not Found</h1>} />
             </Routes>
           </main>
         </div>

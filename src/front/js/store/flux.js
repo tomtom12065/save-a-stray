@@ -25,7 +25,7 @@ const getState = ({ getStore, getActions ,setStore }) => {
         }
       },
 
-      markMessagesAsRead: async (senderId) => {
+      markMessagesAsRead: async (senderId, recipientId) => {
         try {
           const response = await fetch(`${process.env.BACKEND_URL}/api/mark_as_read`, {
             method: "POST",
@@ -33,10 +33,7 @@ const getState = ({ getStore, getActions ,setStore }) => {
               "Content-Type": "application/json",
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
-            body: JSON.stringify({
-              sender_id: senderId,
-              recipient_id: store.user.id,
-            }),
+            body: JSON.stringify({ sender_id: senderId, recipient_id: recipientId }),
           });
       
           if (!response.ok) {
@@ -44,10 +41,10 @@ const getState = ({ getStore, getActions ,setStore }) => {
           }
       
           console.log("Messages marked as read.");
-          return true;
+          const data = await response.json();
+          return data.updated_count; // Number of messages marked as read
         } catch (error) {
           console.error("Error marking messages as read:", error);
-          return false;
         }
       },
       

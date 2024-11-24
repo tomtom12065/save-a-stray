@@ -273,14 +273,18 @@ def mark_as_read():
         return jsonify({"error": "Missing required fields"}), 400
 
     # Update read status for all messages in the conversation
-    ChatMessage.query.filter_by(
+    updated_count = ChatMessage.query.filter_by(
         sender_id=sender_id,
         recipient_id=recipient_id,
         read=False
     ).update({"read": True})
     db.session.commit()
 
-    return jsonify({"message": "Messages marked as read"}), 200
+    return jsonify({
+        "message": "Messages marked as read",
+        "updated_count": updated_count
+    }), 200
+
 
 
 @api.route("/send_message", methods=["POST"])
@@ -294,12 +298,15 @@ def send_message():
     if not sender_id or not recipient_id or not text:
         return jsonify({"error": "Missing required fields"}), 400
 
-    # Create a new message
-    new_message = ChatMessage(sender_id=sender_id, recipient_id=recipient_id, text=text)
+    # Create a new message with read=False
+    new_message = ChatMessage(sender_id=sender_id, recipient_id=recipient_id, text=text, read=False)
     db.session.add(new_message)
     db.session.commit()
 
-    return jsonify({"message": "Message sent successfully", "data": new_message.serialize()}), 201
+    return jsonify({
+        "message": "Message sent successfully",
+        "data": new_message.serialize()
+    }), 201
 
     
 
