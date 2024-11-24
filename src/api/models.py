@@ -92,7 +92,7 @@ class ChatMessage(db.Model):
     # Foreign keys for sender and recipient, linked to User model
     sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     recipient_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-
+    read = db.Column(db.Boolean, default=False)  # New field
     # Message content and timestamp
     text = db.Column(db.String, nullable=False)
     timestamp = db.Column(DateTime(timezone=True), default=datetime.utcnow)
@@ -111,10 +111,11 @@ class ChatMessage(db.Model):
         lazy='select'
     )
 
-    def __init__(self, sender_id, recipient_id, text):
+    def __init__(self, sender_id, recipient_id, text,read):
         self.sender_id = sender_id
         self.recipient_id = recipient_id
         self.text = text
+        self.read - read
 
     def __repr__(self):
         return f'<ChatMessage from {self.sender_id} to {self.recipient_id} at {self.timestamp}>'

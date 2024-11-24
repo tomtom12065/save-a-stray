@@ -262,6 +262,27 @@ def get_message():
 
     return jsonify([message.serialize() for message in messages]), 200
 
+
+@api.route("/mark_as_read", methods=["POST"])
+def mark_as_read():
+    data = request.get_json()
+    recipient_id = data.get("recipient_id")
+    sender_id = data.get("sender_id")
+
+    if not recipient_id or not sender_id:
+        return jsonify({"error": "Missing required fields"}), 400
+
+    # Update read status for all messages in the conversation
+    ChatMessage.query.filter_by(
+        sender_id=sender_id,
+        recipient_id=recipient_id,
+        read=False
+    ).update({"read": True})
+    db.session.commit()
+
+    return jsonify({"message": "Messages marked as read"}), 200
+
+
 @api.route("/send_message", methods=["POST"])
 def send_message():
     data = request.get_json()

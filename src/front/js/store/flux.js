@@ -25,7 +25,32 @@ const getState = ({ getStore, getActions ,setStore }) => {
         }
       },
 
-
+      markMessagesAsRead: async (senderId) => {
+        try {
+          const response = await fetch(`${process.env.BACKEND_URL}/api/mark_as_read`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify({
+              sender_id: senderId,
+              recipient_id: store.user.id,
+            }),
+          });
+      
+          if (!response.ok) {
+            throw new Error("Failed to mark messages as read.");
+          }
+      
+          console.log("Messages marked as read.");
+          return true;
+        } catch (error) {
+          console.error("Error marking messages as read:", error);
+          return false;
+        }
+      },
+      
 
 
 
@@ -54,33 +79,37 @@ const getState = ({ getStore, getActions ,setStore }) => {
             return null; // Return null on failure
         }
     },
-    
     sendMessage: async (senderId, recipientId, text) => {
       try {
-          const response = await fetch(`${process.env.BACKEND_URL}/api/send_message`, {
-              method: "POST",
-              headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${localStorage.getItem("token")}`, // Optional if authentication is required
-              },
-              body: JSON.stringify({
-                  sender_id: senderId,
-                  recipient_id: recipientId,
-                  text: text,
-              }),
-          });
-  
-          if (!response.ok) {
-              throw new Error("Failed to send message");
-          }
-  
-          const result = await response.json();
-          return result; // Return the response on success
+        const payload = {
+          sender_id: senderId,
+          recipient_id: recipientId,
+          text: text,
+        };
+        console.log("Sending payload:", payload);
+    
+        const response = await fetch(`${process.env.BACKEND_URL}/api/send_message`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(payload),
+        });
+    
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Backend Error:", errorData);
+          throw new Error("Failed to send message");
+        }
+    
+        const result = await response.json();
+        return result;
       } catch (error) {
-          console.error("Error sending message:", error);
-          return null; // Return null on failure
+        console.error("Error sending message:", error);
+        return null;
       }
-  },
+    },
   
 
 

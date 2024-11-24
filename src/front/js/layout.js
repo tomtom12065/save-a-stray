@@ -21,6 +21,7 @@ const Layout = () => {
 
   useEffect(() => {
     actions.getUserProfile();
+    
   }, [actions]);
 
   // Ensure the backend URL is configured
@@ -45,7 +46,7 @@ const Layout = () => {
                 path="/profile"
                 element={store.token ? <ProfilePage /> : <Navigate to="/login" />}
               />
-
+              
               <Route path="/cat-template/:id" element={<CatTemplate />} />
               <Route path="/register" element={<Register />} />
               <Route path="/cat-upload" element={<CatUpload />} />
