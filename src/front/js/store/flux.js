@@ -73,6 +73,38 @@ const getState = ({ getStore, getActions ,setStore }) => {
       
 
 
+      updateUser: async (userInfo) => {
+        try {
+            const response = await fetch(`${process.env.BACKEND_URL}/api/update_user`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+                body: JSON.stringify(userInfo),
+            });
+    
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || "Failed to update user");
+            }
+    
+            const updatedUser = await response.json();
+            setStore({ user: updatedUser.user }); // Update user in the store
+            return true; // Indicate success
+        } catch (error) {
+            console.error("Error updating user:", error);
+            return false; // Indicate failure
+        }
+    },
+
+
+
+
+
+
+
+
 
       getMessages: async (recipientId) => {
         try {

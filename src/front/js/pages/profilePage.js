@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Context } from "../store/appContext";
 import "../../styles/profilePage.css";
-import CatCard from "../component/catCard"; // Import the CatCard component
+import CatCard from "../component/catCard";
 import Chatbox from "../component/chatbox";
 
 const ProfilePage = () => {
@@ -11,6 +11,14 @@ const ProfilePage = () => {
 
   const [isLoading, setIsLoading] = useState(true); // Loading state
   const [error, setError] = useState(null); // Error state
+
+  const [username, setUsername] = useState(store.user?.username || "");
+  const [email, setEmail] = useState(store.user?.email || "");
+  const [updateMessage, setUpdateMessage] = useState("");
+
+  // State for toggling input fields
+  const [showUsernameInput, setShowUsernameInput] = useState(false);
+  const [showEmailInput, setShowEmailInput] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -29,6 +37,9 @@ const ProfilePage = () => {
         if (!success) {
           setError("Failed to fetch your cats.");
         }
+
+        setUsername(userProfile.username);
+        setEmail(userProfile.email);
       } catch (err) {
         console.error("Error fetching data:", err);
         setError("An error occurred while fetching data.");
@@ -39,6 +50,20 @@ const ProfilePage = () => {
 
     fetchUserData();
   }, [actions]);
+
+  // Handle profile updates
+  const handleUpdateProfile = async (type) => {
+    const updatedInfo = type === "username" ? { username } : { email };
+    const success = await actions.updateUser(updatedInfo);
+
+    if (success) {
+      setUpdateMessage(`${type === "username" ? "Username" : "Email"} updated successfully!`);
+      if (type === "username") setShowUsernameInput(false);
+      if (type === "email") setShowEmailInput(false);
+    } else {
+      setUpdateMessage(`Failed to update ${type}. Please try again.`);
+    }
+  };
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -58,7 +83,62 @@ const ProfilePage = () => {
       {/* User Profile Section */}
       <div className="profile-section">
         <h1 className="profile-title">{store.user.username}'s Profile</h1>
-        <p className="profile-email">Email: {store.user.email}</p>
+
+        {/* Username Display and Update */}
+        <div className="profile-info">
+          <p className="profile-item">Username: {store.user.username}</p>
+          <button
+            className="toggle-button"
+            onClick={() => setShowUsernameInput((prev) => !prev)}
+          >
+            {showUsernameInput ? "Cancel" : "Update Username"}
+          </button>
+          {showUsernameInput && (
+            <div className="dropdown-input">
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="profile-input"
+              />
+              <button
+                className="save-button"
+                onClick={() => handleUpdateProfile("username")}
+              >
+                Save
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Email Display and Update */}
+        <div className="profile-info">
+          <p className="profile-item">Email: {store.user.email}</p>
+          <button
+            className="toggle-button"
+            onClick={() => setShowEmailInput((prev) => !prev)}
+          >
+            {showEmailInput ? "Cancel" : "Update Email"}
+          </button>
+          {showEmailInput && (
+            <div className="dropdown-input">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="profile-input"
+              />
+              <button
+                className="save-button"
+                onClick={() => handleUpdateProfile("email")}
+              >
+                Save
+              </button>
+            </div>
+          )}
+        </div>
+
+        {updateMessage && <p className="update-message">{updateMessage}</p>}
       </div>
 
       {/* Chatbox Section */}
@@ -73,7 +153,7 @@ const ProfilePage = () => {
           <div className="cats-horizontal-grid">
             {store.selfcats.map((cat) => (
               <div key={cat.id} className="cat-card-wrapper">
-                <CatCard cat={cat} /> {/* Wrap each CatCard for consistent sizing */}
+                <CatCard cat={cat} />
               </div>
             ))}
           </div>

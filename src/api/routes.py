@@ -263,6 +263,34 @@ def get_message():
     return jsonify([message.serialize() for message in messages]), 200
 
 
+@api.route('/update_user', methods=['PUT'])
+@jwt_required()
+def update_user():
+    user_id = get_jwt_identity()
+    data = request.json
+
+    # Validate inputs
+    username = data.get('username')
+    email = data.get('email')
+
+    if not username or not email:
+        return jsonify({"error": "Username and email are required"}), 400
+
+    # Find the user and update the information
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    user.username = username
+    user.email = email
+    db.session.commit()
+
+    return jsonify({"message": "User updated successfully", "user": user.serialize()}), 200
+
+
+
+
+
 @api.route("/mark_as_read", methods=["POST"])
 def mark_as_read():
     data = request.get_json()

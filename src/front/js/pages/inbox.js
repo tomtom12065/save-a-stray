@@ -10,29 +10,39 @@ const Inbox = () => {
   // Fetch messages on component mount
   useEffect(() => {
     const fetchMessages = async () => {
-      await actions.getMessages(store.user.id);
+      const recipientId = store.user?.id; // Ensure the user ID exists
+      if (recipientId) {
+        await actions.getMessages(recipientId); // Pass the recipient ID
+      }
     };
     fetchMessages();
-  }, [actions]);
+  }, [actions, store.user]);
 
   // Organize messages into conversations
   useEffect(() => {
     if (store.messages && store.messages.length > 0) {
       const convos = store.messages.reduce((acc, message) => {
+        // Determine participant name
         const participant =
-          message.sender === store.currentUser ? message.recipient : message.sender;
+          message.sender === store.user.name ? message.recipient : message.sender;
+
+        // Initialize conversation array if it doesn't exist
         if (!acc[participant]) {
           acc[participant] = [];
         }
+
+        // Add the message to the conversation
         acc[participant].push(message);
         return acc;
       }, {});
-      setConversations(convos);
+
+      setConversations(convos); // Update state with organized conversations
     }
-  }, [store.messages, store.currentUser]);
+  }, [store.messages, store.user]);
 
   return (
     <div className="inbox-container">
+      {/* Sidebar for listing conversations */}
       <div className="inbox-sidebar">
         <h2>Inbox</h2>
         {Object.keys(conversations).length > 0 ? (
@@ -47,8 +57,9 @@ const Inbox = () => {
               <h4>{participant}</h4>
               <p>
                 {
-                  conversations[participant][conversations[participant].length - 1]
-                    .content
+                  conversations[participant][
+                    conversations[participant].length - 1
+                  ].text // Display the last message's content
                 }
               </p>
             </div>
@@ -58,6 +69,7 @@ const Inbox = () => {
         )}
       </div>
 
+      {/* Main content area for selected conversation */}
       <div className="inbox-content">
         {selectedParticipant ? (
           <div className="conversation-details">
@@ -67,10 +79,10 @@ const Inbox = () => {
                 <div
                   key={message.id}
                   className={`message-item ${
-                    message.sender === store.currentUser ? "sent" : "received"
+                    message.sender === store.user.name ? "sent" : "received"
                   }`}
                 >
-                  <p>{message.content}</p>
+                  <p>{message.text}</p>
                   <span className="message-timestamp">
                     {new Date(message.timestamp).toLocaleString()}
                   </span>
