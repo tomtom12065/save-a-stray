@@ -9,15 +9,15 @@ import CatCard from "../component/catCard";  // Import the CatCard component
 export const Home = () => {
   const navigate = useNavigate();
   const { store, actions } = useContext(Context);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  // const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     actions.getCats();
   }, []);
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
+  // const toggleSidebar = () => {
+  //   setIsSidebarOpen(!isSidebarOpen);
+  // };
 
   // Handler to delete cat by ID
   const handleDeleteCat = async (catId) => {
@@ -40,11 +40,11 @@ export const Home = () => {
 
   return (
     <div className="home-container">
-      <button className="sidebar-toggle-btn" onClick={toggleSidebar}>
+      {/* <button className="sidebar-toggle-btn" onClick={toggleSidebar}>
         ☰ Menu
       </button>
 
-      <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} /> */}
 
       <h1 className="title">Save a Stray</h1>
 

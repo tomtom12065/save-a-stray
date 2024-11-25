@@ -1,165 +1,172 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Context } from "../store/appContext";
 import "../../styles/profilePage.css";
-import ChatBox from "../component/chatBox"; // Assuming you have a ChatBox component
-//add bio for profile
-// potential breeder bio
-//potential different useres one for breeders and bio
-// potential verification for breeders and users also potential id request for buyers
-//when you adopt you need to give information ask website to see how they do verification
-//add reviews for users
-// do reasearch on adoption sites
-// add a footer for footer stuff
-// link everything with the sidebar
-//add potential friends
-// make the rest of the project adaptive for all screens
-//react native
-// posts about project update for linked in
-//ask suggestions from platform
-
-
+import CatCard from "../component/catCard";
+import Chatbox from "../component/chatbox";
 
 const ProfilePage = () => {
   const { store, actions } = useContext(Context);
-  const [selectedFile, setSelectedFile] = useState(null);
-const [profileimage,setProfileImage] = useState(null);
-const [catsRetrieved, setCatsRetrieved] = useState(null)
-const token = localStorage.getItem(token)
+  const navigate = useNavigate();
+
+  const [isLoading, setIsLoading] = useState(true); // Loading state
+  const [error, setError] = useState(null); // Error state
+
+  const [username, setUsername] = useState(store.user?.username || "");
+  const [email, setEmail] = useState(store.user?.email || "");
+  const [updateMessage, setUpdateMessage] = useState("");
+
+  // State for toggling input fields
+  const [showUsernameInput, setShowUsernameInput] = useState(false);
+  const [showEmailInput, setShowEmailInput] = useState(false);
+
   useEffect(() => {
-    // Fetch user data if not already present
-   const getCats = async ()=>{
-    let success = await actions.getSelfCats();
-    if (success){
-      setCatsRetrieved(true)
-    }else{
-      setCatsRetrieved(false)
+    const fetchUserData = async () => {
+      try {
+        setIsLoading(true);
+
+        // Fetch user profile
+        const userProfile = await actions.getUserProfile();
+        if (!userProfile) {
+          setError("Failed to fetch user profile.");
+          return;
+        }
+
+        // Fetch user's cats
+        const success = await actions.getSelfCats();
+        if (!success) {
+          setError("Failed to fetch your cats.");
+        }
+
+        setUsername(userProfile.username);
+        setEmail(userProfile.email);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        setError("An error occurred while fetching data.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [actions]);
+
+  // Handle profile updates
+  const handleUpdateProfile = async (type) => {
+    const updatedInfo = type === "username" ? { username } : { email };
+    const success = await actions.updateUser(updatedInfo);
+
+    if (success) {
+      setUpdateMessage(`${type === "username" ? "Username" : "Email"} updated successfully!`);
+      if (type === "username") setShowUsernameInput(false);
+      if (type === "email") setShowEmailInput(false);
+    } else {
+      setUpdateMessage(`Failed to update ${type}. Please try again.`);
     }
-   }
-    
-    getCats()
-    
-    
-    console.log("dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd")
-    console.log(store.selfcats)
-  }, [store.user, actions]);
-
-  // Handler for file selection
-  // const handleFileChange = (event) => {
-  //   const file = event.target.files[0];
-  //   if (file) {
-  //     actions.uploadProfilePic(file).then((response) => {
-  //       if (response.success) {
-  //         alert("Profile picture updated successfully!");
-  //       } else {
-  //         alert(response.message);
-  //       }
-  //     });
-  //   }
-  // };
-  const handleImageChange = async (event) => {
-    const file = event.target.files[0];
-
-    if (!file) {
-      setError("Please select an image file.");
-      return;
-    }
-
-    console.log("File from catUpload before uploadimage ", file)
-
-    
-    const imageUrl = await actions.uploadProfilePic(file);
-   
-
   };
 
-  // Handler for clicking the profile picture
-  const handleClick = () => {
-    document.getElementById("profile-pic-input").click();
-  };
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div className="error-message">{error}</div>;
+  }
+
+  if (!store.user) {
+    navigate("/login");
+    return null;
+  }
 
   return (
     <div className="profile-page">
-      {/* Profile Picture Section */}
-      <div className="profile-pic-container" onClick={handleClick}>
-        {store.user?.image_url ? (
-          <img src={store.user.image_url} alt="Profile" className="profile-pic" />
+      {/* User Profile Section */}
+      <div className="profile-section">
+        <h1 className="profile-title">{store.user.username}'s Profile</h1>
+
+        {/* Username Display and Update */}
+        <div className="profile-info">
+          <p className="profile-item">Username: {store.user.username}</p>
+          <button
+            className="toggle-button"
+            onClick={() => setShowUsernameInput((prev) => !prev)}
+          >
+            {showUsernameInput ? "Cancel" : "Update Username"}
+          </button>
+          {showUsernameInput && (
+            <div className="dropdown-input">
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="profile-input"
+              />
+              <button
+                className="save-button"
+                onClick={() => handleUpdateProfile("username")}
+              >
+                Save
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Email Display and Update */}
+        <div className="profile-info">
+          <p className="profile-item">Email: {store.user.email}</p>
+          <button
+            className="toggle-button"
+            onClick={() => setShowEmailInput((prev) => !prev)}
+          >
+            {showEmailInput ? "Cancel" : "Update Email"}
+          </button>
+          {showEmailInput && (
+            <div className="dropdown-input">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="profile-input"
+              />
+              <button
+                className="save-button"
+                onClick={() => handleUpdateProfile("email")}
+              >
+                Save
+              </button>
+            </div>
+          )}
+        </div>
+
+        {updateMessage && <p className="update-message">{updateMessage}</p>}
+      </div>
+
+      {/* Chatbox Section */}
+      <div className="profile-chatbox">
+        <Chatbox />
+      </div>
+
+      {/* User's Cats Section */}
+      <div className="profile-cats">
+        <h2 className="profile-cats-title">Your Cats</h2>
+        {store.selfcats && store.selfcats.length > 0 ? (
+          <div className="cats-horizontal-grid">
+            {store.selfcats.map((cat) => (
+              <div key={cat.id} className="cat-card-wrapper">
+                <CatCard cat={cat} />
+              </div>
+            ))}
+          </div>
         ) : (
-          <div className="upload-placeholder">Click to upload</div>
+          <p className="profile-no-cats">You have no cats.</p>
         )}
       </div>
 
-      {/* User Information Section */}
-      <h2>{store.user?.username}</h2>
-      <p>Email: {store.user?.email}</p>
-
-      {/* Hidden file input for profile picture upload */}
-      <input
-        id="profile-pic-input"
-        type="file"
-        accept="image/*"
-        style={{ display: "none" }}
-        onChange={handleImageChange}
-      />
-
-      {/* Button to request password reset */}
-      <button
-        className="btn btn-primary mt-3"
-        onClick={() => window.location.href = "/requesting-reset"}
-      >
-        Request Password Reset
-      </button>
-
-      {/* Bootstrap Carousel for User's Cats */}
-      {catsRetrieved?(
-        <div className="user-cats-carousel mt-5">
-          <h3>Your Cats</h3>
-          <div id="catsCarousel" className="carousel slide" data-bs-ride="carousel">
-            <div className="carousel-inner">
-              {store.selfcats.map((cat, index) => (
-                <div
-                  key={cat.id}
-                  className={`carousel-item ${index === 0 ? "active" : ""}`}
-                >
-                  <img
-                    src={cat.image_url}
-                    className="d-block w-100"
-                    alt={cat.name}
-                    style={{ height: "300px", objectFit: "cover" }}
-                  />
-                  <div className="carousel-caption d-none d-md-block">
-                    <h5>{cat?.name}</h5>
-                    <p>{cat?.breed} - Age: {cat.age}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <button
-              className="carousel-control-prev"
-              type="button"
-              data-bs-target="#catsCarousel"
-              data-bs-slide="prev"
-            >
-              <span className="carousel-control-prev-icon" aria-hidden="true"></span>
-              <span className="visually-hidden">Previous</span>
-            </button>
-            <button
-              className="carousel-control-next"
-              type="button"
-              data-bs-target="#catsCarousel"
-              data-bs-slide="next"
-            >
-              <span className="carousel-control-next-icon" aria-hidden="true"></span>
-              <span className="visually-hidden">Next</span>
-            </button>
-          </div>
-        </div>
-      ) : catsRetrieved==null?(<p className="mt-5">Loading.</p>): !store.selfcats? (
-        <p className="mt-5">You have not uploaded any cats yet.</p>
-      ): (<p className="mt-5">An error ocurred, please come back later</p>)}
-
-      {/* Chat Box for Messaging */}
-      <div className="chat-box-container">
-        <ChatBox recipient="AnotherUser" />
+      {/* Navigate to Inbox Button */}
+      <div className="profile-inbox-button">
+        <button onClick={() => navigate("/inbox")} className="inbox-button">
+          Go to Inbox
+        </button>
       </div>
     </div>
   );

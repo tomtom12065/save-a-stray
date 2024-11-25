@@ -1,64 +1,54 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useEffect, useContext, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Context } from "../store/appContext";
+import Chatbox from "../component/chatbox"; // Correctly import Chatbox
 import "../../styles/catTemplate.css";
 
 const CatTemplate = () => {
   const { id } = useParams(); // Get the cat ID from the URL
   const { store, actions } = useContext(Context);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Handle loading state
+  const [recipientId, setRecipientId] = useState(null); // Store the recipient's ID for Chatbox
 
-  // Fetch the cat data when the component mounts
   useEffect(() => {
-    actions.getCatById(id); // Fetch the cat by ID
+    const fetchCat = async () => {
+      await actions.getCatById(id); // Fetch the single cat and store it in the global state
+      setLoading(false); // Mark as loaded
+    };
+    fetchCat();
   }, [id, actions]);
 
-  useEffect(() => {
-    if (store.singleCat) {
-      setLoading(false); // Set loading to false once the cat data is available
-    }
-  }, [store.singleCat]);
-
+  // Display a loading message while fetching cat data
   if (loading) {
-    return <p>Loading...</p>; // Show loading message while the cat data is being fetched
+    return <p>Loading...</p>;
   }
 
+  // Get the single cat details from the store
   const cat = store.singleCat;
 
+  // Handle the case where no cat data is found
   if (!cat) {
-    return <p>Cat not found.</p>; // Handle case where the cat is not found
+    return <p>Cat not found.</p>;
   }
 
-  // Cloudinary URL with transformation for resizing
-  const cloudinaryUrl = cat.image_url
-  console.log(cat.image_url)
-    ? `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/w_300,h_200,c_fill/${cat.image_url}`
-    : "https://via.placeholder.com/300x200"; // Fallback if no image
+  // Function to handle showing the chatbox
+  const handleChatClick = () => {
+    setRecipientId(cat.user_id); // Set the recipient ID (cat owner)
+  };
 
   return (
-    <div className="cat-page-container">
-      <h1 className="cat-name">{cat.name}</h1>
-
-      <div className="cat-images-grid">
-        <img
-          className="img-fluid w-50 p-3 w-sm-75 w-md-50 w-lg-25"
-          src={cloudinaryUrl} // Use the dynamically generated Cloudinary URL
-          alt={cat.name}
-        />
-      </div>
-
-      <p className="cat-description">
-        Breed: {cat.breed} <br />
-        Age: {cat.age} <br />
-        Price: ${cat.price}
-      </p>
-
-      <button
-        className="add-to-cart-btn"
-        onClick={() => alert("Added to cart!")}
-      >
-        Add to Cart
-      </button>
+    <div className="cat-template">
+      <h1>{cat.name}</h1>
+      <img src={cat.image_url} alt={cat.name} />
+      <p><strong>Breed:</strong> {cat.breed}</p>
+      <p><strong>Age:</strong> {cat.age} years</p>
+      <p><strong>Price:</strong> ${cat.price.toFixed(2)}</p>
+      <button onClick={handleChatClick}>Message Owner</button>
+      {recipientId && (
+        <div className="chatbox-container">
+          <Chatbox recipientId={recipientId} /> {/* Pass the owner's ID */}
+        </div>
+      )}
     </div>
   );
 };

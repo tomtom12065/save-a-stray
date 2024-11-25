@@ -1,15 +1,15 @@
 const getState = ({ getStore, getActions ,setStore }) => {
   //  getaction lets you use functions within the flux in other functions
   // Helper function to retrieve token
-  const getToken = () => sessionStorage.getItem("token");
+  const getToken = () => localStorage.getItem("token");
   console.log(getStore.token)
   return {
     store: {
       message: null,
       cats: [],
-      user: null,
+      user: JSON.parse(localStorage.getItem("user")) || null,
       selfcats: [],
-      token: sessionStorage.getItem("token")
+      token: localStorage.getItem("token") || null,
     },
 
     actions: {
@@ -24,6 +24,159 @@ const getState = ({ getStore, getActions ,setStore }) => {
           console.error("Error loading message from backend", error);
         }
       },
+      getBreeds: async () => {
+        try {
+          const response = await fetch("https://api.thecatapi.com/v1/breeds", {
+            headers: {
+              "x-api-key": process.env.CAT_API_KEY, // Securely retrieved API key
+            },
+          });
+      
+          if (!response.ok) {
+            throw new Error(`Error fetching breeds: ${response.statusText}`);
+          }
+      
+          const breeds = await response.json();
+          // Map the response to only the breed names
+          setStore({ breeds: breeds.map((breed) => breed.name) });
+          console.log("Breeds fetched successfully:", breeds.map((breed) => breed.name));
+        } catch (error) {
+          console.error("Error fetching cat breeds:", error);
+        }
+      },
+      
+    
+  
+
+      markMessagesAsRead: async (senderId, recipientId) => {
+        try {
+          const response = await fetch(`${process.env.BACKEND_URL}/api/mark_as_read`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify({ sender_id: senderId, recipient_id: recipientId }),
+          });
+      
+          if (!response.ok) {
+            throw new Error("Failed to mark messages as read.");
+          }
+      
+          console.log("Messages marked as read.");
+          const data = await response.json();
+          return data.updated_count; // Number of messages marked as read
+        } catch (error) {
+          console.error("Error marking messages as read:", error);
+        }
+      },
+      
+
+
+      updateUser: async (userInfo) => {
+        try {
+            const response = await fetch(`${process.env.BACKEND_URL}/api/update_user`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+                body: JSON.stringify(userInfo),
+            });
+    
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || "Failed to update user");
+            }
+    
+            const updatedUser = await response.json();
+            setStore({ user: updatedUser.user }); // Update user in the store
+            return true; // Indicate success
+        } catch (error) {
+            console.error("Error updating user:", error);
+            return false; // Indicate failure
+        }
+    },
+
+
+
+
+
+
+
+
+
+      getMessages: async (recipientId) => {
+        try {
+            const response = await fetch(
+                `${process.env.BACKEND_URL}/api/get_message?recipient_id=${recipientId}`,
+                {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${localStorage.getItem("token")}`, // Optional if authentication is required
+                    },
+                }
+            );
+    
+            if (!response.ok) {
+                throw new Error("Failed to fetch messages");
+            }
+    
+            const messages = await response.json();
+            setStore({ messages }); // Update store with fetched messages
+            return messages;
+        } catch (error) {
+            console.error("Error fetching messages:", error);
+            return null; // Return null on failure
+        }
+    },
+
+    
+
+
+
+
+
+
+
+    sendMessage: async (senderId, recipientId, text) => {
+      try {
+        const payload = {
+          sender_id: senderId,
+          recipient_id: recipientId,
+          text: text,
+        };
+        console.log("Sending payload:", payload);
+    
+        const response = await fetch(`${process.env.BACKEND_URL}/api/send_message`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(payload),
+        });
+    
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Backend Error:", errorData);
+          throw new Error("Failed to send message");
+        }
+    
+        const result = await response.json();
+        return result;
+      } catch (error) {
+        console.error("Error sending message:", error);
+        return null;
+      }
+    },
+  
+
+
+
+
+
 
       // **User Authentication Actions**
      
@@ -144,17 +297,16 @@ const getState = ({ getStore, getActions ,setStore }) => {
           }
       
           console.log("Login successful. Data received:", data);
-      
-          // Update the store with the user data and tokens
-          setStore({ user: data.user, token: data.access_token });
-          
           console.log("Store updated with user and token:", { user: data.user, token: data.access_token });
       
-          // Save the tokens to sessionStorage
+          // Save the tokens to localStorage
           localStorage.setItem("token", data.access_token);
           localStorage.setItem("refresh_token", data.refresh_token);
+          localStorage.setItem("user", JSON.stringify(data.user));
           setStore({ user: data.user, token: data.access_token });
-          console.log("Tokens saved to sessionStorage:", data.access_token, data.refresh_token);
+          const actions = getActions()
+          actions.getMessages(data.user.id)
+          console.log("Tokens saved to localStorage:", data.access_token, data.refresh_token);
           
           return { success: true, message: "Login successful" };
         } catch (error) {
@@ -166,7 +318,9 @@ const getState = ({ getStore, getActions ,setStore }) => {
 
       logout: () => {
         console.log("Logging out...");
-        sessionStorage.removeItem("token"); // Remove token from sessionStorage
+        localStorage.removeItem("token"); // Remove token from local
+        localStorage.removeItem("refresh_token");
+        localStorage.removeItem("user"); 
         setStore({ user: null, token: null }); // Reset user and token in store
       },
 
@@ -177,7 +331,7 @@ const getState = ({ getStore, getActions ,setStore }) => {
         const response = await fetch(`${process.env.BACKEND_URL}/api/add-cat`, {
           method: "POST",
           headers: {
-            "Authorization": "Bearer " + sessionStorage.getItem("token"),
+            "Authorization": "Bearer " + localStorage.getItem("token"),
             "Content-Type": "application/json"
           },
           body: data
@@ -362,7 +516,7 @@ const getState = ({ getStore, getActions ,setStore }) => {
       },
       
       deleteCat: async (catId) => {
-        const token = sessionStorage.getItem("token");
+        const token = localStorage.getItem("token");
   
         if (!token) {
           console.error("Token is missing. Please log in.");
@@ -386,7 +540,7 @@ const getState = ({ getStore, getActions ,setStore }) => {
           }
   
           if (!resp.ok) {
-            throw new Error(data.error || "Error deleting cat");
+            throw new Error(data.error || "Error dgetseleting cat");
           }
   
           // Update the store to remove the deleted cat
@@ -473,6 +627,56 @@ const getState = ({ getStore, getActions ,setStore }) => {
         }
       },
 
+      getUserProfile: async () => {
+        try {
+          const token = localStorage.getItem("token");
+          if (!token) {
+            console.error("No token found");
+            return null;
+          }
+      
+          const BACKEND_URL = process.env.BACKEND_URL;
+          console.log("Fetching user profile from:", `${BACKEND_URL}/api/user`);
+      
+          const response = await fetch(`${BACKEND_URL}/api/user`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`,
+            },
+          });
+      
+          const responseText = await response.text();
+          console.log("Response Text:", responseText);
+      
+          if (!response.ok) {
+            console.error(
+              `Failed to fetch user profile: ${response.status} ${response.statusText}`
+            );
+            console.error("Error details:", responseText);
+            return null;
+          }
+      
+          let data;
+          try {
+            data = JSON.parse(responseText);
+          } catch (parseError) {
+            console.error("Error parsing JSON response:", parseError);
+            console.error("Response Text:", responseText); // Log the response again
+            return null;
+          }
+      
+          setStore({ user: data });
+          console.log("Fetched user profile:", data);
+          return data;
+        } catch (error) {
+          console.error("Error fetching user profile:", error);
+          return null;
+        }
+      },
+      
+      
+      
       requestPasswordReset: async (email) => {
         const baseApiUrl = process.env.BACKEND_URL;
 

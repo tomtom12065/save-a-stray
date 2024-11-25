@@ -1,47 +1,52 @@
-.profile-page {
-    padding: 20px;
-    max-width: 900px;
-    margin: 0 auto;
-  }
-  
-  .profile-pic-container {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    overflow: hidden;
-    cursor: pointer;
-    margin: 0 auto 20px;
-  }
-  
-  .profile-pic {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  
-  .upload-placeholder {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-    background-color: #f0f0f0;
-    font-size: 14px;
-    color: #aaa;
-  }
-  
-  .user-cats-carousel {
-    margin-top: 30px;
-  }
-  
-  .carousel-inner img {
-    object-fit: cover;
-  }
-  
-  .chat-box-container {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 1000;
-  }
-  
+.profile-cats {
+  margin-top: 20px;
+}
+
+.profile-cats-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.cats-horizontal-grid {
+  display: flex;
+  overflow-x: auto; /* Allow horizontal scrolling if needed */
+  gap: 15px;
+  padding: 10px;
+  scroll-snap-type: x mandatory; /* Ensure smooth snapping */
+}
+
+.cats-horizontal-grid::-webkit-scrollbar {
+  height: 8px; /* Horizontal scrollbar height */
+}
+
+.cats-horizontal-grid::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 4px;
+}
+
+.cats-horizontal-grid::-webkit-scrollbar-track {
+  background: #f4f4f4;
+}
+
+.cat-card-wrapper {
+  flex: 0 0 250px; /* Same width as on Home.js */
+  scroll-snap-align: start; /* Align cards to the scroll position */
+}
+
+/* profilePage.css */
+.inbox-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-top: 20px;
+}
+
+.inbox-button:hover {
+  background-color: #0056b3;
+}
+

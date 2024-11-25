@@ -1,116 +1,112 @@
-import React, { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Context } from '../store/appContext';
+import React, { useEffect, useContext, useState } from "react";
+import { Context } from "../store/appContext";
 import "../../styles/catPage.css";
 
-export default function CatUpload() {
-  const { actions } = useContext(Context);
-  const navigate = useNavigate();
-  const [cat, setCat] = useState({ name: '', breed: '', age: '', price: '', imageUrl: '' });
-  const [error, setError] = useState('');
-  const [isUploading, setIsUploading] = useState(false);
-  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-  const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET;
+const CatUpload = () => {
+  const { actions, store } = useContext(Context);
+  const [catName, setCatName] = useState("");
+  const [breed, setBreed] = useState("");
+  const [age, setAge] = useState("");
+  const [description, setDescription] = useState("");
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
 
-  const token = sessionStorage.getItem("token");
+  // Fetch cat breeds on component mount
+  useEffect(() => {
+    if (!store.breeds || store.breeds.length === 0) {
+      actions.getBreeds(); // Use existing getBreeds action
+    }
+  }, [actions, store.breeds]);
 
-  // Cloudinary Image Upload Function
- 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
 
-  // Handle Image Change
-  const handleImageChange = async (event) => {
-    const file = event.target.files[0];
-
-    if (!file) {
-      setError("Please select an image file.");
+    if (!catName || !breed || !age) {
+      setError("Please fill in all required fields.");
       return;
     }
 
-    console.log("File from catUpload before uploadimage ", file)
-
-    setIsUploading(true);
-    const imageUrl = await actions.uploadImage(file);
-    setIsUploading(false);
-
-    if (imageUrl) {
-      setCat({ ...cat, imageUrl });
-    } else {
-      setError("Failed to upload image. Please try again.");
-    }
-  };
-
-  // Handle Form Submission
-  const onSubmit = async (event) => {
-    event.preventDefault();
-    setError('');
+    const catData = {
+      name: catName,
+      breed: breed,
+      age: age,
+      description: description,
+    };
 
     try {
-      const catData = {
-        age: Number(cat.age),
-        price: Number(cat.price),
-        breed: cat.breed,
-        name: cat.name,
-        imageUrl: cat.imageUrl,
-      };
-
-      console.log("Submitting cat data:", catData);
-
-      const response = await actions.postCatData2(catData);
-      console.log("Response from postCatData:", response);
-
-      if (response.success) {
-        navigate("/");
+      const response = await actions.uploadCat(catData); // Existing uploadCat action
+      if (response.status === 201) {
+        setSuccess("Cat uploaded successfully!");
+        // Clear form fields after success
+        setCatName("");
+        setBreed("");
+        setAge("");
+        setDescription("");
       } else {
-        setError(response.message || "Failed to add cat");
-        alert(`Failed to add cat: ${response.message || "Please try again."}`);
+        setError(response.error || "Failed to upload the cat. Please try again.");
       }
-    } catch (error) {
-      console.error("Error submitting cat data:", error);
-      setError("An unexpected error occurred");
+    } catch (err) {
+      console.error("Error uploading cat:", err);
+      setError("An unexpected error occurred.");
     }
   };
 
   return (
-    <div className="upload-container">
-      {error && <div className="error-message" style={{ color: 'red', marginBottom: '1rem' }}>{error}</div>}
-      <form onSubmit={onSubmit}>
-        <label>Name:</label>
+    <div className="cat-upload-container">
+      <h2>Upload Cat</h2>
+      <form onSubmit={handleSubmit}>
+        {error && <p className="error-message">{error}</p>}
+        {success && <p className="success-message">{success}</p>}
+
+        <label htmlFor="cat-name">Cat Name:</label>
         <input
+          id="cat-name"
           type="text"
-          value={cat.name}
-          onChange={(e) => setCat({ ...cat, name: e.target.value })}
+          value={catName}
+          onChange={(e) => setCatName(e.target.value)}
+          placeholder="Enter the cat's name"
           required
         />
-        <label>Age:</label>
-        <input
-          type="number"
-          value={cat.age}
-          onChange={(e) => setCat({ ...cat, age: e.target.value })}
+
+        <label htmlFor="cat-breed">Breed:</label>
+        <select
+          id="cat-breed"
+          value={breed}
+          onChange={(e) => setBreed(e.target.value)}
           required
-        />
-        <label>Breed:</label>
-        <input
-          type="text"
-          value={cat.breed}
-          onChange={(e) => setCat({ ...cat, breed: e.target.value })}
+        >
+          <option value="">Select a breed</option>
+          {store.breeds &&
+            store.breeds.map((b) => (
+              <option key={b} value={b}>
+                {b}
+              </option>
+            ))}
+        </select>
+
+        <label htmlFor="cat-age">Age:</label>
+        <select
+          id="cat-age"
+          value={age}
+          onChange={(e) => setAge(e.target.value)}
           required
-        />
-        <label>Price:</label>
-        <input
-          type="number"
-          value={cat.price}
-          onChange={(e) => setCat({ ...cat, price: e.target.value })}
-          required
-        />
-        <label>Upload Image:</label>
-        <input
-          type="file"
-          onChange={handleImageChange}
-          accept="image/*"
-        />
-        {isUploading && <p>Uploading image...</p>}
-        <button type="submit" disabled={isUploading}>Upload Cat</button>
+        >
+          <option value="">Select age</option>
+          <option value="<1 year">&lt;1 year</option>
+          <option value="1 year">1 year</option>
+          <option value="2 years">2 years</option>
+          <option value="3 years">3 years</option>
+          <option value="4 years">4 years</option>
+          <option value="5 years">5 years</option>
+        </select>
+
+
+        <button type="submit">Upload Cat</button>
       </form>
     </div>
   );
-}
+};
+
+export default CatUpload;
