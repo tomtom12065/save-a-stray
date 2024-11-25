@@ -23,6 +23,7 @@ const Layout = () => {
     if (token) {
       actions.getUserProfile(token); // Ensure user profile is fetched if token exists
     }
+    actions.getBreeds();
   }, [actions]);
 
   // Ensure the backend URL is configured

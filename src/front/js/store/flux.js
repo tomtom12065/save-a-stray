@@ -24,6 +24,28 @@ const getState = ({ getStore, getActions ,setStore }) => {
           console.error("Error loading message from backend", error);
         }
       },
+      getBreeds: async () => {
+        try {
+          const response = await fetch("https://api.thecatapi.com/v1/breeds", {
+            headers: {
+              "x-api-key": "live_6y9GIdnM9K4y0Aeuof30mkxTmxqTJsE5CCNF333rPp08rXp2At6ROJNLNgcDpLLe",
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error(`Error fetching breeds: ${response.statusText}`);
+          }
+
+          const breeds = await response.json();
+          // Map the response to only the breed names
+          setStore({ breeds: breeds.map((breed) => breed.name) });
+          console.log("Breeds fetched successfully:", breeds.map((breed) => breed.name));
+        } catch (error) {
+          console.error("Error fetching cat breeds:", error);
+        }
+      },
+    
+  
 
       markMessagesAsRead: async (senderId, recipientId) => {
         try {
@@ -76,6 +98,15 @@ const getState = ({ getStore, getActions ,setStore }) => {
             return null; // Return null on failure
         }
     },
+
+    
+
+
+
+
+
+
+
     sendMessage: async (senderId, recipientId, text) => {
       try {
         const payload = {

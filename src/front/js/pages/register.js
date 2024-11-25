@@ -2,7 +2,7 @@ import React, { useState, useContext } from "react";
 import { Context } from "../store/appContext";
 import { useNavigate } from "react-router-dom";
 import "../../styles/register.css";
-
+import { ValidateUserName } from "../component/validators";
 const Register = () => {
   const { actions } = useContext(Context);
   const [email, setEmail] = useState("");
@@ -10,30 +10,41 @@ const Register = () => {
   const [username,setUsername] = useState("");
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const [invaliditems, setInvaliditems] = useState([])
 
+  
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setInvaliditems([]);
     setError(null);
-    try {
-      const userData = {
-        email: email,
-        password: password,
-        username:username
-      };
 
-      console.log("Submitting user data:", userData);
+    let isUsernameValid = ValidateUserName(username,setInvaliditems)
+    if(isUsernameValid){
 
-      const response = await actions.registerUser(userData);
-      console.log("test 3");
-      if (response.status === 201) {
-        navigate("/"); // Redirect on successful registration
-      } else {
-        setError(response.error || "Failed to register. Please try again.");
+
+      try {
+        const userData = {
+          email: email,
+          password: password,
+          username:username
+        };
+  
+        console.log("Submitting user data:", userData);
+  
+        const response = await actions.registerUser(userData);
+        console.log("test 3");
+        if (response.status === 201) {
+          navigate("/"); // Redirect on successful registration
+        } else {
+          setError(response.error || "Failed to register. Please try again.");
+        }
+      } catch (error) {
+        console.error("Error registering user", error);
+        setError("An unexpected error occurred.");
       }
-    } catch (error) {
-      console.error("Error registering user", error);
-      setError("An unexpected error occurred.");
+
     }
+   
   };
 
   return (
@@ -62,6 +73,8 @@ const Register = () => {
           onChange={(e)=> setUsername(e.target.value)}
           required
           />
+
+          {invaliditems.includes("user_name") && <label className="error-label">username must be between 2 and 25 characters</label>}
         <button type="submit">Register</button>
       </form>
     </div>
