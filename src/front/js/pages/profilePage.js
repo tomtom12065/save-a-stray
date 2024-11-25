@@ -81,6 +81,13 @@ const ProfilePage = () => {
           <p className="profile-no-cats">You have no cats.</p>
         )}
       </div>
+
+      {/* Navigate to Inbox Button */}
+      <div className="profile-inbox-button">
+        <button onClick={() => navigate("/inbox")} className="inbox-button">
+          Go to Inbox
+        </button>
+      </div>
     </div>
   );
 };

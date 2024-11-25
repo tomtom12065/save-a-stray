@@ -7,6 +7,7 @@ import CatUpload from "./pages/catUpload";
 import CatTemplate from "./pages/catTemplate";
 import ProfilePage from "./pages/profilePage";
 import Login from "./pages/login";
+import Inbox from "./pages/inbox"; // Import Inbox.js
 import { ResetPassword } from "./pages/resetpassword";
 import { Sendtoken } from "./pages/requestingreset";
 import Sidebar from "./component/sidebar";
@@ -23,7 +24,7 @@ const Layout = () => {
     if (token) {
       actions.getUserProfile(token); // Ensure user profile is fetched if token exists
     }
-    actions.getBreeds();
+  
   }, [actions]);
 
   // Ensure the backend URL is configured
@@ -57,6 +58,14 @@ const Layout = () => {
               <Route path="/login" element={<Login />} />
               <Route path="/requesting-reset" element={<Sendtoken />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+
+              {/* New route for Inbox page */}
+              <Route
+                path="/inbox"
+                element={store.token ? <Inbox /> : <Navigate to="/login" />}
+              />
+
+              {/* Fallback for undefined routes */}
               <Route path="*" element={<h1>Page Not Found</h1>} />
             </Routes>
           </main>

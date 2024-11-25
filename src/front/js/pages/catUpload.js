@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useContext, useState } from "react";
 import { Context } from "../store/appContext";
 import "../../styles/catPage.css";
 
@@ -13,9 +13,9 @@ const CatUpload = () => {
 
   // Fetch cat breeds on component mount
   useEffect(() => {
-  
-      actions.getBreeds();
-    
+    if (!store.breeds || store.breeds.length === 0) {
+      actions.getBreeds(); // Use existing getBreeds action
+    }
   }, [actions, store.breeds]);
 
   const handleSubmit = async (e) => {
@@ -24,7 +24,7 @@ const CatUpload = () => {
     setSuccess(null);
 
     if (!catName || !breed || !age) {
-      setError("Please fill in all fields.");
+      setError("Please fill in all required fields.");
       return;
     }
 
@@ -36,9 +36,10 @@ const CatUpload = () => {
     };
 
     try {
-      const response = await actions.uploadCat(catData);
+      const response = await actions.uploadCat(catData); // Existing uploadCat action
       if (response.status === 201) {
         setSuccess("Cat uploaded successfully!");
+        // Clear form fields after success
         setCatName("");
         setBreed("");
         setAge("");
@@ -56,20 +57,22 @@ const CatUpload = () => {
     <div className="cat-upload-container">
       <h2>Upload Cat</h2>
       <form onSubmit={handleSubmit}>
-        {error && <p className="error">{error}</p>}
-        {success && <p className="success">{success}</p>}
+        {error && <p className="error-message">{error}</p>}
+        {success && <p className="success-message">{success}</p>}
 
-        <label>Cat Name:</label>
+        <label htmlFor="cat-name">Cat Name:</label>
         <input
+          id="cat-name"
           type="text"
           value={catName}
           onChange={(e) => setCatName(e.target.value)}
-          placeholder="Enter cat's name"
+          placeholder="Enter the cat's name"
           required
         />
 
-        <label>Breed:</label>
+        <label htmlFor="cat-breed">Breed:</label>
         <select
+          id="cat-breed"
           value={breed}
           onChange={(e) => setBreed(e.target.value)}
           required
@@ -77,14 +80,15 @@ const CatUpload = () => {
           <option value="">Select a breed</option>
           {store.breeds &&
             store.breeds.map((b) => (
-              <option key={b.id} value={b.name}>
-                {b.name}
+              <option key={b} value={b}>
+                {b}
               </option>
             ))}
         </select>
 
-        <label>Age:</label>
+        <label htmlFor="cat-age">Age:</label>
         <select
+          id="cat-age"
           value={age}
           onChange={(e) => setAge(e.target.value)}
           required
@@ -98,7 +102,6 @@ const CatUpload = () => {
           <option value="5 years">5 years</option>
         </select>
 
-        
 
         <button type="submit">Upload Cat</button>
       </form>

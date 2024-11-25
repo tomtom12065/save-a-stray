@@ -34,3 +34,19 @@
   flex: 0 0 250px; /* Same width as on Home.js */
   scroll-snap-align: start; /* Align cards to the scroll position */
 }
+
+/* profilePage.css */
+.inbox-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-top: 20px;
+}
+
+.inbox-button:hover {
+  background-color: #0056b3;
+}
+
