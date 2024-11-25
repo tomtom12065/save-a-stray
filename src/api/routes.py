@@ -93,23 +93,23 @@ def get_self_cats():
         return jsonify({"error": "Internal server error"}), 500
 
 
-@api.route("/cat/<int:cat_id>", methods=["GET"])
-def get_single_cat(cat_id):
-    cat = Cat.query.get(cat_id)
-    if not cat:
-        return jsonify({"error": "Cat not found"}), 404
-    return jsonify({"cat": cat.serialize()}), 200
+# @api.route("/cat/<int:cat_id>", methods=["GET"])
+# def get_single_cat(cat_id):
+#     cat = Cat.query.get(cat_id)
+#     if not cat:
+#         return jsonify({"error": "Cat not found"}), 404
+#     return jsonify({"cat": cat.serialize()}), 200
 
 
-@api.route("/api/user", methods=["GET"])
-@jwt_required()
-def get_user():
-    current_user_id = get_jwt_identity()
-    user = User.query.get(current_user_id)
-    if user:
-        return jsonify(user.serialize())
-    else:
-        return jsonify({"error": "User not found"}), 404
+# @api.route("/api/user", methods=["GET"])
+# @jwt_required()
+# def get_user():
+#     current_user_id = get_jwt_identity()
+#     user = User.query.get(current_user_id)
+#     if user:
+#         return jsonify(user.serialize())
+#     else:
+#         return jsonify({"error": "User not found"}), 404
 
 
 # ---------------------------------------------
@@ -156,26 +156,26 @@ def upload_profile_picture():
 
 
 # routes.py
-@api.route('/user', methods=['GET'])
-@jwt_required()
-def get_user():
-    try:
-        print("Route '/api/user' has been called.")
-        current_user_id = get_jwt_identity()
-        print(f"Current user ID from JWT: {current_user_id}")
+# @api.route('/user', methods=['GET'])
+# @jwt_required()
+# def get_user():
+#     try:
+#         print("Route '/api/user' has been called.")
+#         current_user_id = get_jwt_identity()
+#         print(f"Current user ID from JWT: {current_user_id}")
 
-        user = User.query.get(current_user_id)
-        if user:
-            print(f"User found: {user}")
-            user_data = user.serialize()
-            print(f"Serialized user data: {user_data}")
-            return jsonify(user_data), 200
-        else:
-            print("User not found.")
-            return jsonify({"error": "User not found"}), 404
-    except Exception as e:
-        print(f"Error in get_user: {str(e)}")
-        return jsonify({"error": "Internal server error"}), 500
+#         user = User.query.get(current_user_id)
+#         if user:
+#             print(f"User found: {user}")
+#             user_data = user.serialize()
+#             print(f"Serialized user data: {user_data}")
+#             return jsonify(user_data), 200
+#         else:
+#             print("User not found.")
+#             return jsonify({"error": "User not found"}), 404
+#     except Exception as e:
+#         print(f"Error in get_user: {str(e)}")
+#         return jsonify({"error": "Internal server error"}), 500
 
 
 
