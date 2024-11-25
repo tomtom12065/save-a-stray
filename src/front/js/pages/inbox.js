@@ -10,7 +10,7 @@ const Inbox = () => {
   // Fetch messages on component mount
   useEffect(() => {
     const fetchMessages = async () => {
-      await actions.getMessages();
+      await actions.getMessages(store.user.id);
     };
     fetchMessages();
   }, [actions]);
