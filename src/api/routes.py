@@ -191,14 +191,30 @@ def hash_password(password, salt):
 @api.route('/register', methods=['POST'])
 def register_user():
     data = request.get_json()
-    email, password, username = data.get("email"), data.get("password"), data.get("username")
+    email = data.get("email")
+    password = data.get("password")
+    username = data.get("username")
+    profilepic = data.get("profilepic")  # Optional profile picture
+
+    # Validate required fields
     if not all([email, password, username]):
         return jsonify({"error": "Email, password, and username are required"}), 400
     if User.query.filter_by(email=email).first():
         return jsonify({"error": "User already exists"}), 409
+
+    # Hash the password with salt
     salt = secrets.token_hex(16)
     hashed_password = hashlib.sha256((password + salt).encode()).hexdigest()
-    new_user = User(username=username, email=email, password=hashed_password, is_active=True, salt=salt)
+
+    # Create the new user
+    new_user = User(
+        username=username,
+        email=email,
+        password=hashed_password,
+        is_active=True,
+        salt=salt,
+        profilepic=profilepic  # Add profile picture if provided
+    )
     try:
         db.session.add(new_user)
         db.session.commit()
@@ -329,7 +345,6 @@ def send_message():
 
 
 
-
 # GET a single cat by ID
 @api.route('/cat/<int:cat_id>', methods=['GET'])
 def get_single_cat(cat_id):
@@ -412,3 +427,48 @@ def delete_cat(cat_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+
+
+
+@api.route("/add-cat", methods=["POST"])
+@jwt_required()  # Ensure the user is authenticated
+def add_cat():
+    data = request.get_json()
+
+    # Get the user ID from the JWT token
+    user_id = get_jwt_identity()
+
+    # Extract fields from request data
+    name = data.get("name")
+    breed = data.get("breed")
+    age = data.get("age")
+    price = data.get("price", 0.0)  # Default price to 0.0 if not provided
+    image_url = data.get("image_url")
+
+    # Validate required fields
+    if not name or not breed or not age or not image_url:
+        return jsonify({"error": "Missing required fields"}), 400
+
+    try:
+        # Create a new Cat instance
+        new_cat = Cat(
+            name=name,
+            breed=breed,
+            age=age,
+            price=price,
+            image_url=image_url,
+            user_id=user_id,  # Assign the logged-in user as the owner
+        )
+        db.session.add(new_cat)
+        db.session.commit()
+
+        return jsonify({
+            "message": "Cat added successfully",
+            "cat": new_cat.serialize()
+        }), 201
+
+    except Exception as e:
+        return jsonify({
+            "error": "Failed to add cat",
+            "details": str(e)
+        }), 500

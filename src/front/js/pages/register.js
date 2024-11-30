@@ -10,14 +10,45 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
+  const [profilepic, setProfilepic] = useState(null); // Uploaded image URL
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [invaliditems, setInvaliditems] = useState([]);
   const navigate = useNavigate();
+
+  // Handle Profile Picture Upload
+  const handleProfilePicChange = async (event) => {
+    const file = event.target.files[0];
+
+    if (!file) {
+      setError("Please select an image file.");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const uploadedImageUrl = await actions.uploadImage(file); // Call uploadImage action
+      setIsUploading(false);
+
+      if (uploadedImageUrl) {
+        setProfilepic(uploadedImageUrl); // Set the profile pic URL
+        setError(null); // Clear error if successful
+      } else {
+        setError("Failed to upload image. Please try again.");
+      }
+    } catch (err) {
+      console.error("Image upload error:", err);
+      setIsUploading(false);
+      setError("An unexpected error occurred during image upload.");
+    }
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setInvaliditems([]);
     setError(null);
+    setSuccess(null);
 
     // Username Validation
     const isUsernameValid = validateUserName(username, setInvaliditems);
@@ -37,18 +68,20 @@ const Register = () => {
     if (isUsernameValid && isEmailValid && isPasswordValid) {
       try {
         const userData = {
-          email: email,
-          password: password,
-          username: username,
+          email,
+          password,
+          username,
+          profilepic, // Include profile picture URL
         };
 
         console.log("Submitting user data:", userData);
 
         const response = await actions.registerUser(userData);
-        if (response.status === 201) {
+        if (response.success) {
+          setSuccess("Registration successful!");
           navigate("/"); // Redirect on successful registration
         } else {
-          setError(response.error || "Failed to register. Please try again.");
+          setError(response.message || "Failed to register. Please try again.");
         }
       } catch (error) {
         console.error("Error registering user", error);
@@ -62,6 +95,7 @@ const Register = () => {
       <h2>Register</h2>
       <form onSubmit={handleSubmit}>
         {error && <p className="error">{error}</p>}
+        {success && <p className="success-message">{success}</p>}
         <label>Email:</label>
         <input
           type="email"
@@ -87,7 +121,7 @@ const Register = () => {
             number, and a special character.
           </label>
         )}
-        <label>Username</label>
+        <label>Username:</label>
         <input
           type="text"
           value={username}
@@ -99,7 +133,16 @@ const Register = () => {
             Username must be between 2 and 25 characters.
           </label>
         )}
-        <button type="submit">Register</button>
+        <label>Profile Picture (optional):</label>
+        <input
+          type="file"
+          onChange={handleProfilePicChange}
+          accept="image/*"
+        />
+        {isUploading && <p>Uploading image...</p>}
+        <button type="submit" disabled={isUploading}>
+          Register
+        </button>
       </form>
     </div>
   );

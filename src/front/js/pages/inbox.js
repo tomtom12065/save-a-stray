@@ -12,27 +12,31 @@ const Inbox = () => {
     const fetchMessages = async () => {
       const recipientId = store.user?.id; // Ensure the user ID exists
       if (recipientId) {
-        await actions.getMessages(recipientId); // Pass the recipient ID
+        await actions.getMessages(recipientId); // Fetch all messages for the user
       }
     };
     fetchMessages();
   }, [actions, store.user]);
 
-  // Organize messages into conversations
+  // Organize messages into conversations with usernames
   useEffect(() => {
     if (store.messages && store.messages.length > 0) {
       const convos = store.messages.reduce((acc, message) => {
-        // Determine participant name
-        const participant =
-          message.sender === store.user.name ? message.recipient : message.sender;
+        // Determine the other participant's ID and username
+        const isSender = message.senderId === store.user.id;
+        const participantId = isSender ? message.recipientId : message.senderId;
+        const participantName = isSender ? message.recipient : message.sender;
 
         // Initialize conversation array if it doesn't exist
-        if (!acc[participant]) {
-          acc[participant] = [];
+        if (!acc[participantId]) {
+          acc[participantId] = {
+            name: participantName, // Store the username
+            messages: [],
+          };
         }
 
         // Add the message to the conversation
-        acc[participant].push(message);
+        acc[participantId].messages.push(message);
         return acc;
       }, {});
 
@@ -46,19 +50,19 @@ const Inbox = () => {
       <div className="inbox-sidebar">
         <h2>Inbox</h2>
         {Object.keys(conversations).length > 0 ? (
-          Object.keys(conversations).map((participant) => (
+          Object.keys(conversations).map((participantId) => (
             <div
-              key={participant}
+              key={participantId}
               className={`conversation-item ${
-                selectedParticipant === participant ? "active" : ""
+                selectedParticipant === participantId ? "active" : ""
               }`}
-              onClick={() => setSelectedParticipant(participant)}
+              onClick={() => setSelectedParticipant(participantId)}
             >
-              <h4>{participant}</h4>
+              <h4>{conversations[participantId].name}</h4> {/* Display username */}
               <p>
                 {
-                  conversations[participant][
-                    conversations[participant].length - 1
+                  conversations[participantId].messages[
+                    conversations[participantId].messages.length - 1
                   ].text // Display the last message's content
                 }
               </p>
@@ -73,13 +77,15 @@ const Inbox = () => {
       <div className="inbox-content">
         {selectedParticipant ? (
           <div className="conversation-details">
-            <h3>Conversation with {selectedParticipant}</h3>
+            <h3>
+              Conversation with {conversations[selectedParticipant].name}
+            </h3>
             <div className="messages-list">
-              {conversations[selectedParticipant].map((message) => (
+              {conversations[selectedParticipant].messages.map((message) => (
                 <div
                   key={message.id}
                   className={`message-item ${
-                    message.sender === store.user.name ? "sent" : "received"
+                    message.senderId === store.user.id ? "sent" : "received"
                   }`}
                 >
                   <p>{message.text}</p>

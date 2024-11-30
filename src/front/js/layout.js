@@ -13,6 +13,7 @@ import { Sendtoken } from "./pages/requestingreset";
 import Sidebar from "./component/sidebar";
 import Chatbox from "./component/chatbox";
 import { Context } from "./store/appContext";
+import { Navbar } from "./component/navbar";
 import "../styles/layout.css";
 
 const Layout = () => {
@@ -36,12 +37,14 @@ const Layout = () => {
     <div className="app-layout">
       <BrowserRouter basename={basename}>
         <div className="layout-container">
+        
           <Sidebar /> {/* Sidebar component always visible */}
 
           {/* Display Chatbox only if user is logged in */}
           {store.token && <Chatbox />}
 
           <main className="main-content">
+          <Navbar></Navbar>
             <Routes>
               <Route index element={<Home />} />
 

@@ -216,18 +216,16 @@ const getState = ({ getStore, getActions ,setStore }) => {
       registerUser: async (userData) => {
         try {
           console.log("Starting registration process in register_user.");
-  
-          console.log("Registering user - Input Data:", userData);
-          console.log("Type of userData:", typeof userData); // Should be "object"
-  
           const url = `${process.env.BACKEND_URL}/api/register`;
-          console.log("URL for registration:", url);
-  
-          // Convert user data to JSON string
-          const bodyData = JSON.stringify(userData);
-          console.log("Data to be sent in body (JSON string):", bodyData);
-          console.log("Type of bodyData:", typeof bodyData); // Should be "string"
-  
+      
+          // Include profile picture in the payload
+          const bodyData = JSON.stringify({
+            email: userData.email,
+            password: userData.password,
+            username: userData.username,
+            profilepic: userData.profilepic || null, // Optional field
+          });
+      
           const resp = await fetch(url, {
             method: "POST",
             headers: {
@@ -235,27 +233,17 @@ const getState = ({ getStore, getActions ,setStore }) => {
             },
             body: bodyData,
           });
-  
-          // Check if response was received and log status
-          console.log("Fetch response received. Status:", resp.status);
+      
           if (!resp.ok) {
-            console.log("Fetch request failed. Response status:", resp.status);
             const errorData = await resp.json();
-            console.log("Error data received from server:", errorData);
             return { success: false, message: errorData.error || "Error registering user" };
           }
-  
+      
           const data = await resp.json();
-          console.log("Data parsed from JSON response:", data);
-          console.log("Type of data:", typeof data); // Should be "object"
-  
-          // Checks that user data is present in the response
           if (data && data.user) {
-            console.log("User registered successfully:", data.user);
             setStore({ user: data.user });
             return { success: true, message: "User registered successfully", status: 201 };
           } else {
-            console.log("No user data received in response.");
             return { success: false, message: "No user data received from server" };
           }
         } catch (error) {
@@ -263,6 +251,7 @@ const getState = ({ getStore, getActions ,setStore }) => {
           return { success: false, message: error.message };
         }
       },
+      
   
       loginUser: async (userData) => {
         console.log("loginUser called with userData:", userData);
@@ -357,25 +346,26 @@ const getState = ({ getStore, getActions ,setStore }) => {
           if (!token) {
             return { success: false, message: "User is not authenticated" };
           }
-          
-          if (!cat.imageUrl) {
-            // Step 1: Upload the image to Cloudinary
-            const imageUrl = await getActions().uploadImage(cat.image_url);
-            if (!imageUrl) {
+      
+          // If no imageUrl is provided, attempt to upload the image
+          if (!cat.image_url) {
+            const uploadedUrl = await getActions().uploadImage(cat.file); // Pass the file directly for upload
+            if (!uploadedUrl) {
               return { success: false, message: "Image upload failed. Please try again." };
             }
+            cat.image_url = uploadedUrl; // Assign the uploaded image URL to the cat object
           }
-  
-          // Step 2: Prepare the cat data with the uploaded image URL
+      
+          // Prepare the cat data for the API request
           const data = JSON.stringify({
             name: cat.name,
             breed: cat.breed,
             age: cat.age,
             price: cat.price,
-            image_url: cat.imageUrl, // Include the image URL from Cloudinary
+            image_url: cat.image_url,
           });
-  
-          // Step 3: Make the API request to add the cat data
+      
+          // Make the API request to add the cat data
           const response = await fetch(`${process.env.BACKEND_URL}/api/add-cat`, {
             method: "POST",
             headers: {
@@ -384,9 +374,9 @@ const getState = ({ getStore, getActions ,setStore }) => {
             },
             body: data,
           });
-  
+      
           const responseData = await response.json();
-  
+      
           if (response.status === 201) {
             return {
               success: true,
@@ -407,6 +397,7 @@ const getState = ({ getStore, getActions ,setStore }) => {
           };
         }
       },
+      
   
       getCats: async () => {
         try {

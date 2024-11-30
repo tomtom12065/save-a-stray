@@ -7,9 +7,11 @@ const CatUpload = () => {
   const [catName, setCatName] = useState("");
   const [breed, setBreed] = useState("");
   const [age, setAge] = useState("");
-  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
 
   // Fetch cat breeds on component mount
   useEffect(() => {
@@ -18,12 +20,39 @@ const CatUpload = () => {
     }
   }, [actions, store.breeds]);
 
+  // Handle Image Upload
+  const handleImageChange = async (event) => {
+    const file = event.target.files[0];
+
+    if (!file) {
+      setError("Please select an image file.");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const uploadedImageUrl = await actions.uploadImage(file);
+      setIsUploading(false);
+
+      if (uploadedImageUrl) {
+        setImageUrl(uploadedImageUrl);
+      } else {
+        setError("Failed to upload image. Please try again.");
+      }
+    } catch (err) {
+      console.error("Image upload error:", err);
+      setIsUploading(false);
+      setError("An unexpected error occurred during image upload.");
+    }
+  };
+
+  // Handle Form Submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
 
-    if (!catName || !breed || !age) {
+    if (!catName || !breed || !age || !price || !imageUrl) {
       setError("Please fill in all required fields.");
       return;
     }
@@ -32,18 +61,20 @@ const CatUpload = () => {
       name: catName,
       breed: breed,
       age: age,
-      description: description,
+      price: parseFloat(price), // Convert price to a number
+      image_url: imageUrl,
     };
 
     try {
-      const response = await actions.uploadCat(catData); // Existing uploadCat action
-      if (response.status === 201) {
+      const response = await actions.postCatData2(catData); // Existing uploadCat action
+      if (response && response.status === 201) {
         setSuccess("Cat uploaded successfully!");
         // Clear form fields after success
         setCatName("");
         setBreed("");
         setAge("");
-        setDescription("");
+        setPrice("");
+        setImageUrl("");
       } else {
         setError(response.error || "Failed to upload the cat. Please try again.");
       }
@@ -86,24 +117,40 @@ const CatUpload = () => {
             ))}
         </select>
 
-        <label htmlFor="cat-age">Age:</label>
-        <select
+        <label htmlFor="cat-age">Age (years):</label>
+        <input
           id="cat-age"
+          type="number"
           value={age}
           onChange={(e) => setAge(e.target.value)}
+          placeholder="Enter age (1-20+)"
+          min="1"
+          max="20"
           required
-        >
-          <option value="">Select age</option>
-          <option value="<1 year">&lt;1 year</option>
-          <option value="1 year">1 year</option>
-          <option value="2 years">2 years</option>
-          <option value="3 years">3 years</option>
-          <option value="4 years">4 years</option>
-          <option value="5 years">5 years</option>
-        </select>
+        />
 
+        <label htmlFor="cat-price">Price (USD):</label>
+        <input
+          id="cat-price"
+          type="number"
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+          placeholder="Enter price"
+          step="0.01"
+          required
+        />
 
-        <button type="submit">Upload Cat</button>
+        <label>Upload Image:</label>
+        <input
+          type="file"
+          onChange={handleImageChange}
+          accept="image/*"
+        />
+        {isUploading && <p>Uploading image...</p>}
+
+        <button type="submit" disabled={isUploading}>
+          Upload Cat
+        </button>
       </form>
     </div>
   );

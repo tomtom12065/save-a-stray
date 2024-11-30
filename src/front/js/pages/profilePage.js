@@ -49,9 +49,28 @@ const ProfilePage = () => {
     };
 
     fetchUserData();
+    actions.getSelfCats();
   }, [actions]);
 
   // Handle profile updates
+ 
+ 
+  const handleDeleteCat = async (catId) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this cat?");
+    if (confirmDelete) {
+      const response = await actions.deleteCat(catId);
+      if (response.success) {
+        alert("Cat deleted successfully.");
+        await actions.getCats();
+      } else {
+        alert(`Failed to delete cat: ${response.message}`);
+      }
+    }
+  };
+
+ 
+ 
+ 
   const handleUpdateProfile = async (type) => {
     const updatedInfo = type === "username" ? { username } : { email };
     const success = await actions.updateUser(updatedInfo);

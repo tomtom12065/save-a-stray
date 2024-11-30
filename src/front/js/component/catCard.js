@@ -1,9 +1,39 @@
 // CatCard.js
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useContext } from "react";
+import { Context } from "../store/appContext";
 
-const CatCard = ({ cat, onDelete }) => {
+const CatCard = ({ cat}) => {
   const navigate = useNavigate();
+  const {  actions } = useContext(Context);
+
+  const handleDeleteCat = async (catId) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this cat?");
+    if (confirmDelete) {
+      const response = await actions.deleteCat(catId);
+      if (response.success) {
+        alert("Cat deleted successfully.");
+        alert("Cat deleted successfully.");
+        await actions.getSelfCats();
+      } else {
+        alert(`Failed to delete cat: ${response.message}`);
+      }
+    }
+  };
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   return (
     <div className="col-12 col-md-10 col-lg-10 mb-4">
@@ -28,7 +58,7 @@ const CatCard = ({ cat, onDelete }) => {
         </button>
         <button
           className="btn btn-danger mt-2"
-          onClick={() => onDelete(cat.id)}
+          onClick={() => handleDeleteCat(cat.id)}
         >
           Delete
         </button>
