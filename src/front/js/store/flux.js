@@ -137,9 +137,6 @@ const getState = ({ getStore, getActions ,setStore }) => {
 
 
 
-
-
-
     sendMessage: async (senderId, recipientId, text) => {
       try {
         const payload = {
@@ -158,6 +155,8 @@ const getState = ({ getStore, getActions ,setStore }) => {
           body: JSON.stringify(payload),
         });
     
+        console.log("Response status:", response.status);
+    
         if (!response.ok) {
           const errorData = await response.json();
           console.error("Backend Error:", errorData);
@@ -165,12 +164,14 @@ const getState = ({ getStore, getActions ,setStore }) => {
         }
     
         const result = await response.json();
+        console.log("Message sent successfully:", result);
         return result;
       } catch (error) {
         console.error("Error sending message:", error);
         return null;
       }
     },
+    
   
 
 

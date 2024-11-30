@@ -6,6 +6,7 @@ const Inbox = () => {
   const { store, actions } = useContext(Context);
   const [conversations, setConversations] = useState({});
   const [selectedParticipant, setSelectedParticipant] = useState(null);
+  const [messageText, setMessageText] = useState(""); // New state for message text
 
   // Fetch messages on component mount
   useEffect(() => {
@@ -23,8 +24,8 @@ const Inbox = () => {
     if (store.messages && store.messages.length > 0) {
       const convos = store.messages.reduce((acc, message) => {
         // Determine the other participant's ID and username
-        const isSender = message.senderId === store.user.id;
-        const participantId = isSender ? message.recipientId : message.senderId;
+        const isSender = message.sender_id === store.user.id;
+        const participantId = isSender ? message.recipient_id : message.sender_id;
         const participantName = isSender ? message.recipient : message.sender;
 
         // Initialize conversation array if it doesn't exist
@@ -44,28 +45,43 @@ const Inbox = () => {
     }
   }, [store.messages, store.user]);
 
-  const handleSendMessage = async (text) => {
-    if (!selectedParticipant || !text.trim()) return;
+  // Handle sending a message
+  const handleSendMessage = async () => {
+    if (!selectedParticipant || !messageText.trim()) {
+      console.error("No recipient or message text is empty.");
+      return;
+    }
 
     const senderId = store.user.id;
     const recipientId = selectedParticipant;
 
-    const result = await actions.sendMessage(senderId, recipientId, text);
-    if (result) {
+    console.log("Sending message to:", recipientId);
+
+    const result = await actions.sendMessage(senderId, recipientId, messageText);
+    console.log("sendMessage result:", result);
+
+    if (result && result.data) {
       const newMessage = {
-        id: result.data.id,
-        senderId: senderId,
-        recipientId: recipientId,
-        text: text,
-        timestamp: new Date().toISOString(),
+        id: result.data.id, // Ensure this matches backend response
+        sender_id: senderId,
+        recipient_id: recipientId,
+        text: messageText,
+        timestamp: result.data.timestamp, // Ensure timestamp exists in backend response
       };
 
       // Update the local state with the new message
       setConversations((prevConversations) => {
         const updatedConversations = { ...prevConversations };
+        if (!updatedConversations[recipientId]) {
+          updatedConversations[recipientId] = { name: "Unknown", messages: [] };
+        }
         updatedConversations[recipientId].messages.push(newMessage);
         return updatedConversations;
       });
+
+      setMessageText(""); // Clear input field after sending
+    } else {
+      console.error("Failed to send message.");
     }
   };
 
@@ -81,9 +97,11 @@ const Inbox = () => {
               className={`conversation-item ${
                 selectedParticipant === participantId ? "active" : ""
               }`}
-              onClick={() => setSelectedParticipant(participantId)}
+              onClick={() => {
+                console.log("Setting selected participant:", participantId);
+                setSelectedParticipant(participantId);
+              }}
             >
-             
               <h4>{conversations[participantId].name}</h4>
               <p>
                 {
@@ -104,14 +122,14 @@ const Inbox = () => {
         {selectedParticipant ? (
           <div className="conversation-details">
             <h3>
-              Conversation with {conversations[selectedParticipant].name}
+              Conversation with {conversations[selectedParticipant]?.name || "Unknown"}
             </h3>
             <div className="messages-list">
-              {conversations[selectedParticipant].messages.map((message) => (
+              {conversations[selectedParticipant]?.messages.map((message) => (
                 <div
                   key={message.id}
                   className={`message-item ${
-                    message.senderId === store.user.id ? "sent" : "received"
+                    message.sender_id === store.user.id ? "sent" : "received"
                   }`}
                 >
                   <p>{message.text}</p>
@@ -124,11 +142,14 @@ const Inbox = () => {
             <div className="message-input">
               <input
                 type="text"
+                value={messageText}
+                onChange={(e) => setMessageText(e.target.value)}
                 placeholder="Type your message..."
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") handleSendMessage(e.target.value);
+                  if (e.key === "Enter") handleSendMessage();
                 }}
               />
+              <button onClick={handleSendMessage}>Send</button>
             </div>
           </div>
         ) : (

@@ -319,10 +319,10 @@ def mark_as_read():
     }), 200
 
 
-
 @api.route("/send_message", methods=["POST"])
 def send_message():
     data = request.get_json()
+    print("Received data:", data)  # Log received data
 
     sender_id = data.get("sender_id")
     recipient_id = data.get("recipient_id")
@@ -331,7 +331,6 @@ def send_message():
     if not sender_id or not recipient_id or not text:
         return jsonify({"error": "Missing required fields"}), 400
 
-    # Create a new message with read=False
     new_message = ChatMessage(sender_id=sender_id, recipient_id=recipient_id, text=text, read=False)
     db.session.add(new_message)
     db.session.commit()
@@ -340,6 +339,7 @@ def send_message():
         "message": "Message sent successfully",
         "data": new_message.serialize()
     }), 201
+
 
     
 
