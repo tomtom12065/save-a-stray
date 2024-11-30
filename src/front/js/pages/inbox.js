@@ -44,6 +44,31 @@ const Inbox = () => {
     }
   }, [store.messages, store.user]);
 
+  const handleSendMessage = async (text) => {
+    if (!selectedParticipant || !text.trim()) return;
+
+    const senderId = store.user.id;
+    const recipientId = selectedParticipant;
+
+    const result = await actions.sendMessage(senderId, recipientId, text);
+    if (result) {
+      const newMessage = {
+        id: result.data.id,
+        senderId: senderId,
+        recipientId: recipientId,
+        text: text,
+        timestamp: new Date().toISOString(),
+      };
+
+      // Update the local state with the new message
+      setConversations((prevConversations) => {
+        const updatedConversations = { ...prevConversations };
+        updatedConversations[recipientId].messages.push(newMessage);
+        return updatedConversations;
+      });
+    }
+  };
+
   return (
     <div className="inbox-container">
       {/* Sidebar for listing conversations */}
@@ -58,12 +83,13 @@ const Inbox = () => {
               }`}
               onClick={() => setSelectedParticipant(participantId)}
             >
-              <h4>{conversations[participantId].name}</h4> {/* Display username */}
+             
+              <h4>{conversations[participantId].name}</h4>
               <p>
                 {
                   conversations[participantId].messages[
                     conversations[participantId].messages.length - 1
-                  ].text // Display the last message's content
+                  ].text
                 }
               </p>
             </div>
@@ -94,6 +120,15 @@ const Inbox = () => {
                   </span>
                 </div>
               ))}
+            </div>
+            <div className="message-input">
+              <input
+                type="text"
+                placeholder="Type your message..."
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSendMessage(e.target.value);
+                }}
+              />
             </div>
           </div>
         ) : (

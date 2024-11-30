@@ -83,7 +83,6 @@ class Cat(db.Model):
                 "username": self.owner.username
             } if self.owner else None  # Include owner details if available
         }
-
 class ChatMessage(db.Model):
     __tablename__ = 'chat_messages'  # Explicit table name
 
@@ -93,7 +92,8 @@ class ChatMessage(db.Model):
     # Foreign keys for sender and recipient, linked to User model
     sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     recipient_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    read = db.Column(db.Boolean, default=False)  # New field
+    read = db.Column(db.Boolean, default=False)  # Indicates if the message has been read
+
     # Message content and timestamp
     text = db.Column(db.String, nullable=False)
     timestamp = db.Column(DateTime(timezone=True), default=datetime.utcnow)
@@ -112,7 +112,7 @@ class ChatMessage(db.Model):
         lazy='select'
     )
 
-    def __init__(self, sender_id, recipient_id, text,read):
+    def __init__(self, sender_id, recipient_id, text, read):
         self.sender_id = sender_id
         self.recipient_id = recipient_id
         self.text = text
@@ -122,11 +122,14 @@ class ChatMessage(db.Model):
         return f'<ChatMessage from {self.sender_id} to {self.recipient_id} at {self.timestamp}>'
 
     def serialize(self):
-        """Serialize the message to a dictionary format"""
+        """Serialize the message to a dictionary format, including sender and recipient usernames."""
         return {
             'id': self.id,
             'sender_id': self.sender_id,
             'recipient_id': self.recipient_id,
+            'sender': self.sender.username if self.sender else None,  # Include sender's username
+            'recipient': self.recipient.username if self.recipient else None,  # Include recipient's username
             'text': self.text,
-            'timestamp': self.timestamp.isoformat()  # Convert to ISO format string
+            'timestamp': self.timestamp.isoformat(),  # Convert to ISO format string
+            'read': self.read  # Include the read status
         }

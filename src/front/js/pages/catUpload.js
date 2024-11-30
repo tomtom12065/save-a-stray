@@ -1,15 +1,16 @@
 import React, { useEffect, useContext, useState } from "react";
 import { Context } from "../store/appContext";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import "../../styles/catPage.css";
 
 const CatUpload = () => {
   const { actions, store } = useContext(Context);
+  const navigate = useNavigate(); // Initialize navigate hook
   const [catName, setCatName] = useState("");
   const [breed, setBreed] = useState("");
   const [age, setAge] = useState("");
   const [price, setPrice] = useState("");
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
 
@@ -50,7 +51,6 @@ const CatUpload = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-    setSuccess(null);
 
     if (!catName || !breed || !age || !price || !imageUrl) {
       setError("Please fill in all required fields.");
@@ -66,15 +66,9 @@ const CatUpload = () => {
     };
 
     try {
-      const response = await actions.postCatData2(catData); // Existing uploadCat action
-      if (response && response.status === 201) {
-        setSuccess("Cat uploaded successfully!");
-        // Clear form fields after success
-        setCatName("");
-        setBreed("");
-        setAge("");
-        setPrice("");
-        setImageUrl("");
+      const response = await actions.postCatData2(catData);
+      if (response && response.success) {
+        navigate("/"); // Navigate home immediately after successful upload
       } else {
         setError(response.error || "Failed to upload the cat. Please try again.");
       }
@@ -89,7 +83,6 @@ const CatUpload = () => {
       <h2>Upload Cat</h2>
       <form onSubmit={handleSubmit}>
         {error && <p className="error-message">{error}</p>}
-        {success && <p className="success-message">{success}</p>}
 
         <label htmlFor="cat-name">Cat Name:</label>
         <input
@@ -141,11 +134,7 @@ const CatUpload = () => {
         />
 
         <label>Upload Image:</label>
-        <input
-          type="file"
-          onChange={handleImageChange}
-          accept="image/*"
-        />
+        <input type="file" onChange={handleImageChange} accept="image/*" />
         {isUploading && <p>Uploading image...</p>}
 
         <button type="submit" disabled={isUploading}>
