@@ -130,71 +130,140 @@ const getState = ({ getStore, getActions ,setStore }) => {
 
 
 
-      getMessages: async (recipientId) => {
-        try {
-            const response = await fetch(
-                `${process.env.BACKEND_URL}/api/get_message?recipient_id=${recipientId}`,
-                {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${localStorage.getItem("token")}`, // Optional if authentication is required
-                    },
-                }
-            );
-    
-            if (!response.ok) {
-                throw new Error("Failed to fetch messages");
-            }
-    
-            const messages = await response.json();
-            setStore({ messages }); // Update store with fetched messages
-            return messages;
-        } catch (error) {
-            console.error("Error fetching messages:", error);
-            return null; // Return null on failure
-        }
-    },
-
-    
-
-
-
-
-    sendMessage: async (senderId, recipientId, text) => {
+    getMessages: async () => {
       try {
-        const payload = {
-          sender_id: senderId,
-          recipient_id: recipientId,
-          text: text,
-        };
-        console.log("Sending payload:", payload);
-    
-        const response = await fetch(`${process.env.BACKEND_URL}/api/send_message`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify(payload),
-        });
-    
-        console.log("Response status:", response.status);
-    
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error("Backend Error:", errorData);
-          throw new Error("Failed to send message");
-        }
-    
-        const result = await response.json();
-        console.log("Message sent successfully:", result);
-        return result;
+          const response = await fetch(`${process.env.BACKEND_URL}/api/get_messages`, {
+              method: "GET",
+              headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+          });
+  
+          if (!response.ok) {
+              throw new Error("Failed to fetch messages");
+          }
+  
+          const messages = await response.json();
+          setStore({ messages }); // Save messages to the store
+          return messages;
       } catch (error) {
-        console.error("Error sending message:", error);
-        return null;
+          console.error("Error fetching messages:", error);
+          return null; // Return null on failure
       }
-    },
+  },
+  
+  
+
+
+
+
+
+//     getAllMessages: async () => {
+//       const token = localStorage.getItem("token"); // Retrieve JWT token
+//       try {
+//           const response = await fetch("/get_all_messages", {
+//               method: "GET",
+//               headers: { Authorization: `Bearer ${token}` },
+//           });
+//           const data = await response.json();
+//           if (response.ok) {
+//               setStore({ messages: data }); // Save messages in the global store
+//           } else {
+//               console.error("Error fetching all messages:", data.error);
+//           }
+//       } catch (error) {
+//           console.error("Fetch all messages failed:", error);
+//       }
+//   },
+
+  
+getConversationWithOwner: async (ownerId) => {
+  const token = localStorage.getItem("token"); // Retrieve JWT token
+  try {
+      const response = await fetch(`${process.env.BACKEND_URL}/api/get_single_message?recipient_id=${ownerId}`, {
+          method: "GET",
+          headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+          },
+      });
+
+      if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Error fetching conversation:", errorData.error);
+          throw new Error("Failed to fetch conversation");
+      }
+
+      const data = await response.json();
+      setStore({ messages: data }); // Save the specific conversation in the global store
+      return data; // Return the conversation for local use if needed
+  } catch (error) {
+      console.error("Fetch conversation failed:", error);
+      return null; // Return null on failure
+  }
+},
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+sendMessage: async (recipientId, text) => {
+  try {
+    const payload = {
+      recipient_id: recipientId,
+      text: text,
+    };
+    console.log("Sending payload:", payload);
+
+    const response = await fetch(`${process.env.BACKEND_URL}/api/send_message`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    console.log("Response status:", response.status);
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Backend Error:", errorData);
+      throw new Error("Failed to send message");
+    }
+
+    const result = await response.json();
+    console.log("Message sent successfully:", result);
+    return result;
+  } catch (error) {
+    console.error("Error sending message:", error);
+    return null;
+  }
+},
+
     
   
 

@@ -20,15 +20,19 @@ const Register = () => {
   // Handle Profile Picture Upload
   const handleProfilePicChange = async (event) => {
     const file = event.target.files[0];
+    console.log("Selected file for profile picture:", file);
 
     if (!file) {
       setError("Please select an image file.");
+      console.log("Error: No file selected.");
       return;
     }
 
     setIsUploading(true);
     try {
+      console.log("Uploading image...");
       const uploadedImageUrl = await actions.uploadImage(file); // Call uploadImage action
+      console.log("Image uploaded successfully:", uploadedImageUrl);
       setIsUploading(false);
 
       if (uploadedImageUrl) {
@@ -36,6 +40,7 @@ const Register = () => {
         setError(null); // Clear error if successful
       } else {
         setError("Failed to upload image. Please try again.");
+        console.log("Error: Failed to upload image.");
       }
     } catch (err) {
       console.error("Image upload error:", err);
@@ -50,17 +55,27 @@ const Register = () => {
     setError(null);
     setSuccess(null);
 
+    console.log("Form submission started with values:", {
+      email,
+      password,
+      username,
+      profilepic,
+    });
+
     // Username Validation
     const isUsernameValid = validateUserName(username, setInvaliditems);
+    console.log("Username validation result:", isUsernameValid);
 
     // Email Validation
     const isEmailValid = validateEmail(email);
+    console.log("Email validation result:", isEmailValid);
     if (!isEmailValid) {
       setInvaliditems((prev) => [...prev, "email"]);
     }
 
     // Password Validation
     const isPasswordValid = validatePassword(password);
+    console.log("Password validation result:", isPasswordValid);
     if (!isPasswordValid) {
       setInvaliditems((prev) => [...prev, "password"]);
     }
@@ -77,16 +92,22 @@ const Register = () => {
         console.log("Submitting user data:", userData);
 
         const response = await actions.registerUser(userData);
+        console.log("Registration response:", response);
+
         if (response.success) {
           setSuccess("Registration successful!");
+          console.log("Registration successful. Redirecting...");
           navigate("/"); // Redirect on successful registration
         } else {
           setError(response.message || "Failed to register. Please try again.");
+          console.log("Error: Registration failed with message:", response.message);
         }
       } catch (error) {
-        console.error("Error registering user", error);
+        console.error("Error registering user:", error);
         setError("An unexpected error occurred.");
       }
+    } else {
+      console.log("Validation failed. Invalid items:", invaliditems);
     }
   };
 

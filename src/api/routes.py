@@ -251,21 +251,70 @@ def login():
     }), 200
 
 
-@api.route("/get_message", methods=["GET"])
-def get_message():
-  
+
+@api.route("/get_messages", methods=["GET"])
+@jwt_required()
+def get_messages():
+    user_id = get_jwt_identity()  # Get the logged-in user's ID
+
+    try:
+        # Fetch all messages where the user is either the sender or recipient
+        messages = ChatMessage.query.filter(
+            (ChatMessage.sender_id == user_id) | (ChatMessage.recipient_id == user_id)
+        ).order_by(ChatMessage.timestamp.desc()).all()
+
+        # Serialize and return the messages
+        return jsonify([message.serialize() for message in messages]), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
+# @api.route("/get_all_messages", methods=["GET"])
+# @jwt_required()
+# def get_all_messages():
+#     recipient_id = get_jwt_identity()  # Get the logged-in user's ID
+#     messages = ChatMessage.query.filter_by(recipient_id=recipient_id).order_by(ChatMessage.timestamp.desc()).all()
+#     return jsonify([message.serialize() for message in messages]), 200
+
+
+@api.route("/get_single_message", methods=["GET"])
+@jwt_required()
+def get_single_message():
     recipient_id = request.args.get("recipient_id")
+    sender_id = get_jwt_identity()  # Get the logged-in user's ID
 
     if not recipient_id:
         return jsonify({"error": "Missing required parameters"}), 400
 
-    # Fetch messages between the two users
-    messages = ChatMessage.query.filter(
-        ((ChatMessage.recipient_id == recipient_id)) |
-        ((ChatMessage.sender_id == recipient_id) )
-    ).order_by(ChatMessage.timestamp.asc()).all()
+    try:
+        messages = ChatMessage.query.filter(
+            ((ChatMessage.sender_id == sender_id) & (ChatMessage.recipient_id == recipient_id)) |
+            ((ChatMessage.sender_id == recipient_id) & (ChatMessage.recipient_id == sender_id))
+        ).order_by(ChatMessage.timestamp.asc()).all()
 
-    return jsonify([message.serialize() for message in messages]), 200
+        return jsonify([message.serialize() for message in messages]), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 @api.route('/update_user', methods=['PUT'])
@@ -348,27 +397,34 @@ def mark_as_read():
         "updated_count": updated_count
     }), 200
 
-
 @api.route("/send_message", methods=["POST"])
+@jwt_required()  # Ensure the user is authenticated
 def send_message():
     data = request.get_json()
-    print("Received data:", data)  # Log received data
+    print("Received data:", data)  # Log received data for debugging
 
-    sender_id = data.get("sender_id")
+    # Get sender_id from the JWT token
+    sender_id = get_jwt_identity()
     recipient_id = data.get("recipient_id")
     text = data.get("text")
 
-    if not sender_id or not recipient_id or not text:
-        return jsonify({"error": "Missing required fields"}), 400
+    # Validate inputs
+    if not recipient_id or not text:
+        return jsonify({"error": "Missing required fields: recipient_id and text are required"}), 400
 
-    new_message = ChatMessage(sender_id=sender_id, recipient_id=recipient_id, text=text, read=False)
-    db.session.add(new_message)
-    db.session.commit()
+    try:
+        # Create and save the new message
+        new_message = ChatMessage(sender_id=sender_id, recipient_id=recipient_id, text=text, read=False)
+        db.session.add(new_message)
+        db.session.commit()
 
-    return jsonify({
-        "message": "Message sent successfully",
-        "data": new_message.serialize()
-    }), 201
+        return jsonify({
+            "message": "Message sent successfully",
+            "data": new_message.serialize()
+        }), 201
+    except Exception as e:
+        db.session.rollback()  # Rollback in case of an error
+        return jsonify({"error": str(e)}), 500
 
 
     

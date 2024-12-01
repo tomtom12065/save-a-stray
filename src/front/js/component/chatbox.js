@@ -8,12 +8,12 @@ const Chatbox = ({ recipientId }) => {
   const [messageText, setMessageText] = useState("");
   const [isCollapsed, setIsCollapsed] = useState(true); // Control visibility of the chatbox
 
-  // Fetch messages when the chatbox is expanded and recipientId changes
+  // Fetch messages for the recipient when the chatbox is expanded
   useEffect(() => {
     const fetchMessages = async () => {
       if (!isCollapsed && recipientId) {
         try {
-          const fetchedMessages = await actions.getMessages(recipientId);
+          const fetchedMessages = await actions.getConversationWithOwner(recipientId);
           setMessages(fetchedMessages || []);
           await actions.markMessagesAsRead(store.user.id, recipientId); // Mark messages as read
         } catch (error) {
@@ -29,17 +29,19 @@ const Chatbox = ({ recipientId }) => {
     if (!messageText.trim()) return;
 
     try {
-      await actions.sendMessage(store.user.id, recipientId, messageText);
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
-          senderId: store.user.id,
-          recipientId,
-          text: messageText,
-          timestamp: new Date().toISOString(),
-          read: false, // New messages are unread for the recipient
-        },
-      ]);
+      const result = await actions.sendMessage(recipientId, messageText);
+      if (result) {
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          {
+            sender_id: store.user.id,
+            recipient_id: recipientId,
+            text: messageText,
+            timestamp: new Date().toISOString(),
+            read: false, // New messages are unread for the recipient
+          },
+        ]);
+      }
       setMessageText("");
     } catch (error) {
       console.error("Error sending message:", error);
@@ -59,7 +61,7 @@ const Chatbox = ({ recipientId }) => {
               messages.map((msg, idx) => (
                 <div
                   key={idx}
-                  className={msg.senderId === store.user.id ? "sent" : "received"}
+                  className={msg.sender_id === store.user.id ? "sent" : "received"}
                 >
                   {msg.text}
                 </div>

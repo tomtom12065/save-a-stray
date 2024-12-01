@@ -1,5 +1,5 @@
 import React, { useEffect, useContext, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom"; // Import useNavigate
+import { useParams, useNavigate } from "react-router-dom";
 import { Context } from "../store/appContext";
 import "../../styles/catTemplate.css";
 
@@ -7,7 +7,7 @@ const CatTemplate = () => {
   const { id } = useParams(); // Get the cat ID from the URL
   const { store, actions } = useContext(Context);
   const [loading, setLoading] = useState(true); // Handle loading state
-  const navigate = useNavigate(); // For navigation
+  const navigate = useNavigate(); // Hook for navigation
 
   useEffect(() => {
     const fetchCat = async () => {
@@ -30,19 +30,9 @@ const CatTemplate = () => {
     return <p>Cat not found.</p>;
   }
 
-  // Function to handle creating a conversation and redirecting to Inbox
-  const handleChatClick = async () => {
-    try {
-      // Call backend to create conversation
-      await actions.createConversation(cat.user_id);
-
-      // Navigate to Inbox with owner info
-      navigate("/inbox", {
-        state: { ownerId: cat.user_id, ownerName: cat.owner?.username || "Owner" },
-      });
-    } catch (err) {
-      console.error("Failed to create conversation:", err);
-    }
+  // Function to handle redirection to the inbox
+  const handleMessageOwner = () => {
+    navigate("/inbox", { state: { recipientId: cat.user_id } }); // Navigate to Inbox with recipientId
   };
 
   return (
@@ -58,7 +48,7 @@ const CatTemplate = () => {
       <p>
         <strong>Price:</strong> ${cat.price.toFixed(2)}
       </p>
-      <button onClick={handleChatClick}>Message Owner</button>
+      <button onClick={handleMessageOwner}>Message Owner</button>
     </div>
   );
 };
