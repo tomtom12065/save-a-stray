@@ -3,7 +3,6 @@ import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Context } from "../store/appContext";
 import "../../styles/saveAStray.css";
-import Sidebar from "../component/sidebar";
 import CatCard from "../component/catCard";  // Import the CatCard component
 
 export const Home = () => {

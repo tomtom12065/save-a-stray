@@ -71,7 +71,31 @@ const getState = ({ getStore, getActions ,setStore }) => {
         }
       },
       
-
+      createConversation: async (recipientId) => {
+        try {
+          const response = await fetch(`${process.env.BACKEND_URL}/api/create_conversation`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify({ recipient_id: recipientId }),
+          });
+      
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || "Failed to create conversation");
+          }
+      
+          const result = await response.json();
+          console.log("Conversation created:", result.message);
+          return true; // Indicate success
+        } catch (error) {
+          console.error("Error creating conversation:", error);
+          return false; // Indicate failure
+        }
+      },
+      
 
       updateUser: async (userInfo) => {
         try {

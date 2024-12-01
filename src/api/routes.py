@@ -292,6 +292,36 @@ def update_user():
 
     return jsonify({"message": "User updated successfully", "user": user.serialize()}), 200
 
+@api.route('/create_conversation', methods=['POST'])
+@jwt_required()
+def create_conversation():
+    data = request.get_json()
+    user_id = get_jwt_identity()  # Logged-in user's ID
+    recipient_id = data.get('recipient_id')
+
+    if not recipient_id:
+        return jsonify({"error": "Recipient ID is required"}), 400
+
+    # Check if the conversation already exists
+    existing_conversation = ChatMessage.query.filter_by(
+        sender_id=user_id,
+        recipient_id=recipient_id
+    ).first()
+
+    if not existing_conversation:
+        # Create a placeholder message to establish the conversation
+        new_message = ChatMessage(
+            sender_id=user_id,
+            recipient_id=recipient_id,
+            text="",
+            read=False
+        )
+        db.session.add(new_message)
+        db.session.commit()
+
+    return jsonify({"message": "Conversation created successfully"}), 201
+
+
 
 
 

@@ -16,6 +16,25 @@
     margin-bottom: 20px;
     font-size: 1.5rem;
   }
+
+  .sent {
+    align-self: flex-start;
+    background-color: #e6ffe6;
+    margin: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    max-width: 60%;
+  }
+  
+  .received {
+    align-self: flex-end;
+    background-color: #d9edf7;
+    margin: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    max-width: 60%;
+  }
+  
   
   .conversation-item {
     padding: 10px 15px;

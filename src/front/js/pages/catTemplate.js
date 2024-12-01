@@ -1,14 +1,13 @@
 import React, { useEffect, useContext, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom"; // Import useNavigate
 import { Context } from "../store/appContext";
-import Chatbox from "../component/chatbox"; // Correctly import Chatbox
 import "../../styles/catTemplate.css";
 
 const CatTemplate = () => {
   const { id } = useParams(); // Get the cat ID from the URL
   const { store, actions } = useContext(Context);
   const [loading, setLoading] = useState(true); // Handle loading state
-  const [recipientId, setRecipientId] = useState(null); // Store the recipient's ID for Chatbox
+  const navigate = useNavigate(); // For navigation
 
   useEffect(() => {
     const fetchCat = async () => {
@@ -31,24 +30,35 @@ const CatTemplate = () => {
     return <p>Cat not found.</p>;
   }
 
-  // Function to handle showing the chatbox
-  const handleChatClick = () => {
-    setRecipientId(cat.user_id); // Set the recipient ID (cat owner)
+  // Function to handle creating a conversation and redirecting to Inbox
+  const handleChatClick = async () => {
+    try {
+      // Call backend to create conversation
+      await actions.createConversation(cat.user_id);
+
+      // Navigate to Inbox with owner info
+      navigate("/inbox", {
+        state: { ownerId: cat.user_id, ownerName: cat.owner?.username || "Owner" },
+      });
+    } catch (err) {
+      console.error("Failed to create conversation:", err);
+    }
   };
 
   return (
     <div className="cat-template">
       <h1>{cat.name}</h1>
       <img src={cat.image_url} alt={cat.name} />
-      <p><strong>Breed:</strong> {cat.breed}</p>
-      <p><strong>Age:</strong> {cat.age} years</p>
-      <p><strong>Price:</strong> ${cat.price.toFixed(2)}</p>
+      <p>
+        <strong>Breed:</strong> {cat.breed}
+      </p>
+      <p>
+        <strong>Age:</strong> {cat.age} years
+      </p>
+      <p>
+        <strong>Price:</strong> ${cat.price.toFixed(2)}
+      </p>
       <button onClick={handleChatClick}>Message Owner</button>
-      {recipientId && (
-        <div className="chatbox-container">
-          <Chatbox recipientId={recipientId} /> {/* Pass the owner's ID */}
-        </div>
-      )}
     </div>
   );
 };

@@ -49,12 +49,38 @@ const ProfilePage = () => {
     };
 
     fetchUserData();
-    actions.getSelfCats();
   }, [actions]);
 
   // Handle profile updates
- 
- 
+  const handleUpdateProfile = async (type) => {
+    setError(null);
+    setUpdateMessage("");
+
+    // Prepare updated data with both fields
+    const updatedInfo = {
+      username: type === "username" ? username : store.user.username, // Use updated or current value
+      email: type === "email" ? email : store.user.email, // Use updated or current value
+    };
+
+    try {
+      const response = await actions.updateUser(updatedInfo);
+
+      if (response) {
+        setUpdateMessage(`${type === "username" ? "Username" : "Email"} updated successfully!`);
+        if (type === "username") setShowUsernameInput(false);
+        if (type === "email") setShowEmailInput(false);
+
+        // Ensure store updates with new user data
+        await actions.getUserProfile();
+      } else {
+        setUpdateMessage(`Failed to update ${type}. Please try again.`);
+      }
+    } catch (err) {
+      console.error("Error updating profile:", err);
+      setError("An error occurred while updating your profile. Please try again.");
+    }
+  };
+
   const handleDeleteCat = async (catId) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this cat?");
     if (confirmDelete) {
@@ -65,22 +91,6 @@ const ProfilePage = () => {
       } else {
         alert(`Failed to delete cat: ${response.message}`);
       }
-    }
-  };
-
- 
- 
- 
-  const handleUpdateProfile = async (type) => {
-    const updatedInfo = type === "username" ? { username } : { email };
-    const success = await actions.updateUser(updatedInfo);
-
-    if (success) {
-      setUpdateMessage(`${type === "username" ? "Username" : "Email"} updated successfully!`);
-      if (type === "username") setShowUsernameInput(false);
-      if (type === "email") setShowEmailInput(false);
-    } else {
-      setUpdateMessage(`Failed to update ${type}. Please try again.`);
     }
   };
 

@@ -131,6 +131,16 @@ const Inbox = () => {
                   className={`message-item ${
                     message.sender_id === store.user.id ? "sent" : "received"
                   }`}
+                  style={{
+                    alignSelf:
+                      message.sender_id === store.user.id ? "flex-start" : "flex-end", // Alternate sides
+                    backgroundColor:
+                      message.sender_id === store.user.id ? "#e6ffe6" : "#d9edf7", // Different background colors
+                    margin: "10px",
+                    padding: "10px",
+                    borderRadius: "8px",
+                    maxWidth: "60%",
+                  }}
                 >
                   <p>{message.text}</p>
                   <span className="message-timestamp">
