@@ -2,15 +2,29 @@ import React, { useState, useEffect, useContext } from "react";
 import { Context } from "../store/appContext";
 import "../../styles/chatbox.css";
 
-const Chatbox = ({ recipientId }) => {
+const Chatbox = () => {
   const { store, actions } = useContext(Context);
   const [messages, setMessages] = useState([]);
   const [messageText, setMessageText] = useState("");
-  const [isCollapsed, setIsCollapsed] = useState(true); // Control visibility of the chatbox
+  const [isCollapsed, setIsCollapsed] = useState(true); // State to control collapse
 
-  // Fetch messages for the recipient when the chatbox is expanded
+  const recipientId = store.currentChatRecipientId; // Access current recipient ID
+  const recipientName = store.currentChatRecipientName || "Unknown User"; // Access recipient name
+
+  // Fetch messages and mark them as read when the chatbox is expanded
+ 
+ useEffect(()=>{
+  console.log("store is chatboxopen changed:", store.isChatboxOpen)
+  setIsCollapsed(!store.isChatboxOpen)
+ }, [store.isChatboxOpen])
+ 
+ 
+ 
+ 
+ const cat = store.singleCat;
+ 
   useEffect(() => {
-    const fetchMessages = async () => {
+    const fetchAndMarkMessages = async () => {
       if (!isCollapsed && recipientId) {
         try {
           const fetchedMessages = await actions.getConversationWithOwner(recipientId);
@@ -21,12 +35,19 @@ const Chatbox = ({ recipientId }) => {
         }
       }
     };
-    fetchMessages();
-  }, [isCollapsed, recipientId, actions, store.user.id]);
+    fetchAndMarkMessages();
+    // have to put something in here to rerun the fetch and mark messages to rerun it when i send messages
+  }, [recipientId, isCollapsed, actions])
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!messageText.trim()) return;
+
+
+    actions.setChatRecipient(cat.user_id, cat.owner.username || "Owner");
+
+    // actions.toggleChatboxOpen(true);
+
 
     try {
       const result = await actions.sendMessage(recipientId, messageText);
@@ -38,21 +59,35 @@ const Chatbox = ({ recipientId }) => {
             recipient_id: recipientId,
             text: messageText,
             timestamp: new Date().toISOString(),
-            read: false, // New messages are unread for the recipient
+            read: false,
           },
         ]);
       }
       setMessageText("");
-    } catch (error) {
+      
+    }
+    
+    catch (error) {
       console.error("Error sending message:", error);
     }
   };
 
+  const handleCollapseToggle =()=>{
+    const newCollapsedState = !isCollapsed;
+    setIsCollapsed(newCollapsedState);
+    actions.toggleChatboxOpen(!newCollapsedState);
+  }
+
+
+
+
+
   return (
     <div className={`chatbox-wrapper ${isCollapsed ? "collapsed" : ""}`}>
-      <div className="chatbox-header" onClick={() => setIsCollapsed(!isCollapsed)}>
-        <span>Chat</span>
-        <button>{isCollapsed ? "▲" : "▼"}</button> {/* Toggle icon */}
+      {/* <div className="chatbox-header" onClick={() => setIsCollapsed(!isCollapsed)}> */}
+      <div className="chatbox-header" onClick={handleCollapseToggle}>
+        <span>{isCollapsed ? "Chat" : `Chat with ${recipientName}`}</span>
+        <button className="collapse-button">{isCollapsed ? "▼" : "▲"}</button> {/* Toggle button */}
       </div>
       {!isCollapsed && (
         <div className="chatbox">
@@ -61,9 +96,12 @@ const Chatbox = ({ recipientId }) => {
               messages.map((msg, idx) => (
                 <div
                   key={idx}
-                  className={msg.sender_id === store.user.id ? "sent" : "received"}
+                  className={`message ${msg.sender_id === store.user.id ? "sent" : "received"}`}
                 >
                   {msg.text}
+                  {msg.sender_id !== store.user.id && msg.read && (
+                    <span className="read-indicator">✓</span> /* Read indicator */
+                  )}
                 </div>
               ))
             ) : (

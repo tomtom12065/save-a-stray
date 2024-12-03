@@ -1,5 +1,5 @@
 import React, { useEffect, useContext, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Context } from "../store/appContext";
 import "../../styles/catTemplate.css";
 
@@ -7,7 +7,6 @@ const CatTemplate = () => {
   const { id } = useParams(); // Get the cat ID from the URL
   const { store, actions } = useContext(Context);
   const [loading, setLoading] = useState(true); // Handle loading state
-  const navigate = useNavigate(); // Hook for navigation
 
   useEffect(() => {
     const fetchCat = async () => {
@@ -30,9 +29,11 @@ const CatTemplate = () => {
     return <p>Cat not found.</p>;
   }
 
-  // Function to handle redirection to the inbox
+  // Use setChatRecipient action to set the chat context
   const handleMessageOwner = () => {
-    navigate("/inbox", { state: { recipientId: cat.user_id } }); // Navigate to Inbox with recipientId
+    console.log("message owner button clicked")
+    actions.setChatRecipient(cat.user_id, cat.owner.username || "Owner"); // Set recipient info
+    actions.toggleChatboxOpen(true); // Open the chatbox
   };
 
   return (

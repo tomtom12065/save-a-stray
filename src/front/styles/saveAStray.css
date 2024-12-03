@@ -1,156 +1,78 @@
-/* Global Styles */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: 'Arial', sans-serif;
-  background-color: #f2f2f2;
-  color: #333;
+/* General container styling */
+.home-container {
   padding: 20px;
-}
-
-h1.title {
   text-align: center;
+  background-color: #f9f9f9;
+}
+
+/* Title styling */
+.title {
   font-size: 2.5rem;
-  color: #333;
   margin-bottom: 20px;
+  color: #333;
 }
 
-/* Menu Button */
-.sidebar-toggle-btn {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  padding: 10px 15px;
-  font-size: 1.2rem;
-  border-radius: 5px;
-  cursor: pointer;
+/* Grid container for cat cards */
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Flexible 3-column layout */
+  gap: 20px; /* Space between cards */
+  justify-items: center; /* Center each card horizontally */
+  padding: 10px;
 }
 
-.sidebar-toggle-btn:hover {
-  background-color: #0056b3;
-}
-
-/* Cat Grid */
-/* .cat-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  justify-content: center;
-} */
-
-/* Cat Card */
+/* Individual cat card styling */
 .cat-card {
-  flex: 1 1 300px;
-  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   background-color: #fff;
   border: 1px solid #ddd;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-}
-
-.cat-card img {
   width: 100%;
-  height: 200px;
-  object-fit: cover;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
-}
-
-.cat-card .card-body {
+  max-width: 300px; /* Optional max width */
+  text-align: center;
   padding: 15px;
 }
 
-.cat-card .card-title {
-  font-size: 1.5rem;
-  margin-bottom: 10px;
-}
-
-.cat-card .card-text {
-  font-size: 1rem;
-  color: #555;
-  margin-bottom: 15px;
-}
-
-/* Buttons */
-.cat-card .btn {
+/* Cat card image styling */
+.cat-card img {
   width: 100%;
-  padding: 10px;
-  margin-bottom: 10px;
-  border-radius: 5px;
-}
-
-.btn-primary {
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-}
-
-.btn-primary:hover {
-  background-color: #0056b3;
-}
-
-.btn-danger {
-  background-color: #dc3545;
-  color: #fff;
-  border: none;
-}
-
-.btn-danger:hover {
-  background-color: #c82333;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  h1.title {
-    font-size: 2rem;
-  }
-
-  .cat-card {
-    flex: 1 1 100%;
-    max-width: 100%;
-  }
-
-  .sidebar-toggle-btn {
-    font-size: 1rem;
-    padding: 8px 12px;
-  }
-}
-.short-card {
-  height: 400px; /* Set a fixed height for all cards */
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  overflow: hidden;
-}
-
-.short-card .card-img-top {
-  height: 180px; /* Consistent image height */
-  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3; /* Maintain aspect ratio for images */
   object-fit: cover;
-  border-radius: 10px 10px 0 0;
+  border-bottom: 1px solid #ddd;
 }
 
-.short-card .card-body {
-  flex-grow: 1;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+/* Cat card title */
+.cat-card h3 {
+  font-size: 1.5rem;
+  margin: 10px 0;
+  color: #007bff;
 }
 
-.short-card .card-text {
-  flex-grow: 1;
+/* Cat card description */
+.cat-card p {
+  font-size: 1rem;
+  margin: 5px 0;
+  color: #555;
 }
 
-.short-card .btn {
-  margin-bottom: 5px;
+/* Action button for deleting a cat */
+.cat-card button {
+  margin-top: 10px;
+  padding: 8px 12px;
+  font-size: 1rem;
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
+.cat-card button:hover {
+  background-color: #d43a3a;
+}

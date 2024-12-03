@@ -66,6 +66,12 @@
   margin-right: 10px;
 }
 
+.read-indicator {
+  font-size: 12px;
+  color: green;
+  margin-left: 5px;
+}
+
 .message-input button {
   padding: 10px 20px;
   border: none;

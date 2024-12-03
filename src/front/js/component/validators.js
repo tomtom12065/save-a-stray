@@ -1,7 +1,10 @@
 // validators.js
 export const validateUserName = (username) => {
-    const usernameRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/; // At least 8 chars, 1 uppercase, 1 digit, 1 special char
-    return usernameRegex.test(username);
+    if (username.length >= 3){
+        return true
+    }
+      
+    
 };
 
 export const validateEmail = (email) => {

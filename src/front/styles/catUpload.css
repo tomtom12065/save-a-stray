@@ -1,0 +1,63 @@
+.cat-upload-container {
+  display: flex;
+  flex-direction: column; /* Stack items vertically */
+  align-items: center; /* Center items horizontally */
+  justify-content: center;
+  height: 100vh; /* Full viewport height */
+  background-color: #f9f9f9;
+}
+
+.cat-upload-container h2 {
+  margin-bottom: 20px; /* Add spacing below the header */
+}
+
+.cat-upload-form {
+  display: flex;
+  flex-direction: column; /* Stack form elements vertically */
+  align-items: center;
+  width: 100%;
+  max-width: 400px; /* Limit form width */
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional shadow */
+}
+
+.cat-upload-form label {
+  width: 100%;
+  text-align: left; /* Align label text to the left */
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.cat-upload-form input,
+.cat-upload-form select,
+.cat-upload-form textarea,
+.cat-upload-form button {
+  width: 100%; /* Full width of the form */
+  margin-bottom: 15px; /* Spacing between inputs */
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px; /* Rounded corners */
+  font-size: 16px;
+}
+
+.cat-upload-form button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.cat-upload-form button:hover {
+  background-color: #0056b3;
+}
+
+/* Error message styling */
+.error-message {
+  color: red;
+  font-size: 14px;
+  margin-bottom: 15px;
+  text-align: center;
+}

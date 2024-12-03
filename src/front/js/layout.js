@@ -32,13 +32,13 @@ const Layout = () => {
   if (!process.env.BACKEND_URL || process.env.BACKEND_URL === "") {
     return <BackendURL />;
   }
-
+  
   return (
     <div className="app-layout">
       <BrowserRouter basename={basename}>
         <div className="layout-container">
         
-          <Sidebar /> {/* Sidebar component always visible */}
+          <Sidebar /> Sidebar component always visible
 
           {/* Display Chatbox only if user is logged in */}
           {store.token && <Chatbox />}

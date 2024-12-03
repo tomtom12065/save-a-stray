@@ -1,87 +1,60 @@
-import React, { useEffect, useContext, useState } from "react";
+import React, { useState, useContext } from "react";
 import { Context } from "../store/appContext";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
-import "../../styles/catPage.css";
+import "../../styles/catUpload.css";
 
 const CatUpload = () => {
-  const { actions, store } = useContext(Context);
-  const navigate = useNavigate(); // Initialize navigate hook
+  const { actions } = useContext(Context);
+
+  // State for form fields
   const [catName, setCatName] = useState("");
   const [breed, setBreed] = useState("");
   const [age, setAge] = useState("");
   const [price, setPrice] = useState("");
-  const [error, setError] = useState(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [imageUrl, setImageUrl] = useState("");
+  const [image, setImage] = useState(null);
+  const [error, setError] = useState("");
 
-  // Fetch cat breeds on component mount
-  useEffect(() => {
-    if (!store.breeds || store.breeds.length === 0) {
-      actions.getBreeds(); // Use existing getBreeds action
-    }
-  }, [actions, store.breeds]);
-
-  // Handle Image Upload
-  const handleImageChange = async (event) => {
-    const file = event.target.files[0];
-
-    if (!file) {
-      setError("Please select an image file.");
-      return;
-    }
-
-    setIsUploading(true);
-    try {
-      const uploadedImageUrl = await actions.uploadImage(file);
-      setIsUploading(false);
-
-      if (uploadedImageUrl) {
-        setImageUrl(uploadedImageUrl);
-      } else {
-        setError("Failed to upload image. Please try again.");
-      }
-    } catch (err) {
-      console.error("Image upload error:", err);
-      setIsUploading(false);
-      setError("An unexpected error occurred during image upload.");
-    }
-  };
-
-  // Handle Form Submission
+  // Form submit handler
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
 
-    if (!catName || !breed || !age || !price || !imageUrl) {
-      setError("Please fill in all required fields.");
+    // Validate input fields
+    if (!catName || !breed || !age || !price || !image) {
+      console.log(catName,breed,age,price,image)
+      setError("All fields are required.");
       return;
     }
 
-    const catData = {
-      name: catName,
-      breed: breed,
-      age: age,
-      price: parseFloat(price), // Convert price to a number
-      image_url: imageUrl,
-    };
+    // Reset error
+    setError("");
 
-    try {
-      const response = await actions.postCatData2(catData);
-      if (response && response.success) {
-        navigate("/"); // Navigate home immediately after successful upload
-      } else {
-        setError(response.error || "Failed to upload the cat. Please try again.");
-      }
-    } catch (err) {
-      console.error("Error uploading cat:", err);
-      setError("An unexpected error occurred.");
+    // Prepare data for submission
+    const formData = new FormData();
+    formData.append("name", catName);
+    formData.append("breed", breed);
+    formData.append("age", age);
+    formData.append("price", price);
+    formData.append("image", image);
+
+    // Upload cat using the action
+    const result = await actions.postCatData2(formData);
+
+    if (result) {
+      alert("Cat uploaded successfully!");
+      // Reset form fields
+      setCatName("");
+      setBreed("");
+      setAge("");
+      setPrice("");
+      setImage(null);
+    } else {
+      setError("Failed to upload cat. Please try again.");
     }
   };
 
   return (
     <div className="cat-upload-container">
       <h2>Upload Cat</h2>
-      <form onSubmit={handleSubmit}>
+      <form className="cat-upload-form" onSubmit={handleSubmit}>
         {error && <p className="error-message">{error}</p>}
 
         <label htmlFor="cat-name">Cat Name:</label>
@@ -94,52 +67,49 @@ const CatUpload = () => {
           required
         />
 
-        <label htmlFor="cat-breed">Breed:</label>
+        <label htmlFor="breed">Breed:</label>
         <select
-          id="cat-breed"
+          id="breed"
           value={breed}
           onChange={(e) => setBreed(e.target.value)}
           required
         >
           <option value="">Select a breed</option>
-          {store.breeds &&
-            store.breeds.map((b) => (
-              <option key={b} value={b}>
-                {b}
-              </option>
-            ))}
+          <option value="Persian">Persian</option>
+          <option value="Siamese">Siamese</option>
+          <option value="Maine Coon">Maine Coon</option>
+          {/* Add other breed options here */}
         </select>
 
-        <label htmlFor="cat-age">Age (years):</label>
+        <label htmlFor="age">Age (years):</label>
         <input
-          id="cat-age"
+          id="age"
           type="number"
           value={age}
           onChange={(e) => setAge(e.target.value)}
-          placeholder="Enter age (1-20+)"
-          min="1"
-          max="20"
+          placeholder="Enter age"
           required
         />
 
-        <label htmlFor="cat-price">Price (USD):</label>
+        <label htmlFor="price">Price (USD):</label>
         <input
-          id="cat-price"
+          id="price"
           type="number"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
           placeholder="Enter price"
-          step="0.01"
           required
         />
 
-        <label>Upload Image:</label>
-        <input type="file" onChange={handleImageChange} accept="image/*" />
-        {isUploading && <p>Uploading image...</p>}
+        <label htmlFor="upload-image">Upload Image:</label>
+        <input
+          id="upload-image"
+          type="file"
+          onChange={(e) => setImage(e.target.files[0])}
+          required
+        />
 
-        <button type="submit" disabled={isUploading}>
-          Upload Cat
-        </button>
+        <button type="submit">Upload Cat</button>
       </form>
     </div>
   );

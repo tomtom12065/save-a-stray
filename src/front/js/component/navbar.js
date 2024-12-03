@@ -1,8 +1,11 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Link } from "react-router-dom";
-import "../../styles/navbar.css"
+import "../../styles/navbar.css";
+import { Context } from "../store/appContext";
 
-;export const Navbar = () => {
+export const Navbar = () => {
+  const { store } = useContext(Context); // Access global state
+
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light">
       <div className="container">
@@ -27,46 +30,68 @@ import "../../styles/navbar.css"
         {/* Navbar Links */}
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav ms-auto">
-            {/* Home Page */}
+            {/* Always Available Links */}
             <li className="nav-item">
               <Link to="/" className="nav-link">
                 Home
               </Link>
             </li>
-
-            {/* Cat Listings */}
             <li className="nav-item">
               <Link to="/cat-upload" className="nav-link">
                 catupload
               </Link>
             </li>
 
-            {/* Login */}
-            <li className="nav-item">
-              <Link to="/login" className="nav-link">
-                Login
-              </Link>
-            </li>
 
-            {/* Register */}
-            <li className="nav-item">
-              <Link to="/register" className="nav-link">
-                Register
-              </Link>
-            </li>
 
-            {/* About Page */}
-            <li className="nav-item">
-              <Link to="/about" className="nav-link">
-                About
-              </Link>
-            </li>
 
-            {/* Contact Page */}
+          
+
+
+
+
+
+
+
+
+
+
+            {/* Conditional Links for Logged-Out Users */}
+            {!store.token && (
+              <>
+                <li className="nav-item">
+                  <Link to="/login" className="nav-link">
+                    Login
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link to="/register" className="nav-link">
+                    Register
+                  </Link>
+                </li>
+              </>
+            )}
+
+            {/* Conditional Links for Logged-In Users */}
+            {store.token && (
+              <>
+                <li className="nav-item">
+                  <Link to="/inbox" className="nav-link">
+                    Inbox
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link to="/profile" className="nav-link">
+                    Profile
+                  </Link>
+                </li>
+              </>
+            )}
+
+            {/* Forgot Password (Always Available) */}
             <li className="nav-item">
-              <Link to="/profile" className="nav-link"
-			  >
-                profile
+              <Link to="/requesting-reset" className="nav-link">
+                forgotpassword?
               </Link>
             </li>
           </ul>
