@@ -4,7 +4,7 @@ import "../../styles/navbar.css";
 import { Context } from "../store/appContext";
 
 export const Navbar = () => {
-  const { store } = useContext(Context); // Access global state
+  const { store, actions } = useContext(Context); // Access global state and actions
 
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light">
@@ -42,22 +42,8 @@ export const Navbar = () => {
               </Link>
             </li>
 
-
-
-
-          
-
-
-
-
-
-
-
-
-
-
-            {/* Conditional Links for Logged-Out Users */}
-            {!store.token && (
+            {/* Conditional Links */}
+            {!store.token ? (
               <>
                 <li className="nav-item">
                   <Link to="/login" className="nav-link">
@@ -70,10 +56,7 @@ export const Navbar = () => {
                   </Link>
                 </li>
               </>
-            )}
-
-            {/* Conditional Links for Logged-In Users */}
-            {store.token && (
+            ) : (
               <>
                 <li className="nav-item">
                   <Link to="/inbox" className="nav-link">
@@ -84,6 +67,15 @@ export const Navbar = () => {
                   <Link to="/profile" className="nav-link">
                     Profile
                   </Link>
+                </li>
+                <li className="nav-item">
+                  <button
+                    className="nav-link btn btn-link"
+                    style={{ padding: 0, border: "none", background: "none" }}
+                    onClick={() => actions.logout()}
+                  >
+                    Logout
+                  </button>
                 </li>
               </>
             )}

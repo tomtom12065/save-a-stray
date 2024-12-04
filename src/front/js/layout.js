@@ -38,7 +38,7 @@ const Layout = () => {
       <BrowserRouter basename={basename}>
         <div className="layout-container">
         
-          <Sidebar /> Sidebar component always visible
+          {/* <Sidebar /> Sidebar component always visible */}
 
           {/* Display Chatbox only if user is logged in */}
           {store.token && <Chatbox />}

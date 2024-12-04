@@ -41,7 +41,7 @@ const CatCard = ({ cat}) => {
       <img
         src={cat.image_url || "https://via.placeholder.com/150"}
         alt={cat.name}
-        className="card-img-top"
+        className="cat-card-img"
       />
       <div className="card-body">
         <h5 className="card-title">{cat.name}</h5>
@@ -50,6 +50,7 @@ const CatCard = ({ cat}) => {
           <strong>Age:</strong> {cat.age} years <br />
           <strong>Price:</strong> ${cat.price.toFixed(2)}
         </p>
+        <div className="d-flex align-items-center justify-content-center"> 
         <button
           className="btn btn-primary"
           onClick={() => navigate(`/cat-template/${cat.id}`)}
@@ -57,11 +58,12 @@ const CatCard = ({ cat}) => {
           View Details
         </button>
         <button
-          className="btn btn-danger mt-2"
+          className="btn btn-danger "
           onClick={() => handleDeleteCat(cat.id)}
         >
           Delete
         </button>
+        </div>
       </div>
     </div>
   </div>

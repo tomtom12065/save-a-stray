@@ -384,7 +384,7 @@ const getState = ({ getStore, getActions, setStore }) => {
         }
       },
 
-
+// need to add an if statement that checks the status of the request and if the status is 401 you the action needs to relog back in
       loginUser: async (userData) => {
         console.log("loginUser called with userData:", userData);
 

@@ -19,6 +19,7 @@
   gap: 20px; /* Space between cards */
   justify-items: center; /* Center each card horizontally */
   padding: 10px;
+  height: 400px;
 }
 
 /* Individual cat card styling */
@@ -38,9 +39,9 @@
 }
 
 /* Cat card image styling */
-.cat-card img {
+.cat-card-img {
   width: 100%;
-  height: auto;
+  height: 15%;
   aspect-ratio: 4 / 3; /* Maintain aspect ratio for images */
   object-fit: cover;
   border-bottom: 1px solid #ddd;
