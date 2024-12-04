@@ -12,6 +12,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       singleCat:[],
       token: localStorage.getItem("token") || null,
       isChatboxOpen: false,
+      catApplications:[],
       currentChatRecipientId: null, // New field for chat context
       currentChatRecipientName: ""
     },
@@ -383,6 +384,88 @@ const getState = ({ getStore, getActions, setStore }) => {
           return { success: false, message: error.message };
         }
       },
+
+
+      
+      getCatApplications: async()=>{
+       try{
+       
+        const store = getStore();
+        const token = store.token; 
+       
+        const response = await fetch(`${process.env.BACKEND_URL}/api/get-applications`, {
+          method:"GET",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+
+          }
+
+
+        });
+
+        if (!response.ok) {
+          throw new Error("failed to fetch applications")
+        }
+
+        const data = await response.json();
+        setStore({
+          catApplications: data
+        })
+        return data
+       } catch(error) {
+        console.error("error fetching cat applications:" , error)
+        return null
+       }
+
+      }
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+     , submitApplication: async (applicationData) => {
+        const store = getStore();
+        const token = store.token; // Assumes you are storing the JWT token in the store
+    
+        try {
+            const response = await fetch(
+                process.env.BACKEND_URL + "/api/applications", // Correctly quoted URL
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`, // Attach token for authentication
+                    },
+                    body: JSON.stringify(applicationData), // Convert application data to JSON
+                }
+            );
+    
+            if (response.ok) {
+                const data = await response.json();
+                console.log("Application submitted successfully:", data);
+                return true; // Success
+            } else {
+                const errorData = await response.json();
+                console.error("Error submitting application:", errorData);
+                return false; // Failure
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            return false; // Failure
+        }
+    },
+    
+
+
+
 
 // need to add an if statement that checks the status of the request and if the status is 401 you the action needs to relog back in
       loginUser: async (userData) => {

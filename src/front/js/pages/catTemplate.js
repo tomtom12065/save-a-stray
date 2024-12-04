@@ -2,12 +2,13 @@ import React, { useEffect, useContext, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Context } from "../store/appContext";
 import "../../styles/catTemplate.css";
+import { useNavigate } from "react-router-dom";
 
 const CatTemplate = () => {
   const { id } = useParams(); // Get the cat ID from the URL
   const { store, actions } = useContext(Context);
   const [loading, setLoading] = useState(true); // Handle loading state
-
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchCat = async () => {
       await actions.getCatById(id); // Fetch the single cat and store it in the global state
@@ -50,6 +51,9 @@ const CatTemplate = () => {
         <strong>Price:</strong> ${cat.price.toFixed(2)}
       </p>
       <button onClick={handleMessageOwner}>Message Owner</button>
+      <button id="applyButton"onClick={() => navigate(`/application?catId=${cat.id}`)}>
+    Apply for Adoption
+</button>
     </div>
   );
 };

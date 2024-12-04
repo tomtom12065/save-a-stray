@@ -1,10 +1,10 @@
 import React, { useState, useContext } from "react";
 import { Context } from "../store/appContext";
 import "../../styles/catUpload.css";
-
+import { useNavigate } from "react-router-dom";
 const CatUpload = () => {
   const { actions } = useContext(Context);
-
+  const navigate = useNavigate();
   // State for form fields
   const [catName, setCatName] = useState("");
   const [breed, setBreed] = useState("");
@@ -46,9 +46,11 @@ const CatUpload = () => {
       setAge("");
       setPrice("");
       setImage(null);
+      navigate("/");
     } else {
       setError("Failed to upload cat. Please try again.");
     }
+    
   };
 
   return (

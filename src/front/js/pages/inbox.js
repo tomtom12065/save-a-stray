@@ -3,6 +3,12 @@ import { Context } from "../store/appContext";
 import { useLocation } from "react-router-dom";
 import "../../styles/inbox.css";
 
+
+
+// hAVE A BUTTON
+// i should add an application status to this 
+
+
 const Inbox = () => {
   const { store, actions } = useContext(Context);
   const location = useLocation(); // Access state passed via navigate
@@ -10,7 +16,11 @@ const Inbox = () => {
   const [selectedParticipant, setSelectedParticipant] = useState(null); // Currently selected participant
   const [selectedParticipantUsername, setSelectedParticipantUsername] = useState(""); // Username of selected participant
   const [messageText, setMessageText] = useState(""); // Message input text
+  const [activeTab, setActiveTab] = useState("conversations");
+  const [catApplications,setCatApplications]=  useState({
 
+  })
+  const [selectedCat,setSelectedCat]=  useState(null)
   // Pre-selected recipient from `CatTemplate`
   const recipientIdFromProps = location.state?.recipientId || null;
   const recipientNameFromProps = location.state?.recipientName || null;
@@ -44,6 +54,7 @@ const Inbox = () => {
       }, {});
       console.log("Conversations derived from messages:", convos);
       setConversations(convos);
+      
 
       // Pre-select the recipient conversation if passed via props
       if (recipientIdFromProps) {
@@ -55,6 +66,28 @@ const Inbox = () => {
     }
   }, [store.messages, store.user, recipientIdFromProps, recipientNameFromProps, actions]);
 
+ 
+ 
+ 
+ 
+ useEffect
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
   // Handle selecting a conversation
   const handleSelectConversation = async (participantId) => {
     console.log("Selected participant ID:", participantId);
@@ -94,20 +127,46 @@ const Inbox = () => {
 
   return (
     <div className="inbox">
-      <div className="conversation-list">
-        <h3>Conversations</h3>
-        {Object.keys(conversations).map((participantId) => (
-          <div
-            key={participantId}
-            className={`conversation-item ${participantId === selectedParticipant ? "active" : ""}`}
-            onClick={() => handleSelectConversation(participantId)}
-          >
-            Conversation with {conversations[participantId]?.username || `User ${participantId}`}
-          </div>
-        ))}
+      {console.log("Rendering sidebar")}
+      <div className="sidebar">
+        <div className="tab-navigation">
+          <button
+            className={`tab-button ${activeTab === "conversations" ? "active" : ""
+              }`}
+            onClick={() => setActiveTab("conversations")}
+          >conversations</button>
+
+          <button
+            className={`tab-button ${activeTab === "applications" ? "active" : ""
+              }`}
+            onClick={() => setActiveTab("applications")}
+          >applications</button>
+        </div>
+
+        {
+          activeTab === "conversations" ? (
+            <div className="conversation-list">
+              <h3>Conversations</h3>
+              {Object.keys(conversations).map((participantId) => (
+                <div
+                  key={participantId}
+                  className={`conversation-item ${participantId === selectedParticipant ? "active" : ""}`}
+                  onClick={() => handleSelectConversation(participantId)}
+                >
+                  Conversation with {conversations[participantId]?.username || `User ${participantId}`}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="applications-list">
+              <h3>applications</h3>
+              <div className = "applications-placeholder">applications feature sonn tm</div>
+            </div>
+          )}
       </div>
+
       <div className="message-box">
-        {selectedParticipant ? (
+        {selectedParticipant && activeTab === "conversations"? (
           <>
             <div className="message-header">
               <h2>Conversation with {selectedParticipantUsername}</h2>
@@ -139,7 +198,13 @@ const Inbox = () => {
           </>
         ) : (
           <div className="message-placeholder">
-            <h2>Select a conversation to start chatting</h2>
+            <h2>
+              {
+                activeTab === "conversations"
+                ? "Select a conversation to start chatting"
+                : "applications feature coming soon tm"
+              }
+              </h2>
           </div>
         )}
       </div>

@@ -10,12 +10,11 @@ import Login from "./pages/login";
 import Inbox from "./pages/inbox"; // Import Inbox.js
 import { ResetPassword } from "./pages/resetpassword";
 import { Sendtoken } from "./pages/requestingreset";
-import Sidebar from "./component/sidebar";
 import Chatbox from "./component/chatbox";
-import { Context } from "./store/appContext";
+import { Context } from "./store/appContext"; 
 import { Navbar } from "./component/navbar";
 import "../styles/layout.css";
-
+import ApplicationPage from "./pages/applicationPage";
 const Layout = () => {
   const { store, actions } = useContext(Context);
   const basename = process.env.BASENAME || "";
@@ -59,6 +58,7 @@ const Layout = () => {
               <Route path="/register" element={<Register />} />
               <Route path="/cat-upload" element={<CatUpload />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/application" element={<ApplicationPage />} />
               <Route path="/requesting-reset" element={<Sendtoken />} />
               <Route path="/reset-password" element={<ResetPassword />} />
 

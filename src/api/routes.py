@@ -1,7 +1,7 @@
 # routes.py
 import os
 from flask import request, jsonify, Blueprint 
-from api.models import db, Cat, User, ChatMessage
+from api.models import db, Cat, User, ChatMessage,Application
 from api.send_email import send_email
 from api.utils import APIException
 from werkzeug.security import generate_password_hash
@@ -73,6 +73,81 @@ def get_cats():
     except Exception as e:
         print("Error in get_cats route:", str(e))
         return jsonify({"error": "Internal server error", "details": str(e)}), 500
+
+@api.route('/get-applications',methods=["GET"])
+@jwt_required()
+def get_applications():
+    current_user_id = get_jwt_identity()
+    try:
+        user_cats = Cat.query.filter_by(user_id=current_user_id).all()
+        cats_ids = [cat.id for cat in user_cats]
+
+        applications= Application.query.filter(Application.cat_id.in_(cats_ids)).all()
+
+        results={}
+        for cat in user_cats:
+            cat_applications= [app.serialize() for app in applications if app.cat_id == cat.id]
+            if cat_applications:
+                results[cat.id]= {
+                    "cat": cat.serialize(),
+                    "applications": cat_applications
+
+                }
+
+        return jsonify(results), 200
+    except Exception as e:
+        return jsonify({
+            "error": str(e)
+        }), 500
+
+
+
+
+
+
+@api.route('/applications', methods=['POST'])
+@jwt_required()  # Protect this route with JWT authentication
+def create_application():
+    try:
+        # Get the current user's identity
+        user_id = get_jwt_identity()
+
+        # Parse the incoming JSON data
+        data = request.get_json()
+
+        # Validate the incoming data
+        required_fields = ['cat_id', 'applicant_name', 'contact_info', 'reason']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({"error": f"Missing required field: {field}"}), 400
+
+        # Create a new application instance
+        new_application = Application(
+            cat_id=data['cat_id'],
+            applicant_name=data['applicant_name'],
+            contact_info=data['contact_info'],
+            reason=data['reason'],
+            status='pending',  # Default status for new applications
+            user_id=user_id  # Associate the application with the authenticated user
+        )
+
+        # Add to the database
+        db.session.add(new_application)
+        db.session.commit()
+
+        return jsonify({"message": "Application submitted successfully!"}), 201
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
+
+
+
+
+
+
 
 
 @api.route("/user-cats", methods=["GET"])

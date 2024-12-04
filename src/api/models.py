@@ -133,3 +133,25 @@ class ChatMessage(db.Model):
             'timestamp': self.timestamp.isoformat(),  # Convert to ISO format string
             'read': self.read  # Include the read status
         }
+
+
+
+class Application(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    cat_id = db.Column(db.Integer, nullable=False)  # ID of the cat being applied for
+    applicant_name = db.Column(db.String(120), nullable=False)
+    contact_info = db.Column(db.String(255), nullable=False)
+    reason = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(50), nullable=False, default='pending')  # e.g., pending, approved, rejected
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    user_id = db.Column(db.Integer, nullable=False)
+    def serialize(self):
+        return {
+            "id": self.id,
+            "cat_id": self.cat_id,
+            "applicant_name": self.applicant_name,
+            "contact_info": self.contact_info,
+            "reason": self.reason,
+            "status": self.status,
+            "created_at": self.created_at
+        }
