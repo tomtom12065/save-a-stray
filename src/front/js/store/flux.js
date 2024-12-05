@@ -245,30 +245,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
       sendMessage: async (recipientId, text) => {
         try {
           const payload = {
@@ -302,13 +278,6 @@ const getState = ({ getStore, getActions, setStore }) => {
           return null;
         }
       },
-
-
-
-
-
-
-
 
 
       // **User Authentication Actions**
@@ -387,38 +356,46 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 
       
-      getCatApplications: async()=>{
-       try{
-       
-        const store = getStore();
-        const token = store.token; 
-       
-        const response = await fetch(`${process.env.BACKEND_URL}/api/get-applications`, {
-          method:"GET",
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json"
-
+      getCatApplications: async () => {
+        try {
+          const store = getStore();
+          const token = store.token;
+      
+          if (!token) {
+            console.error("Token is missing");
+            throw new Error("Unauthorized: Token is required to fetch applications");
           }
-
-
-        });
-
-        if (!response.ok) {
-          throw new Error("failed to fetch applications")
+      
+          const url = `${process.env.BACKEND_URL}/api/get-applications`;
+          console.log("Fetching applications from:", url);
+      
+          const response = await fetch(url, {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
+      
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Error response from server:", errorData);
+            throw new Error(`Failed to fetch applications: ${response.statusText}`);
+          }
+      
+          const data = await response.json();
+          console.log("Applications fetched successfully:", data);
+      
+          setStore({
+            catApplications: data,
+          });
+      
+          return data; // Return the fetched applications
+        } catch (error) {
+          console.error("Error fetching cat applications:", error.message || error);
+          return null; // Return null on failure
         }
-
-        const data = await response.json();
-        setStore({
-          catApplications: data
-        })
-        return data
-       } catch(error) {
-        console.error("error fetching cat applications:" , error)
-        return null
-       }
-
-      }
+      },
       
       
       
@@ -431,7 +408,8 @@ const getState = ({ getStore, getActions, setStore }) => {
       
       
       
-     , submitApplication: async (applicationData) => {
+      
+      submitApplication: async (applicationData) => {
         const store = getStore();
         const token = store.token; // Assumes you are storing the JWT token in the store
     
