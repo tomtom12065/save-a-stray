@@ -137,14 +137,22 @@ class ChatMessage(db.Model):
 
 
 class Application(db.Model):
+    __tablename__ = 'applications'
+
     id = db.Column(db.Integer, primary_key=True)
-    cat_id = db.Column(db.Integer, nullable=False)  # ID of the cat being applied for
+    cat_id = db.Column(db.Integer, db.ForeignKey('cats.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
     applicant_name = db.Column(db.String(120), nullable=False)
     contact_info = db.Column(db.String(255), nullable=False)
     reason = db.Column(db.Text, nullable=False)
     status = db.Column(db.String(50), nullable=False, default='pending')  # e.g., pending, approved, rejected
     created_at = db.Column(db.DateTime, server_default=db.func.now())
-    user_id = db.Column(db.Integer, nullable=False)
+
+    # Relationships
+    cat = db.relationship('Cat', backref='applications', lazy=True)
+    user = db.relationship('User', backref='applications', lazy=True)
+
     def serialize(self):
         return {
             "id": self.id,
@@ -153,5 +161,9 @@ class Application(db.Model):
             "contact_info": self.contact_info,
             "reason": self.reason,
             "status": self.status,
-            "created_at": self.created_at
+            "created_at": self.created_at,
+            "user_id": self.user_id,
+            # If desired, you can include related data from cat and user:
+            # "cat": self.cat.serialize() if self.cat else None,
+            # "user": self.user.serialize() if self.user else None
         }

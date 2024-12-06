@@ -105,6 +105,40 @@ def get_applications():
 
 
 
+
+
+
+@api.route("/applications/<int:application_id>/status", methods=["PUT"])
+@jwt_required()
+def update_application_status(application_id):
+    user_id = get_jwt_identity()
+    data = request.get_json()
+    new_status = data.get("status")
+
+    # Validate new status
+    if new_status not in ["approved", "rejected"]:
+        return jsonify({"error": "Invalid status"}), 400
+
+    application = Application.query.get(application_id)
+    if not application:
+        return jsonify({"error": "Application not found"}), 404
+
+    # Retrieve the cat for this application and check ownership
+    cat = Cat.query.get(application.cat_id)
+    if not cat:
+        return jsonify({"error": "Cat not found"}), 404
+
+    if cat.user_id != user_id:
+        return jsonify({"error": "Unauthorized"}), 403
+
+    # If approving, ensure no other approved application exists for the same cat
+    if new_status == "approved":
+        existing_approved = Application.query.filter_by(cat_id=application.cat_id, status="approved").firs
+
+
+
+
+
 @api.route('/applications', methods=['POST'])
 @jwt_required()  # Protect this route with JWT authentication
 def create_application():

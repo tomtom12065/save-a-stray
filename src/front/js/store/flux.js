@@ -399,7 +399,42 @@ const getState = ({ getStore, getActions, setStore }) => {
       
       
       
-      
+      updateApplicationStatus: async (applicationId, newStatus) => {
+        const store = getStore();
+        const token = store.token;
+    
+        if (!token) {
+            console.error("No token found, user not authenticated");
+            return { success: false, message: "Not authenticated" };
+        }
+    
+        try {
+            const response = await fetch(`${process.env.BACKEND_URL}/api/applications/${applicationId}/status`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ status: newStatus }),
+            });
+    
+            const data = await response.json();
+            if (!response.ok) {
+                console.error("Error updating application status:", data.error);
+                return { success: false, message: data.error || "Failed to update status" };
+            }
+    
+            // Refresh the applications after updating to reflect changes
+            const actions = getActions();
+            await actions.getCatApplications();
+    
+            return { success: true, message: "Status updated successfully" };
+        } catch (error) {
+            console.error("Exception while updating application status:", error);
+            return { success: false, message: error.message };
+        }
+    },
+    
       
       
       

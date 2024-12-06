@@ -1,55 +1,48 @@
 // ApplicationCard.js
 import React, { useState, useContext } from "react";
 import { Context } from "../store/appContext";
-const ApplicationCard = ({ application, catName, onStatusChange}) => {
-  const {actions} = useContext(Context)
-  const [currentstatus,setcurrent
+
+const ApplicationCard = ({ application, catName }) => {
+  const { actions } = useContext(Context);
+  const [currentStatus, setCurrentStatus] = useState(application.status);
+  const [loading, setLoading] = useState(false);
+
+  const handleStatusChange = async (newStatus) => {
+    setLoading(true);
+    const result = await actions.updateApplicationStatus(application.id, newStatus);
+    setLoading(false);
+
+    if (result.success) {
+      setCurrentStatus(newStatus);
+    } else {
+      alert("Error: " + result.message);
+    }
+  };
+
   return (
-    // <div className="application-card">
-    //   <h3>Application for {catName}</h3>
-    //   <p>
-    //     <strong>Applicant Name:</strong> {application.applicant_name}
-    //   </p>
-    //   <p>
-    //     <strong>Contact Info:</strong> {application.contact_info}
-    //   </p>
-    //   <p>
-    //     <strong>Reason:</strong> {application.reason}
-    //   </p>
-    //   <p>
-    //     <strong>Status:</strong> {application.status}
-
-    //   </p>
-
     <div className="card application-card">
-      {/* <div className="card-header">
-      
-
-      </div> */}
       <div className="card-body">
+        <h5 className="card-title">Application for {catName}</h5>
+        <p><strong>Applicant Name:</strong> {application.applicant_name}</p>
+        <p><strong>Contact Info:</strong> {application.contact_info}</p>
+        <p><strong>Reason:</strong> {application.reason}</p>
+        <p><strong>Status:</strong> {currentStatus}</p>
 
-        <p>
-          <strong>Applicant Name:</strong> {application.applicant_name}
-        </p>
-        <p>
-          <strong>Contact Info:</strong> {application.contact_info}
-        </p>
-        <p>
-          <strong>Reason:</strong> {application.reason}
-        </p>
-        <p>
-          <strong>Status:</strong> {application.status}
-
-        </p>
-        <div className="dropdown">
-          <button className="btn btn-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-            {application.status}
+        <div className="d-flex gap-2">
+          <button
+            className="btn btn-success btn-sm"
+            onClick={() => handleStatusChange("approved")}
+            disabled={loading || currentStatus === "approved"}
+          >
+            Approve
           </button>
-          <ul className="dropdown-menu">
-            <li className="dropdown-item" >approve</li>
-            <li className="dropdown-item" ></li>
-
-          </ul>
+          <button
+            className="btn btn-danger btn-sm"
+            onClick={() => handleStatusChange("rejected")}
+            disabled={loading || currentStatus === "rejected"}
+          >
+            Reject
+          </button>
         </div>
       </div>
     </div>
