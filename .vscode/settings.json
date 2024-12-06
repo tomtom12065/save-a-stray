@@ -12,5 +12,8 @@
     },
     "[html]": {
         "editor.defaultFormatter": "vscode.html-language-features"
+    },
+    "[css]": {
+        "editor.defaultFormatter": "ms-vsliveshare.vsliveshare"
     }
 }

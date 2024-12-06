@@ -12,7 +12,7 @@ from api.models import db
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
-
+from datetime import timedelta
 # Set environment and static file directory
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../public/')
@@ -38,7 +38,7 @@ MIGRATE = Migrate(app, db, compare_type=True)
 db.init_app(app)
 # initializes jwt
 jwt = JWTManager(app)
-
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=24)
 # Add the admin
 setup_admin(app)
 setup_commands(app)

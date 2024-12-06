@@ -71,7 +71,7 @@ export const Navbar = () => {
                 <li className="nav-item">
                   <button
                     className="nav-link btn btn-link"
-                    style={{ padding: 0, border: "none", background: "none" }}
+                   
                     onClick={() => actions.logout()}
                   >
                     Logout

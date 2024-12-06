@@ -1,0 +1,35 @@
+/* Styles for application list items */
+.application-item {
+  padding: 15px;
+  border-bottom: 1px solid #ddd;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.application-item:hover {
+  background-color: #f0f0f0;
+}
+
+.application-item.active {
+  background-color: #e3f2fd;
+}
+
+/* Styles for the application card */
+.application-card {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.application-card h3 {
+  margin-top: 0;
+  color: #333;
+}
+
+/* Styles for the application container */
+.applications {
+  overflow-y: auto;
+  padding: 10px;
+}

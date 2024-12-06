@@ -2,6 +2,7 @@ import React, { useEffect, useState, useContext } from "react";
 import { Context } from "../store/appContext";
 import { useLocation } from "react-router-dom";
 import "../../styles/inbox.css";
+import ApplicationCard from "../component/applicationCard";
 
 const Inbox = () => {
   const { store, actions } = useContext(Context);
@@ -84,112 +85,123 @@ const Inbox = () => {
   };
 
   return (
-    <div className="inbox">
-      <div className="sidebar">
-        <div className="tab-navigation">
-          <button
-            className={`tab-button ${activeTab === "conversations" ? "active" : ""}`}
-            onClick={() => setActiveTab("conversations")}
-          >
-            Conversations
-          </button>
-          <button
-            className={`tab-button ${activeTab === "applications" ? "active" : ""}`}
-            onClick={() => setActiveTab("applications")}
-          >
-            Applications
-          </button>
+    <div className="container-fluid">
+      <div className="row">
+        <div className="col-4">
+          <div className="tab-navigation">
+            <button
+              className={`btn btn-light ${activeTab === "conversations" ? "active" : ""}`}
+              onClick={() => setActiveTab("conversations")}
+            >
+              Conversations
+            </button>
+            <button
+              className={`btn btn-light ${activeTab === "applications" ? "active" : ""}`}
+              onClick={() => setActiveTab("applications")}
+            >
+              Applications
+            </button>
+          </div>
+
+          {activeTab === "conversations" ? (
+            <div className="conversation-list">
+              <h3>Conversations</h3>
+              {Object.keys(conversations).map((participantId) => (
+                <div
+                  key={participantId}
+                  className={`list-group-item list-group-item-action ${participantId === selectedParticipant ? "active" : ""}`}
+                  onClick={() => handleSelectConversation(participantId)}
+                >
+                  Conversation with {conversations[participantId]?.username || `User ${participantId}`}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="application-list">
+              <h3>Applications</h3>
+              {Object.keys(catApplications).map((catId) => (
+                <div
+                  key={catId}
+                  className={`list-group-item list-group-item-action ${catId === selectedCat ? "active" : ""}`}
+                  onClick={() => handleSelectApplication(catId)}
+                >
+                  Applications for {catApplications[catId]?.cat?.name}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        {activeTab === "conversations" ? (
-          <div className="conversation-list">
-            <h3>Conversations</h3>
-            {Object.keys(conversations).map((participantId) => (
-              <div
-                key={participantId}
-                className={`conversation-item ${participantId === selectedParticipant ? "active" : ""}`}
-                onClick={() => handleSelectConversation(participantId)}
-              >
-                Conversation with {conversations[participantId]?.username || `User ${participantId}`}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="applications-list">
-            <h3>Applications</h3>
-            {Object.keys(catApplications).map((catId) => (
-              <div
-                key={catId}
-                className={`application-item ${catId === selectedCat ? "active" : ""}`}
-                onClick={() => handleSelectApplication(catId)}
-              >
-                Applications for {catApplications[catId].cat.name}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className="message-box">
-        {activeTab === "conversations" ? (
-          selectedParticipant ? (
-            <>
-              <div className="message-header">
-                <h2>Conversation with {selectedParticipantUsername}</h2>
-              </div>
-              <div className="messages">
-                {conversations[selectedParticipant]?.messages.map((message, index) => (
-                  <div
-                    key={index}
-                    className={`message ${message.sender_id === store.user.id ? "sent" : "received"}`}
-                  >
-                    {message.text}
+        <div className="col-8">
+          {activeTab === "conversations" ? (
+            selectedParticipant ? (
+              <>
+                <div className="card">
+                  <div className="card-header">
+                    <h2 className="card-title">Conversation with {selectedParticipantUsername}</h2>
                   </div>
-                ))}
+                  <div className="card-body">
+                    <div className="messages">
+                      {conversations[selectedParticipant]?.messages.map((message, index) => (
+                        <div
+                          key={index}
+                          className={`message ${message.sender_id === store.user.id ? "sent" : "received"}`}
+                        >
+                          {message.text}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="input-group">
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={messageText}
+                        onChange={(e) => setMessageText(e.target.value)}
+                        placeholder="Type your message here"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleSendMessage();
+                        }}
+                      />
+                      <button className="btn btn-primary" onClick={handleSendMessage}>
+                        Send
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="card">
+                <div className="card-body">
+                  <h2 className="card-title">Select a conversation to start chatting</h2>
+                </div>
               </div>
-              <div className="message-input">
-                <input
-                  type="text"
-                  value={messageText}
-                  onChange={(e) => setMessageText(e.target.value)}
-                  placeholder="Type your message here"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleSendMessage();
-                  }}
-                />
-                <button onClick={handleSendMessage}>Send</button>
+            )
+          ) : selectedCat ? (
+            <div className="card">
+              <div className="card-header">
+                <h2 className="card-title">Applications for {catApplications[selectedCat]?.cat?.name}</h2>
               </div>
-            </>
-          ) : (
-            <div className="message-placeholder">
-              <h2>Select a conversation to start chatting</h2>
+              <div className="card-body">
+                <div className="row">
+                  {catApplications[selectedCat]?.applications?.map((application) => (
+                    <div className="col-12 col-md-6 col-lg-4 mb-4" key={application.id}>
+                      <ApplicationCard
+                        application={application}
+                        catName={catApplications[selectedCat]?.cat?.name || "Unknown Cat"}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
-          )
-        ) : selectedCat ? (
-          <div className="applications-details">
-            <h2>Applications for {catApplications[selectedCat].cat.name}</h2>
-            {catApplications[selectedCat].applications.map((app) => (
-              <div key={app.id} className="application-detail">
-                <p>
-                  <strong>Name:</strong> {app.applicant_name}
-                </p>
-                <p>
-                  <strong>Contact:</strong> {app.contact_info}
-                </p>
-                <p>
-                  <strong>Reason:</strong> {app.reason}
-                </p>
-                <p>
-                  <strong>Status:</strong> {app.status}
-                </p>
+          ) : (
+            <div className="card">
+              <div className="card-body">
+                <h2 className="card-title">Select a cat to view applications</h2>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="message-placeholder">
-            <h2>Select a cat to view applications</h2>
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
