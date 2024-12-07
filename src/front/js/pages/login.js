@@ -1,4 +1,15 @@
 // Login.js
+// backend/3001 : onRender
+// frontend/3000: vercel, netlify
+// database: locally, onRender(30days), Amazon AWS (1 year free), Microsoft Azure, (Firebase)
+// database: locally, onRender(30days), Amazon AWS (1 year free), Microsoft Azure, (Firebase)
+// for these ill have to download
+// psql: postresql
+
+
+
+
+
 
 import React, { useState, useContext } from "react";
 import { Context } from "../store/appContext";
@@ -11,7 +22,9 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-
+// allow login with username or email
+// adjust route to accept either
+// 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError(null);

@@ -115,7 +115,7 @@ def update_application_status(application_id):
     data = request.get_json()
     new_status = data.get("status")
 
-    # Validate new status
+    # Validate new status input
     if new_status not in ["approved", "rejected"]:
         return jsonify({"error": "Invalid status"}), 400
 
@@ -123,17 +123,25 @@ def update_application_status(application_id):
     if not application:
         return jsonify({"error": "Application not found"}), 404
 
-    # Retrieve the cat for this application and check ownership
     cat = Cat.query.get(application.cat_id)
     if not cat:
         return jsonify({"error": "Cat not found"}), 404
 
+    # Verify that the logged-in user owns the cat
     if cat.user_id != user_id:
         return jsonify({"error": "Unauthorized"}), 403
 
-    # If approving, ensure no other approved application exists for the same cat
+    # If approving, ensure no other approved application exists for this cat
     if new_status == "approved":
-        existing_approved = Application.query.filter_by(cat_id=application.cat_id, status="approved").firs
+        existing_approved = Application.query.filter_by(cat_id=application.cat_id, status="approved").first()
+        if existing_approved and existing_approved.id != application.id:
+            return jsonify({"error": "This cat already has an approved application"}), 400
+
+    application.status = new_status
+    db.session.commit()
+
+    return jsonify({"message": "Application status updated", "application": application.serialize()}), 200
+
 
 
 

@@ -4,11 +4,23 @@ import { useLocation } from "react-router-dom";
 import "../../styles/inbox.css";
 import ApplicationCard from "../component/applicationCard";
 
-const Inbox = () => {
+// so make an adoption tag
+// potential split into current adoptions and previous
+// create route that grabvs all applications submitted
+// if user id mamtches applicant id 
+// grab those tresults here and sort thru to create a function to sort through the results to show in order of pending approved and rejected
+// i need to addd a cancel adoption request button
+// attach a message to show specific applicant
+// add how old the application is
+// modal popup to show information of catcard in the applications
+// archiving coming soont tm
+
+
+function Inbox() {
   const { store, actions } = useContext(Context);
   const location = useLocation();
   const [conversations, setConversations] = useState({});
-  const [selectedParticipant, setSelectedParticipant] = useState(null);
+  const [selectedParticipant, setSelectedParticipant] = useState(null);g
   const [selectedParticipantUsername, setSelectedParticipantUsername] = useState("");
   const [messageText, setMessageText] = useState("");
   const [activeTab, setActiveTab] = useState("conversations");
@@ -28,10 +40,8 @@ const Inbox = () => {
   useEffect(() => {
     if (store.messages && store.messages.length > 0) {
       const convos = store.messages.reduce((acc, message) => {
-        const otherUserId =
-          message.sender_id === store.user.id ? message.recipient_id : message.sender_id;
-        const otherUsername =
-          message.sender_id === store.user.id ? message.recipient : message.sender;
+        const otherUserId = message.sender_id === store.user.id ? message.recipient_id : message.sender_id;
+        const otherUsername = message.sender_id === store.user.id ? message.recipient : message.sender;
 
         if (!acc[otherUserId]) acc[otherUserId] = { username: otherUsername, messages: [] };
         acc[otherUserId].messages.push(message);
@@ -160,8 +170,7 @@ const Inbox = () => {
                         placeholder="Type your message here"
                         onKeyDown={(e) => {
                           if (e.key === "Enter") handleSendMessage();
-                        }}
-                      />
+                        } } />
                       <button className="btn btn-primary" onClick={handleSendMessage}>
                         Send
                       </button>
@@ -187,8 +196,7 @@ const Inbox = () => {
                     <div className="col-12 col-md-6 col-lg-4 mb-4" key={application.id}>
                       <ApplicationCard
                         application={application}
-                        catName={catApplications[selectedCat]?.cat?.name || "Unknown Cat"}
-                      />
+                        catName={catApplications[selectedCat]?.cat?.name || "Unknown Cat"} />
                     </div>
                   ))}
                 </div>
@@ -205,6 +213,6 @@ const Inbox = () => {
       </div>
     </div>
   );
-};
+}
 
 export default Inbox;
