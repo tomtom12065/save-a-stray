@@ -102,8 +102,17 @@ def get_applications():
 
 
 
+@api.route('/applications/sent', methods=['GET'])
+@jwt_required()
+def get_sent_applications():
+    user_id = get_jwt_identity()  # Get the authenticated user's ID
+    sent_applications = Application.query.filter_by(user_id=user_id).all()
 
+    if not sent_applications:
+        return jsonify({'message': 'No sent applications found'}), 404
 
+    serialized_applications = [application.serialize() for application in sent_applications]
+    return jsonify(serialized_applications), 200
 
 
 

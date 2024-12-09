@@ -4,23 +4,11 @@ import { useLocation } from "react-router-dom";
 import "../../styles/inbox.css";
 import ApplicationCard from "../component/applicationCard";
 
-// so make an adoption tag
-// potential split into current adoptions and previous
-// create route that grabvs all applications submitted
-// if user id mamtches applicant id 
-// grab those tresults here and sort thru to create a function to sort through the results to show in order of pending approved and rejected
-// i need to addd a cancel adoption request button
-// attach a message to show specific applicant
-// add how old the application is
-// modal popup to show information of catcard in the applications
-// archiving coming soont tm
-
-
 function Inbox() {
   const { store, actions } = useContext(Context);
   const location = useLocation();
   const [conversations, setConversations] = useState({});
-  const [selectedParticipant, setSelectedParticipant] = useState(null);g
+  const [selectedParticipant, setSelectedParticipant] = useState(null);
   const [selectedParticipantUsername, setSelectedParticipantUsername] = useState("");
   const [messageText, setMessageText] = useState("");
   const [activeTab, setActiveTab] = useState("conversations");
@@ -111,6 +99,15 @@ function Inbox() {
             >
               Applications
             </button>
+            <button
+              className={`btn btn-light ${activeTab === "sentApplications" ? "active" : ""}`}
+              onClick={() => {
+                setActiveTab("sentApplications");
+                actions.fetchSentApplications();
+              }}
+            >
+              Sent Applications
+            </button>
           </div>
 
           {activeTab === "conversations" ? (
@@ -119,23 +116,39 @@ function Inbox() {
               {Object.keys(conversations).map((participantId) => (
                 <div
                   key={participantId}
-                  className={`list-group-item list-group-item-action ${participantId === selectedParticipant ? "active" : ""}`}
+                  className={`list-group-item list-group-item-action ${
+                    participantId === selectedParticipant ? "active" : ""
+                  }`}
                   onClick={() => handleSelectConversation(participantId)}
                 >
                   Conversation with {conversations[participantId]?.username || `User ${participantId}`}
                 </div>
               ))}
             </div>
-          ) : (
+          ) : activeTab === "applications" ? (
             <div className="application-list">
               <h3>Applications</h3>
               {Object.keys(catApplications).map((catId) => (
                 <div
                   key={catId}
-                  className={`list-group-item list-group-item-action ${catId === selectedCat ? "active" : ""}`}
+                  className={`list-group-item list-group-item-action ${
+                    catId === selectedCat ? "active" : ""
+                  }`}
                   onClick={() => handleSelectApplication(catId)}
                 >
                   Applications for {catApplications[catId]?.cat?.name}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="application-list">
+              <h3>Sent Applications</h3>
+              {store.sentApplications.map((application, index) => (
+                <div key={index} className="list-group-item">
+                  <h5>{application.applicant_name}</h5>
+                  <p>Contact: {application.contact_info}</p>
+                  <p>Reason: {application.reason}</p>
+                  <p>Status: {application.status}</p>
                 </div>
               ))}
             </div>
@@ -145,39 +158,40 @@ function Inbox() {
         <div className="col-8">
           {activeTab === "conversations" ? (
             selectedParticipant ? (
-              <>
-                <div className="card">
-                  <div className="card-header">
-                    <h2 className="card-title">Conversation with {selectedParticipantUsername}</h2>
+              <div className="card">
+                <div className="card-header">
+                  <h2 className="card-title">Conversation with {selectedParticipantUsername}</h2>
+                </div>
+                <div className="card-body">
+                  <div className="messages">
+                    {conversations[selectedParticipant]?.messages.map((message, index) => (
+                      <div
+                        key={index}
+                        className={`message ${
+                          message.sender_id === store.user.id ? "sent" : "received"
+                        }`}
+                      >
+                        {message.text}
+                      </div>
+                    ))}
                   </div>
-                  <div className="card-body">
-                    <div className="messages">
-                      {conversations[selectedParticipant]?.messages.map((message, index) => (
-                        <div
-                          key={index}
-                          className={`message ${message.sender_id === store.user.id ? "sent" : "received"}`}
-                        >
-                          {message.text}
-                        </div>
-                      ))}
-                    </div>
-                    <div className="input-group">
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={messageText}
-                        onChange={(e) => setMessageText(e.target.value)}
-                        placeholder="Type your message here"
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") handleSendMessage();
-                        } } />
-                      <button className="btn btn-primary" onClick={handleSendMessage}>
-                        Send
-                      </button>
-                    </div>
+                  <div className="input-group">
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={messageText}
+                      onChange={(e) => setMessageText(e.target.value)}
+                      placeholder="Type your message here"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleSendMessage();
+                      }}
+                    />
+                    <button className="btn btn-primary" onClick={handleSendMessage}>
+                      Send
+                    </button>
                   </div>
                 </div>
-              </>
+              </div>
             ) : (
               <div className="card">
                 <div className="card-body">
@@ -188,7 +202,9 @@ function Inbox() {
           ) : selectedCat ? (
             <div className="card">
               <div className="card-header">
-                <h2 className="card-title">Applications for {catApplications[selectedCat]?.cat?.name}</h2>
+                <h2 className="card-title">
+                  Applications for {catApplications[selectedCat]?.cat?.name}
+                </h2>
               </div>
               <div className="card-body">
                 <div className="row">
@@ -196,7 +212,8 @@ function Inbox() {
                     <div className="col-12 col-md-6 col-lg-4 mb-4" key={application.id}>
                       <ApplicationCard
                         application={application}
-                        catName={catApplications[selectedCat]?.cat?.name || "Unknown Cat"} />
+                        catName={catApplications[selectedCat]?.cat?.name || "Unknown Cat"}
+                      />
                     </div>
                   ))}
                 </div>

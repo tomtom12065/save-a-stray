@@ -14,7 +14,8 @@ const getState = ({ getStore, getActions, setStore }) => {
       isChatboxOpen: false,
       catApplications:[],
       currentChatRecipientId: null, // New field for chat context
-      currentChatRecipientName: ""
+      currentChatRecipientName: "",
+      sentApplications: [] 
     },
 
     actions: {
@@ -163,7 +164,38 @@ const getState = ({ getStore, getActions, setStore }) => {
       },
 
 
+      fetchSentApplications: async () => {
+        const token = localStorage.getItem("token"); // Get the token for authentication
+        const response = await fetch(`${process.env.BACKEND_URL}/applications/sent`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}` // Add the token to the request
+          }
+        });
 
+        if (response.ok) {
+          const data = await response.json();
+          setStore({ sentApplications: data }); // Update store with fetched data
+        } else {
+          console.error(`Failed to fetch sent applications: ${response.statusText}`);
+        }
+      },
+    
+  
+
+
+
+
+
+
+
+
+
+
+
+
+      
 
 
 
@@ -444,37 +476,30 @@ const getState = ({ getStore, getActions, setStore }) => {
       
       
       
-      submitApplication: async (applicationData) => {
-        const store = getStore();
-        const token = store.token; // Assumes you are storing the JWT token in the store
-    
-        try {
-            const response = await fetch(
-                process.env.BACKEND_URL + "/api/applications", // Correctly quoted URL
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`, // Attach token for authentication
-                    },
-                    body: JSON.stringify(applicationData), // Convert application data to JSON
-                }
-            );
-    
-            if (response.ok) {
-                const data = await response.json();
-                console.log("Application submitted successfully:", data);
-                return true; // Success
-            } else {
-                const errorData = await response.json();
-                console.error("Error submitting application:", errorData);
-                return false; // Failure
-            }
-        } catch (error) {
-            console.error("Error:", error);
-            return false; // Failure
-        }
-    },
+    submitApplication: async (applicationData) => {
+      const store = getStore();
+      const token = store.token; // Assumes the JWT token is stored in the store
+  
+      const response = await fetch(`${process.env.BACKEND_URL}/api/applications`, {
+          method: "POST",
+          headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`, // Attach token for authentication
+          },
+          body: JSON.stringify(applicationData), // Convert application data to JSON
+      });
+  
+      if (response.ok) {
+          const data = await response.json();
+          console.log("Application submitted successfully:", data);
+          return true; // Success
+      }
+  
+      const errorData = await response.json();
+      console.error("Error submitting application:", errorData);
+      return false; // Failure
+  },
+  
     
 
 
