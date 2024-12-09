@@ -15,7 +15,6 @@ import { Context } from "./store/appContext";
 import { Navbar } from "./component/navbar";
 import "../styles/layout.css";
 import ApplicationPage from "./pages/applicationPage";
-import PaymentsPayouts from "./pages/PaymentsPayouts";
 const Layout = () => {
   const { store, actions } = useContext(Context);
   const basename = process.env.BASENAME || "";
@@ -62,7 +61,6 @@ const Layout = () => {
               <Route path="/application" element={<ApplicationPage />} />
               <Route path="/requesting-reset" element={<Sendtoken />} />
               <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/payments" element={<PaymentsPayouts/>} />
 
 
               {/* New route for Inbox page */}
