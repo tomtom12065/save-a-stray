@@ -5,6 +5,32 @@ import { Context } from "../store/appContext";
 import "../../styles/saveAStray.css";
 import CatCard from "../component/catCard";  // Import the CatCard component
 
+
+
+
+// classmate collaborations?
+// also helps practicing wit collaboration
+// allows for biggr projects
+// use more third party api's 
+// study stripe more
+// go deeper into payments
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export const Home = () => {
   const navigate = useNavigate();
   const { store, actions } = useContext(Context);

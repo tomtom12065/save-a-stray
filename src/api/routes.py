@@ -17,6 +17,7 @@ import logging
 import cloudinary.uploader
 import cloudinary
 from datetime import timedelta
+import stripe
 #completely overall the routes to deal with the new models
 #try it all in postman
 #make sure to get jwt token(taken care o by layout)gives the sender id
@@ -33,7 +34,7 @@ cloudinary.config(
 
 api = Blueprint("api", __name__)
 
-
+stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 # ---------------------------------------------
 # GET Routes
 # ---------------------------------------------
@@ -684,3 +685,62 @@ def add_cat():
             "error": "Failed to add cat",
             "details": str(e)
         }), 500
+
+
+
+
+
+
+
+
+@api.route('/create-payment-intent', methods=['OPTIONS', 'POST'])
+def create_payment_intent():
+    if request.method == 'OPTIONS':
+        return '', 204
+    try:
+        data = request.get_json()
+        intent = stripe.PaymentIntent.create(
+            amount=data['amount'],  # amount in cents
+            currency='usd',
+            metadata={'integration_check': 'accept_a_payment'},
+        )
+        return jsonify({
+            'clientSecret': intent['client_secret']
+        })
+    except Exception as e:
+        return jsonify(error=str(e)), 403
+
+@api.route('/payout', methods=['POST'])
+@jwt_required() 
+def create_payout():
+    try:
+        current_user_id = get_jwt_identity()
+        data = request.get_json()
+
+
+        # Here you would typically look up the Stripe account ID for the current user
+        # This is just an example - replace with your actual logic
+        # provider_stripe_account = get_provider_stripe_account(current_user_id)
+
+        # Create a transfer to the connected account
+        payout = stripe.Payout.create(
+            amount=data['amount'],  # amount in cents
+            currency='usd',
+            # stripe_account="acct_1Q18mE2ZAO1b3fPQ"
+            # stripe_account="acct_1QIydjIKKqBcu9li" #regular stripe acc
+            stripe_account="acct_1QIyvyIurh11jVin" #sandbox stripe acc
+            
+            # stripe_account=data['providerId']  # Stripe Account ID of the provider
+            # stripe_account=provider_stripe_account
+        )
+
+        return jsonify({
+            'success': True,
+            'payoutId': payout.id
+        })
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 403
