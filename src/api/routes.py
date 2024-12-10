@@ -18,6 +18,13 @@ import cloudinary.uploader
 import cloudinary
 from datetime import timedelta
 import stripe
+from flask_cors import CORS
+
+
+
+
+
+
 #completely overall the routes to deal with the new models
 #try it all in postman
 #make sure to get jwt token(taken care o by layout)gives the sender id
@@ -33,7 +40,7 @@ cloudinary.config(
 )
 
 api = Blueprint("api", __name__)
-
+CORS(api)
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 # ---------------------------------------------
 # GET Routes
@@ -45,19 +52,23 @@ def handle_hello():
 
 @api.route('/user', methods=['GET'])
 @jwt_required()
-async def get_user_data():
-    # Get the identity of the current user from the JWT token
-    current_user_id = get_jwt_identity()
+def get_user_data():
+    try:
+        # Get the identity of the current user from the JWT token
+        current_user_id = get_jwt_identity()
 
-    # Fetch user data asynchronously from the database
-    user = await User.query.get(current_user_id)
+        # Fetch user data asynchronously from the database
+        user =  User.query.get(current_user_id)
 
-    # If the user is found, return the serialized data
-    if user:
+        if not user:
+                return jsonify({"msg": "User not found"}), 404
+
+        # If the user is found, return the serialized data
         return jsonify(user.serialize()), 200
 
-    # If the user is not found, return a 404 error
-    return jsonify({"error": "User not found"}), 404
+    except Exception as e:
+        return jsonify({"msg": f"Error fetching user data: {str(e)}"}), 422
+
 @api.route("/cats", methods=["GET"])
 def get_cats():
     cats = Cat.query.all()
@@ -183,9 +194,9 @@ def create_application():
 
 @api.route("/user-cats", methods=["GET"])
 @jwt_required()
-async def get_self_cats():
+def get_self_cats():
     current_user_id = get_jwt_identity()
-    user = await User.query.get(current_user_id)
+    user =  User.query.get(current_user_id)
 
     if not user:
         return jsonify({"error": "User not found"}), 404
@@ -219,11 +230,11 @@ async def get_self_cats():
 
 @api.route('/upload_profile_picture', methods=['POST'])
 @jwt_required()
-async def upload_profile_picture():
+def upload_profile_picture():
     current_user_id = get_jwt_identity()
 
     # Fetch the user from the database
-    user = await User.query.get(current_user_id)
+    user =  User.query.get(current_user_id)
     if not user:
         return jsonify({"error": "User not found"}), 404
 
@@ -285,7 +296,7 @@ def hash_password(password, salt):
 # User registration
 
 @api.route('/register', methods=['POST'])
-async def register_user():
+def register_user():
     data = request.get_json()
     email = data.get("email")
     password = data.get("password")
@@ -295,7 +306,7 @@ async def register_user():
     # Validate required fields
     if not all([email, password, username]):
         return jsonify({"error": "Email, password, and username are required"}), 400
-    if await User.query.filter_by(email=email).first():
+    if  User.query.filter_by(email=email).first():
         return jsonify({"error": "User already exists"}), 409
 
     # Hash the password with salt
@@ -344,11 +355,11 @@ def login():
 
 @api.route("/get_messages", methods=["GET"])
 @jwt_required()
-async def get_messages():
+def get_messages():
     user_id = get_jwt_identity()  # Get the logged-in user's ID
 
     # Fetch all messages where the user is either the sender or recipient
-    messages = await ChatMessage.query.filter(
+    messages =  ChatMessage.query.filter(
         (ChatMessage.sender_id == user_id) | (ChatMessage.recipient_id == user_id)
     ).order_by(ChatMessage.timestamp.desc()).all()
 
@@ -365,7 +376,7 @@ async def get_messages():
 
 @api.route("/get_single_message", methods=["GET"])
 @jwt_required()
-async def get_single_message():
+def get_single_message():
     recipient_id = request.args.get("recipient_id")
     sender_id = get_jwt_identity()  # Get the logged-in user's ID
 
@@ -373,7 +384,7 @@ async def get_single_message():
         return jsonify({"error": "Missing required parameters"}), 400
 
     # Fetch messages between the sender and recipient
-    messages = await ChatMessage.query.filter(
+    messages =  ChatMessage.query.filter(
         ((ChatMessage.sender_id == sender_id) & (ChatMessage.recipient_id == recipient_id)) |
         ((ChatMessage.sender_id == recipient_id) & (ChatMessage.recipient_id == sender_id))
     ).order_by(ChatMessage.timestamp.asc()).all()
@@ -479,7 +490,7 @@ def mark_as_read():
 
 @api.route("/send_message", methods=["POST"])
 @jwt_required()  # Ensure the user is authenticated
-async def send_message():
+def send_message():
     data = request.get_json()
     print("Received data:", data)  # Log received data for debugging
 
@@ -517,12 +528,12 @@ def get_single_cat(cat_id):
 
 
 @api.route('/request_reset', methods=['POST'])
-async def request_reset():
+def request_reset():
     email = request.json.get("email")
     if not email:
         return jsonify({"error": "Email is required"}), 400
 
-    user = await User.query.filter_by(email=email).first()
+    user =  User.query.filter_by(email=email).first()
     if user:
         token = create_access_token(identity=email, expires_delta=timedelta(hours=1))
         reset_link = f"{os.getenv('FRONTEND_URL')}/reset-Password?token={token}"
@@ -535,7 +546,7 @@ async def request_reset():
 
 
 @api.route("/upload_image", methods=["POST"])
-async def upload_image():
+def upload_image():
     file_to_upload = request.files["file"]
     upload_result = cloudinary.uploader.upload(file_to_upload)
     return jsonify({"success": True, "url": upload_result["secure_url"]}), 200
@@ -545,9 +556,9 @@ async def upload_image():
 # ---------------------------------------------
 @api.route("/reset-password", methods=["PUT"])
 @jwt_required()
-async def reset_password():
+def reset_password():
     email = get_jwt_identity()
-    user = await User.query.filter_by(email=email).first_or_404()
+    user =  User.query.filter_by(email=email).first_or_404()
     new_password = request.json.get("new_password")
     if not new_password:
         return jsonify({"error": "New password is required"}), 400
@@ -563,9 +574,9 @@ async def reset_password():
 
 @api.route("/delete-cat/<int:cat_id>", methods=["DELETE"])
 @jwt_required()
-async def delete_cat(cat_id):
+def delete_cat(cat_id):
     current_user_id = get_jwt_identity()
-    cat = await Cat.query.get(cat_id)
+    cat =  Cat.query.get(cat_id)
     if not cat:
         return jsonify({"error": "Cat not found"}), 404
     if cat.user_id != current_user_id:
@@ -578,7 +589,7 @@ async def delete_cat(cat_id):
 
 @api.route("/add-cat", methods=["POST"])
 @jwt_required()  # Ensure the user is authenticated
-async def add_cat():
+def add_cat():
     data = request.get_json()
 
     # Get the user ID from the JWT token
@@ -618,7 +629,7 @@ async def add_cat():
 
 
 @api.route('/create-payment-intent', methods=['OPTIONS', 'POST'])
-async def create_payment_intent():
+def create_payment_intent():
     if request.method == 'OPTIONS':
         return '', 204
 
@@ -635,7 +646,7 @@ async def create_payment_intent():
 
 @api.route('/payout', methods=['POST'])
 @jwt_required() 
-async def create_payout():
+def create_payout():
     current_user_id = get_jwt_identity()
     data = request.get_json()
 

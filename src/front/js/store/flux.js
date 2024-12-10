@@ -9,13 +9,13 @@ const getState = ({ getStore, getActions, setStore }) => {
       cats: [],
       user: JSON.parse(localStorage.getItem("user")) || null,
       selfcats: [],
-      singleCat:[],
+      singleCat: [],
       token: localStorage.getItem("token") || null,
       isChatboxOpen: false,
-      catApplications:[],
+      catApplications: [],
       currentChatRecipientId: null, // New field for chat context
       currentChatRecipientName: "",
-      sentApplications: [] 
+      sentApplications: []
     },
 
     actions: {
@@ -36,17 +36,17 @@ const getState = ({ getStore, getActions, setStore }) => {
             "x-api-key": process.env.CAT_API_KEY, // Securely retrieved API key
           },
         });
-      
+
         if (!response.ok) {
           return console.error(`Error fetching breeds: ${response.statusText}`);
         }
-      
+
         const breeds = await response.json();
         // Map the response to only the breed names
         setStore({ breeds: breeds.map((breed) => breed.name) });
         console.log("Breeds fetched successfully:", breeds.map((breed) => breed.name));
       },
-      
+
 
       setChatRecipient: (recipientId, recipientName) => {
         setStore({
@@ -61,113 +61,111 @@ const getState = ({ getStore, getActions, setStore }) => {
         setStore({ isChatboxOpen: state });
       },
 
-markMessagesAsRead: async (senderId, recipientId) => {
-  const response = await fetch(`${process.env.BACKEND_URL}/api/mark_as_read`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-    body: JSON.stringify({ sender_id: senderId, recipient_id: recipientId }),
-  });
+      markMessagesAsRead: async (senderId, recipientId) => {
+        const response = await fetch(`${process.env.BACKEND_URL}/api/mark_as_read`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({ sender_id: senderId, recipient_id: recipientId }),
+        });
 
-  if (!response.ok) {
-    return console.error("Failed to mark messages as read.");
-  }
+        if (!response.ok) {
+          return console.error("Failed to mark messages as read.");
+        }
 
-  console.log("Messages marked as read.");
-  const data = await response.json();
-  return data.updated_count; // Number of messages marked as read
-},
-
-
-createConversation: async (recipientId) => {
-  const response = await fetch(`${process.env.BACKEND_URL}/api/create_conversation`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-    body: JSON.stringify({ recipient_id: recipientId }),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    console.error(errorData.error || "Failed to create conversation");
-    return false; // Indicate failure
-  }
-
-  const result = await response.json();
-  console.log("Conversation created:", result.message);
-  return true; // Indicate success
-},
+        console.log("Messages marked as read.");
+        const data = await response.json();
+        return data.updated_count; // Number of messages marked as read
+      },
 
 
-updateUser: async (userInfo) => {
-  const response = await fetch(`${process.env.BACKEND_URL}/api/update_user`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-    body: JSON.stringify(userInfo),
-  });
+      createConversation: async (recipientId) => {
+        const response = await fetch(`${process.env.BACKEND_URL}/api/create_conversation`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({ recipient_id: recipientId }),
+        });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    console.error(errorData.error || "Failed to update user");
-    return false; // Indicate failure
-  }
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error(errorData.error || "Failed to create conversation");
+          return false; // Indicate failure
+        }
 
-  const updatedUser = await response.json();
-  setStore({ user: updatedUser.user }); // Update user in the store
-  return true; // Indicate success
-},
-
-
-loginUser: async (email, password) => {
-  const response = await fetch(`${process.env.BACKEND_URL}/api/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ email, password })
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    console.error(errorData.error || "Failed to log in");
-    return false; // Indicate failure
-  }
-
-  const data = await response.json();
-  localStorage.setItem("accessToken", data.access_token);
-  localStorage.setItem("refreshToken", data.refresh_token);
-  setStore({ user: data.user }); // Update user in the store
-
-  return true; // Indicate success
-},
+        const result = await response.json();
+        console.log("Conversation created:", result.message);
+        return true; // Indicate success
+      },
 
 
-fetchSentApplications: async () => {
-  const token = localStorage.getItem("token"); // Get the token for authentication
-  const response = await fetch(`${process.env.BACKEND_URL}/applications/sent`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}` // Add the token to the request
-    }
-  });
+      updateUser: async (userInfo) => {
+        const response = await fetch(`${process.env.BACKEND_URL}/api/update_user`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(userInfo),
+        });
 
-  if (!response.ok) {
-    return console.error(`Failed to fetch sent applications: ${response.statusText}`);
-  }
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error(errorData.error || "Failed to update user");
+          return false; // Indicate failure
+        }
 
-  const data = await response.json();
-  setStore({ sentApplications: data }); // Update store with fetched data
-},
+        const updatedUser = await response.json();
+        setStore({ user: updatedUser.user }); // Update user in the store
+        return true; // Indicate success
+      },
 
-  
+
+      // loginUser: async (email, password) => {
+      //   const response = await fetch(`${process.env.BACKEND_URL}/api/login`, {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json"
+      //     },
+      //     body: JSON.stringify({ email, password })
+      //   });
+
+      //   if (!response.ok) {
+      //     const errorData = await response.json();
+      //     console.error(errorData.error || "Failed to log in");
+      //     return false; // Indicate failure
+      //   }
+
+      //   const data = await response.json();
+      //   localStorage.setItem("accessToken", data.access_token);
+      //   localStorage.setItem("refreshToken", data.refresh_token);
+      //   setStore({ user: data.user }); // Update user in the store
+
+      //   return true; // Indicate success
+      // },
+
+
+      fetchSentApplications: async () => {
+        const token = localStorage.getItem("token"); // Get the token for authentication
+        const response = await fetch(`${process.env.BACKEND_URL}/applications/sent`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}` // Add the token to the request
+          }
+        });
+
+        if (!response.ok) {
+          return console.error(`Failed to fetch sent applications: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        setStore({ sentApplications: data }); // Update store with fetched data
+      },
 
 
 
@@ -180,29 +178,31 @@ fetchSentApplications: async () => {
 
 
 
-      
 
 
 
 
-getMessages: async () => {
-  const response = await fetch(`${process.env.BACKEND_URL}/api/get_messages`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  });
 
-  if (!response.ok) {
-    console.error("Failed to fetch messages");
-    return null; // Return null on failure
-  }
 
-  const messages = await response.json();
-  setStore({ messages }); // Save messages to the store
-  return messages;
-},
+
+      getMessages: async () => {
+        const response = await fetch(`${process.env.BACKEND_URL}/api/get_messages`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+
+        if (!response.ok) {
+          console.error("Failed to fetch messages");
+          return null; // Return null on failure
+        }
+
+        const messages = await response.json();
+        setStore({ messages }); // Save messages to the store
+        return messages;
+      },
 
 
 
@@ -237,18 +237,18 @@ getMessages: async () => {
             Authorization: `Bearer ${token}`,
           },
         });
-      
+
         if (!response.ok) {
           const errorData = await response.json();
           console.error("Error fetching conversation:", errorData.error);
           return null; // Return null on failure
         }
-      
+
         const data = await response.json();
         setStore({ messages: data }); // Save the specific conversation in the global store
         return data; // Return the conversation for local use if needed
       },
-      
+
 
 
 
@@ -258,7 +258,7 @@ getMessages: async () => {
           text: text,
         };
         console.log("Sending payload:", payload);
-      
+
         const response = await fetch(`${process.env.BACKEND_URL}/api/send_message`, {
           method: "POST",
           headers: {
@@ -267,20 +267,20 @@ getMessages: async () => {
           },
           body: JSON.stringify(payload),
         });
-      
+
         console.log("Response status:", response.status);
-      
+
         if (!response.ok) {
           const errorData = await response.json();
           console.error("Backend Error:", errorData);
           return null; // Return null on failure
         }
-      
+
         const result = await response.json();
         console.log("Message sent successfully:", result);
         return result;
       },
-      
+
 
       // **User Authentication Actions**
 
@@ -292,28 +292,28 @@ getMessages: async () => {
             "Content-Type": "application/json",
           },
         });
-      
+
         if (!response.ok) {
           const error = await response.json();
           console.error("Failed to retrieve user data:", error);
           return { success: false, message: error.error || "User data retrieval failed" };
         }
-      
+
         const data = await response.json();
         console.log("User data retrieved:", data);
-      
+
         // Update the global state with user information
         setStore({ user: data });
-      
+
         return { success: true };
       },
-      
+
 
 
 
       registerUser: async (userData) => {
         const url = `${process.env.BACKEND_URL}/api/register`;
-      
+
         // Include profile picture in the payload
         const bodyData = JSON.stringify({
           email: userData.email,
@@ -321,7 +321,7 @@ getMessages: async () => {
           username: userData.username,
           profilepic: userData.profilepic || null, // Optional field
         });
-      
+
         const resp = await fetch(url, {
           method: "POST",
           headers: {
@@ -329,13 +329,13 @@ getMessages: async () => {
           },
           body: bodyData,
         });
-      
+
         if (!resp.ok) {
           const errorData = await resp.json();
           console.error("Error registering user:", errorData);
           return { success: false, message: errorData.error || "Error registering user" };
         }
-      
+
         const data = await resp.json();
         if (data && data.user) {
           setStore({ user: data.user });
@@ -345,20 +345,20 @@ getMessages: async () => {
           return { success: false, message: "No user data received from server" };
         }
       },
-      
+
 
       getCatApplications: async () => {
         const store = getStore();
         const token = store.token;
-      
+
         if (!token) {
           console.error("Token is missing");
           return null; // Return null if token is missing
         }
-      
+
         const url = `${process.env.BACKEND_URL}/api/get-applications`;
         console.log("Fetching applications from:", url);
-      
+
         const response = await fetch(url, {
           method: "GET",
           headers: {
@@ -366,33 +366,33 @@ getMessages: async () => {
             "Content-Type": "application/json",
           },
         });
-      
+
         if (!response.ok) {
           const errorData = await response.json();
           console.error("Error response from server:", errorData);
           return null; // Return null on failure
         }
-      
+
         const data = await response.json();
         console.log("Applications fetched successfully:", data);
-      
+
         setStore({
           catApplications: data,
         });
-      
+
         return data; // Return the fetched applications
       },
-      
-      
+
+
       updateApplicationStatus: async (applicationId, newStatus) => {
         const store = getStore();
         const token = store.token;
-      
+
         if (!token) {
           console.error("No token found, user not authenticated");
           return { success: false, message: "Not authenticated" };
         }
-      
+
         const response = await fetch(`${process.env.BACKEND_URL}/api/applications/${applicationId}/status`, {
           method: "PUT",
           headers: {
@@ -401,32 +401,32 @@ getMessages: async () => {
           },
           body: JSON.stringify({ status: newStatus }),
         });
-      
+
         const data = await response.json();
         if (!response.ok) {
           console.error("Error updating application status:", data.error);
           return { success: false, message: data.error || "Failed to update status" };
         }
-      
+
         // Refresh the applications after updating to reflect changes
         const actions = getActions();
         await actions.getCatApplications();
-      
+
         return { success: true, message: "Status updated successfully" };
       },
-      
-      
-      
-      
-      
-      
-      
-      
-      
+
+
+
+
+
+
+
+
+
       submitApplication: async (applicationData) => {
         const store = getStore();
         const token = store.token; // Assumes the JWT token is stored in the store
-      
+
         const response = await fetch(`${process.env.BACKEND_URL}/api/applications`, {
           method: "POST",
           headers: {
@@ -435,31 +435,31 @@ getMessages: async () => {
           },
           body: JSON.stringify(applicationData), // Convert application data to JSON
         });
-      
+
         if (!response.ok) {
           const errorData = await response.json();
           console.error("Error submitting application:", errorData);
           return false; // Failure
         }
-      
+
         const data = await response.json();
         console.log("Application submitted successfully:", data);
         return true; // Success
       },
-      
+
 
 
 
 
       loginUser: async (userData) => {
         console.log("loginUser called with userData:", userData);
-      
+
         const backendUrl = process.env.BACKEND_URL;
         console.log("Backend URL:", backendUrl);
-      
+
         const endpoint = `${backendUrl}/api/login`;
         console.log("Login endpoint:", endpoint);
-      
+
         const requestOptions = {
           method: "POST",
           headers: {
@@ -468,46 +468,46 @@ getMessages: async () => {
           body: JSON.stringify(userData),
         };
         console.log("Request options:", requestOptions);
-      
+
         const resp = await fetch(endpoint, requestOptions);
         console.log("Fetch response received:", resp);
-      
+
         const data = await resp.json();
         console.log("Response JSON data:", data);
-      
+
         console.log("Response status OK?", resp.ok);
-        
+
         // Check if the status is 401 (unauthorized)
         if (resp.status === 401) {
           console.error("Login failed: Unauthorized (401). Attempting to relog.");
-          
+
           // Add logic for relogging or handling the 401 error (e.g., refreshing the token or redirecting to the login page)
           // This could be a re-login attempt or redirecting the user to the login page.
           return { success: false, message: "Unauthorized, please log in again" };
         }
-      
+
         if (!resp.ok) {
           const errorMessage = data.error || "Error logging in";
           console.error("Login failed:", errorMessage);
           return { success: false, message: errorMessage };
         }
-      
+
         console.log("Login successful. Data received:", data);
         console.log("Store updated with user and token:", { user: data.user, token: data.access_token });
-      
+
         // Save the tokens to localStorage
         localStorage.setItem("token", data.access_token);
         localStorage.setItem("refresh_token", data.refresh_token);
         localStorage.setItem("user", JSON.stringify(data.user));
         setStore({ user: data.user, token: data.access_token });
-      
+
         const actions = getActions();
         actions.getMessages(data.user.id);
         console.log("Tokens saved to localStorage:", data.access_token, data.refresh_token);
-      
+
         return { success: true, message: "Login successful" };
       },
-      
+
 
       logout: () => {
         console.log("Logging out...");
@@ -518,14 +518,14 @@ getMessages: async () => {
       },
 
       // **Cat Actions**
-   
+
       postCatData2: async (cat) => {
         const token = localStorage.getItem("token");
         if (!token) {
           return { success: false, message: "User is not authenticated" };
         }
         console.log(cat.get("breed"));
-      
+
         // If no imageUrl is provided, attempt to upload the image
         if (!cat.get("image_url")) {
           const uploadedUrl = await getActions().uploadImage(cat.get("image")); // Pass the file directly for upload
@@ -534,7 +534,7 @@ getMessages: async () => {
           }
           cat.append("image_url", uploadedUrl); // Assign the uploaded image URL to the cat object
         }
-      
+
         // Prepare the cat data for the API request
         const data = JSON.stringify({
           name: cat.get("name"),
@@ -543,7 +543,7 @@ getMessages: async () => {
           price: cat.get("price"),
           image_url: cat.get("image_url"),
         });
-      
+
         // Make the API request to add the cat data
         const response = await fetch(`${process.env.BACKEND_URL}/api/add-cat`, {
           method: "POST",
@@ -553,9 +553,9 @@ getMessages: async () => {
           },
           body: data,
         });
-      
+
         const responseData = await response.json();
-      
+
         if (response.ok) {
           return {
             success: true,
@@ -569,25 +569,25 @@ getMessages: async () => {
           };
         }
       },
-      
+
 
       getCats: async () => {
         const resp = await fetch(`${process.env.BACKEND_URL}/api/cats`);
         console.log("Response status:", resp.status);
         console.log("Backend URL:", process.env.BACKEND_URL);
-      
+
         if (!resp.ok) {
           const errorText = await resp.text();
           console.error("Error response text:", errorText);
           return { success: false, message: `Error: ${resp.status} ${resp.statusText}` };
         }
-      
+
         const data = await resp.json();
         console.log("Fetched cats data:", data);
         setStore({ cats: data.cats });
         return { success: true };
       },
-      
+
 
       getSelfCats: async () => {
         const token = localStorage.getItem("token");
@@ -595,7 +595,7 @@ getMessages: async () => {
           console.error("No token found. User might not be logged in.");
           return { success: false, message: "Unauthorized access: No token provided." };
         }
-      
+
         const response = await fetch(`${process.env.BACKEND_URL}/api/user-cats`, {
           method: "GET",
           headers: {
@@ -603,25 +603,25 @@ getMessages: async () => {
             Authorization: `Bearer ${token}`,
           },
         });
-      
+
         if (!response.ok) {
           const errorData = await response.json();
           console.error("Error fetching user's cats:", errorData);
           return { success: false, message: "Failed to fetch user's cats." };
         }
-      
+
         const responseBody = await response.json();
         console.log("User's cats fetched successfully:", responseBody);
-      
+
         setStore({ selfcats: responseBody });
-      
+
         return { success: true };
       },
-      
+
       getCatById: async (catId) => {
         const resp = await fetch(`${process.env.BACKEND_URL}/api/cat/${catId}`);
         const data = await resp.json();
-      
+
         if (resp.ok) {
           setStore({ singleCat: data.cat });  // Store the fetched cat in singleCat
         } else {
@@ -634,7 +634,7 @@ getMessages: async () => {
       uploadProfilePic: async (file) => {
         const formData = new FormData();
         formData.append("file", file);
-      
+
         // Use your backend route for image upload
         const response = await fetch(`${process.env.BACKEND_URL}/api/upload_profile_picture`, {
           method: "POST",
@@ -643,86 +643,86 @@ getMessages: async () => {
           },
           body: formData,
         });
-      
+
         if (!response.ok) {
           const error = await response.json();
           console.error("Error uploading profile picture:", error);
           return { success: false, message: error.error || "Failed to upload profile picture" };
         }
-      
+
         const data = await response.json();
         console.log("Profile picture uploaded successfully:", data);
-      
+
         // Update the user's profile picture in the store
         setStore({ user: { ...getStore().user, image_url: data.url } });
-      
+
         return { success: true, message: "Profile picture updated successfully" };
       },
-      
-    deleteCat: async (catId) => {
-  const token = localStorage.getItem("token");
 
-  if (!token) {
-    console.error("Token is missing. Please log in.");
-    return { success: false, message: "User is not authenticated" };
-  }
+      deleteCat: async (catId) => {
+        const token = localStorage.getItem("token");
 
-  const resp = await fetch(`${process.env.BACKEND_URL}/api/delete-cat/${catId}`, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`,
-    },
-  });
+        if (!token) {
+          console.error("Token is missing. Please log in.");
+          return { success: false, message: "User is not authenticated" };
+        }
 
-  const data = await resp.json();
+        const resp = await fetch(`${process.env.BACKEND_URL}/api/delete-cat/${catId}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        });
 
-  if (resp.status === 403) {
-    console.error("Unauthorized: You do not own this cat.");
-    return { success: false, message: "You are not authorized to delete this cat." };
-  }
+        const data = await resp.json();
 
-  if (!resp.ok) {
-    console.error("Error deleting cat:", data.error || "Unknown error");
-    return { success: false, message: data.error || "Error deleting cat" };
-  }
+        if (resp.status === 403) {
+          console.error("Unauthorized: You do not own this cat.");
+          return { success: false, message: "You are not authorized to delete this cat." };
+        }
 
-  // Update the store to remove the deleted cat
-  const updatedCats = getStore().cats.filter((cat) => cat.id !== catId);
-  setStore((prev) => ({
-    ...prev,
-    cats: updatedCats,
-    message: "Cat deleted successfully!",
-  }));
+        if (!resp.ok) {
+          console.error("Error deleting cat:", data.error || "Unknown error");
+          return { success: false, message: data.error || "Error deleting cat" };
+        }
 
-  return { success: true, message: "Cat deleted successfully" };
-},
+        // Update the store to remove the deleted cat
+        const updatedCats = getStore().cats.filter((cat) => cat.id !== catId);
+        setStore((prev) => ({
+          ...prev,
+          cats: updatedCats,
+          message: "Cat deleted successfully!",
+        }));
 
-// **Image Upload Actions**
-uploadImage: async (file) => {
-  const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET;
-  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("upload_preset", uploadPreset);
-  formData.append("folder", "cats"); // Uploads the image to the 'cats' folder
-  console.log(file, "file");
-  console.log(formData, "formData");
+        return { success: true, message: "Cat deleted successfully" };
+      },
 
-  const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-    method: "POST",
-    body: formData,
-  });
+      // **Image Upload Actions**
+      uploadImage: async (file) => {
+        const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET;
+        const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", uploadPreset);
+        formData.append("folder", "cats"); // Uploads the image to the 'cats' folder
+        console.log(file, "file");
+        console.log(formData, "formData");
 
-  const data = await response.json();
-  if (data.secure_url) {
-    console.log("Uploaded image URL:", data.secure_url);
-    return data.secure_url;
-  } else {
-    console.error("Upload error:", data.error.message);
-    return null;
-  }
-},
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await response.json();
+        if (data.secure_url) {
+          console.log("Uploaded image URL:", data.secure_url);
+          return data.secure_url;
+        } else {
+          console.error("Upload error:", data.error.message);
+          return null;
+        }
+      },
 
 
 
@@ -734,7 +734,7 @@ uploadImage: async (file) => {
           console.error("Token is missing. Please provide a valid token.");
           return { success: false, message: "Token is required." };
         }
-      
+
         const response = await fetch(`${baseApiUrl}/api/reset-password`, {
           method: "PUT",
           headers: {
@@ -745,9 +745,9 @@ uploadImage: async (file) => {
             new_password: newPassword,
           }),
         });
-      
+
         const data = await response.json();
-      
+
         if (response.ok) {
           console.log("Password reset successfully.");
           return { success: true, message: "Password has been reset successfully." };
@@ -756,61 +756,98 @@ uploadImage: async (file) => {
           return { success: false, message: data.error || "Error resetting password." };
         }
       },
+      // getUserProfile: async () => {
+      //   const token = localStorage.getItem("token");
+      //   if (!token) {
+      //     console.error("No token found");
+      //     return null;
+      //   }
+
+      //   const BACKEND_URL = process.env.BACKEND_URL;
+      //   console.log("Fetching user profile from:", `${BACKEND_URL}/api/user`);
+
+      //   const response = await fetch(`${BACKEND_URL}/api/user`, {
+      //     method: "GET",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       "Authorization": `Bearer ${token}`,
+      //     },
+      //   });
+
+      //   if (!response.ok) {
+      //     const responseText = await response.text();  // Read the response text
+      //     console.error(`Failed to fetch user profile: ${response.status} ${response.statusText}`);
+      //     console.error("Error details:", responseText);  // Log the full response body to see the error details
+      //     return null;
+      //   }
+
+      //   const responseText = await response.text();  // Read the response text
+      //   console.log("Response Text:", responseText);
+
+      //   let data = null;
+      //   if (responseText) {
+      //     try {
+      //       data = JSON.parse(responseText);
+      //     } catch (error) {
+      //       console.error("Error parsing JSON response:", error);
+      //       console.error("Response Text:", responseText);
+      //       return null;
+      //     }
+      //   }
+
+      //   setStore({ user: data });
+      //   console.log("Fetched user profile:", data);
+      //   return data;
+      // },
+
+
       getUserProfile: async () => {
-        const token = localStorage.getItem("token");
+        // const token = localStorage.getItem("token");
+        const token = localStorage.getItem("accessToken");
+        
         if (!token) {
           console.error("No token found");
           return null;
         }
-      
+
         const BACKEND_URL = process.env.BACKEND_URL;
         console.log("Fetching user profile from:", `${BACKEND_URL}/api/user`);
-      
-        const response = await fetch(`${BACKEND_URL}/api/user`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-          },
-        });
-      
-        if (!response.ok) {
-          const responseText = await response.text();  // Read the response text
-          console.error(`Failed to fetch user profile: ${response.status} ${response.statusText}`);
-          console.error("Error details:", responseText);  // Log the full response body to see the error details
-          return null;
-        }
-      
-        const responseText = await response.text();  // Read the response text
-        console.log("Response Text:", responseText);
-      
-        let data = null;
-        if (responseText) {
-          try {
-            data = JSON.parse(responseText);
-          } catch (error) {
-            console.error("Error parsing JSON response:", error);
-            console.error("Response Text:", responseText);
-            return null;
+
+        try {
+          const response = await fetch(`${BACKEND_URL}/api/user`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`,
+            },
+          });
+          console.log(response);
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Error fetching user profile:", errorData);
+            throw new Error(errorData.msg || 'Failed to fetch user profile');
           }
+          
+          const data = await response.json();
+          console.log("getUserProfile data" ,data);
+          return data;
+        } catch (error) {
+          console.error("Error in getUserProfile:", error);
+          throw error;
         }
-      
-        setStore({ user: data });
-        console.log("Fetched user profile:", data);
-        return data;
       },
-      
-      
+
 
 
       requestPasswordReset: async (email) => {
         const baseApiUrl = process.env.BACKEND_URL;
-      
+
         if (!email) {
           console.error("Email is required.");
           return { success: false, message: "Email is required." };
         }
-      
+
         const response = await fetch(`${baseApiUrl}/api/request_reset`, {
           method: "POST",
           headers: {
@@ -818,9 +855,9 @@ uploadImage: async (file) => {
           },
           body: JSON.stringify({ email }),
         });
-      
+
         const data = await response.json();
-      
+
         if (response.ok) {
           console.log("Password reset link sent successfully.");
           return { success: true, message: "If your email is in our system, you will receive a password reset link." };
@@ -829,7 +866,7 @@ uploadImage: async (file) => {
           return { success: false, message: data.error || "Failed to send password reset link." };
         }
       },
-      
+
     },
   };
 };
