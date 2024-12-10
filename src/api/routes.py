@@ -50,22 +50,48 @@ stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 def handle_hello():
     return jsonify({"message": "Hello! I'm a message that came from the backend."}), 200
 
+# @api.route('/user', methods=['GET'])
+# @jwt_required()
+# def get_user_data():
+#     try:
+#         # Get the identity of the current user from the JWT token
+#         current_user_id = get_jwt_identity()
+
+#         # Fetch user data asynchronously from the database
+#         user =  User.query.get(current_user_id)
+
+#         if not user:
+#                 return jsonify({"msg": "User not found"}), 404
+
+#         # If the user is found, return the serialized data
+#         return jsonify(user.serialize()), 200
+
+#     except Exception as e:
+#         return jsonify({"msg": f"Error fetching user data: {str(e)}"}), 422
+
 @api.route('/user', methods=['GET'])
 @jwt_required()
 def get_user_data():
     try:
         # Get the identity of the current user from the JWT token
         current_user_id = get_jwt_identity()
-
-        # Fetch user data asynchronously from the database
-        user =  User.query.get(current_user_id)
+        
+        # Convert string ID to integer if it's not already
+        if isinstance(current_user_id, str):
+            current_user_id = int(current_user_id)
+        
+        # Fetch user data from the database
+        user = User.query.get(current_user_id)
 
         if not user:
-                return jsonify({"msg": "User not found"}), 404
+            return jsonify({"msg": "User not found"}), 404
 
         # If the user is found, return the serialized data
         return jsonify(user.serialize()), 200
 
+    except ValueError:
+        # Handle case where current_user_id can't be converted to int
+        return jsonify({"msg": "Invalid user ID format"}), 422
     except Exception as e:
         return jsonify({"msg": f"Error fetching user data: {str(e)}"}), 422
 

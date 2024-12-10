@@ -802,9 +802,9 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 
       getUserProfile: async () => {
-        // const token = localStorage.getItem("token");
-        const token = localStorage.getItem("accessToken");
-        
+        const token = localStorage.getItem("token");
+        // const token = localStorage.getItem("accessToken");
+
         if (!token) {
           console.error("No token found");
           return null;
@@ -828,9 +828,9 @@ const getState = ({ getStore, getActions, setStore }) => {
             console.error("Error fetching user profile:", errorData);
             throw new Error(errorData.msg || 'Failed to fetch user profile');
           }
-          
+
           const data = await response.json();
-          console.log("getUserProfile data" ,data);
+          console.log("getUserProfile data", data);
           return data;
         } catch (error) {
           console.error("Error in getUserProfile:", error);
