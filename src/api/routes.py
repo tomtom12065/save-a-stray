@@ -45,61 +45,48 @@ def handle_hello():
 
 @api.route('/user', methods=['GET'])
 @jwt_required()
-def get_user_data():
-    try:
-        # Get the identity of the current user from the JWT token
-        current_user_id = get_jwt_identity()
-        
-        # Fetch user data from the database
-        user = User.query.get(current_user_id)
-        
-        if user:
-            # Serialize the user data and return it
-            return jsonify(user.serialize()), 200
-        else:
-            # If the user is not found, return a 404 error
-            return jsonify({"error": "User not found"}), 404
-    except Exception as e:
-        # Handle any server errors
-        return jsonify({"error": "An error occurred while retrieving user data", "details": str(e)}), 500
-    
+async def get_user_data():
+    # Get the identity of the current user from the JWT token
+    current_user_id = get_jwt_identity()
+
+    # Fetch user data asynchronously from the database
+    user = await User.query.get(current_user_id)
+
+    # If the user is found, return the serialized data
+    if user:
+        return jsonify(user.serialize()), 200
+
+    # If the user is not found, return a 404 error
+    return jsonify({"error": "User not found"}), 404
 @api.route("/cats", methods=["GET"])
 def get_cats():
-    try:
-        cats = Cat.query.all()
-        if not cats:
-            return jsonify({"message": "No cats found", "cats": []}), 200
-        cats_serialized = [cat.serialize() for cat in cats]
-        return jsonify({"cats": cats_serialized}), 200
-    except Exception as e:
-        print("Error in get_cats route:", str(e))
-        return jsonify({"error": "Internal server error", "details": str(e)}), 500
+    cats = Cat.query.all()
+    if not cats:
+        return jsonify({"message": "No cats found", "cats": []}), 200
+    
+    cats_serialized = [cat.serialize() for cat in cats]
+    return jsonify({"cats": cats_serialized}), 200
 
-@api.route('/get-applications',methods=["GET"])
+@api.route('/get-applications', methods=["GET"])
 @jwt_required()
 def get_applications():
     current_user_id = get_jwt_identity()
-    try:
-        user_cats = Cat.query.filter_by(user_id=current_user_id).all()
-        cats_ids = [cat.id for cat in user_cats]
+    
+    user_cats = Cat.query.filter_by(user_id=current_user_id).all()
+    cats_ids = [cat.id for cat in user_cats]
 
-        applications= Application.query.filter(Application.cat_id.in_(cats_ids)).all()
+    applications = Application.query.filter(Application.cat_id.in_(cats_ids)).all()
 
-        results={}
-        for cat in user_cats:
-            cat_applications= [app.serialize() for app in applications if app.cat_id == cat.id]
-            if cat_applications:
-                results[cat.id]= {
-                    "cat": cat.serialize(),
-                    "applications": cat_applications
+    results = {}
+    for cat in user_cats:
+        cat_applications = [app.serialize() for app in applications if app.cat_id == cat.id]
+        if cat_applications:
+            results[cat.id] = {
+                "cat": cat.serialize(),
+                "applications": cat_applications
+            }
 
-                }
-
-        return jsonify(results), 200
-    except Exception as e:
-        return jsonify({
-            "error": str(e)
-        }), 500
+    return jsonify(results), 200
 
 
 
@@ -156,44 +143,36 @@ def update_application_status(application_id):
 
 
 
-
 @api.route('/applications', methods=['POST'])
 @jwt_required()  # Protect this route with JWT authentication
 def create_application():
-    try:
-        # Get the current user's identity
-        user_id = get_jwt_identity()
+    # Get the current user's identity
+    user_id = get_jwt_identity()
 
-        # Parse the incoming JSON data
-        data = request.get_json()
+    # Parse the incoming JSON data
+    data = request.get_json()
 
-        # Validate the incoming data
-        required_fields = ['cat_id', 'applicant_name', 'contact_info', 'reason']
-        for field in required_fields:
-            if field not in data:
-                return jsonify({"error": f"Missing required field: {field}"}), 400
+    # Validate the incoming data
+    required_fields = ['cat_id', 'applicant_name', 'contact_info', 'reason']
+    for field in required_fields:
+        if field not in data:
+            return jsonify({"error": f"Missing required field: {field}"}), 400
 
-        # Create a new application instance
-        new_application = Application(
-            cat_id=data['cat_id'],
-            applicant_name=data['applicant_name'],
-            contact_info=data['contact_info'],
-            reason=data['reason'],
-            status='pending',  # Default status for new applications
-            user_id=user_id  # Associate the application with the authenticated user
-        )
+    # Create a new application instance
+    new_application = Application(
+        cat_id=data['cat_id'],
+        applicant_name=data['applicant_name'],
+        contact_info=data['contact_info'],
+        reason=data['reason'],
+        status='pending',  # Default status for new applications
+        user_id=user_id  # Associate the application with the authenticated user
+    )
 
-        # Add to the database
-        db.session.add(new_application)
-        db.session.commit()
+    # Add to the database
+    db.session.add(new_application)
+    db.session.commit()
 
-        return jsonify({"message": "Application submitted successfully!"}), 201
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-
+    return jsonify({"message": "Application submitted successfully!"}), 201
 
 
 
@@ -204,20 +183,15 @@ def create_application():
 
 @api.route("/user-cats", methods=["GET"])
 @jwt_required()
-def get_self_cats():
-    try:
-       
-        current_user_id = get_jwt_identity()
-        # user = User.query.filter_by(id=current_user).first()
-        user = User.query.get(current_user_id)
-        
-        if not user:
-            return jsonify({"error": "User not found"}), 404
-        cats = user.cats
-        return jsonify([cat.serialize() for cat in cats]), 200
-    except Exception as e:
-        print(f"Error in get_self_cats: {str(e)}")
-        return jsonify({"error": "Internal server error"}), 500
+async def get_self_cats():
+    current_user_id = get_jwt_identity()
+    user = await User.query.get(current_user_id)
+
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    cats = user.cats
+    return jsonify([cat.serialize() for cat in cats]), 200
 
 
 # @api.route("/cat/<int:cat_id>", methods=["GET"])
@@ -245,32 +219,27 @@ def get_self_cats():
 
 @api.route('/upload_profile_picture', methods=['POST'])
 @jwt_required()
-def upload_profile_picture():
-    try:
-        # Get the current user ID from the JWT token
-        current_user_id = get_jwt_identity()
+async def upload_profile_picture():
+    current_user_id = get_jwt_identity()
 
-        # Fetch the user from the database
-        user = User.query.get(current_user_id)
-        if not user:
-            return jsonify({"error": "User not found"}), 404
+    # Fetch the user from the database
+    user = await User.query.get(current_user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
 
-        # Get the file from the request
-        file_to_upload = request.files.get('file')
-        if not file_to_upload:
-            return jsonify({"error": "No file uploaded"}), 400
+    # Get the file from the request
+    file_to_upload = request.files.get('file')
+    if not file_to_upload:
+        return jsonify({"error": "No file uploaded"}), 400
 
-        # Upload the file to Cloudinary
-        upload_result = cloudinary.uploader.upload(file_to_upload)
+    # Upload the file to Cloudinary
+    upload_result = cloudinary.uploader.upload(file_to_upload)
 
-        # Update the user's image_url in the database
-        user.image_url = upload_result['secure_url']
-        db.session.commit()
+    # Update the user's image_url in the database
+    user.image_url = upload_result['secure_url']
+    db.session.commit()
 
-        return jsonify({"message": "Profile picture updated successfully", "url": user.image_url}), 200
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+    return jsonify({"message": "Profile picture updated successfully", "url": user.image_url}), 200
 
 
 # @api.route('/user/<int:user_id>', methods=['GET'])
@@ -316,7 +285,7 @@ def hash_password(password, salt):
 # User registration
 
 @api.route('/register', methods=['POST'])
-def register_user():
+async def register_user():
     data = request.get_json()
     email = data.get("email")
     password = data.get("password")
@@ -326,7 +295,7 @@ def register_user():
     # Validate required fields
     if not all([email, password, username]):
         return jsonify({"error": "Email, password, and username are required"}), 400
-    if User.query.filter_by(email=email).first():
+    if await User.query.filter_by(email=email).first():
         return jsonify({"error": "User already exists"}), 409
 
     # Hash the password with salt
@@ -342,15 +311,10 @@ def register_user():
         salt=salt,
         profilepic=profilepic  # Add profile picture if provided
     )
-    try:
-        db.session.add(new_user)
-        db.session.commit()
-        return jsonify({"success": True, "message": "User registered successfully", "user": new_user.serialize()}), 201
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+    db.session.add(new_user)
+    db.session.commit()
 
-
+    return jsonify({"success": True, "message": "User registered successfully", "user": new_user.serialize()}), 201
 
 
 
@@ -378,23 +342,18 @@ def login():
     }), 200
 
 
-
 @api.route("/get_messages", methods=["GET"])
 @jwt_required()
-def get_messages():
+async def get_messages():
     user_id = get_jwt_identity()  # Get the logged-in user's ID
 
-    try:
-        # Fetch all messages where the user is either the sender or recipient
-        messages = ChatMessage.query.filter(
-            (ChatMessage.sender_id == user_id) | (ChatMessage.recipient_id == user_id)
-        ).order_by(ChatMessage.timestamp.desc()).all()
+    # Fetch all messages where the user is either the sender or recipient
+    messages = await ChatMessage.query.filter(
+        (ChatMessage.sender_id == user_id) | (ChatMessage.recipient_id == user_id)
+    ).order_by(ChatMessage.timestamp.desc()).all()
 
-        # Serialize and return the messages
-        return jsonify([message.serialize() for message in messages]), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
+    # Serialize and return the messages
+    return jsonify([message.serialize() for message in messages]), 200
 
 
 # @api.route("/get_all_messages", methods=["GET"])
@@ -404,28 +363,22 @@ def get_messages():
 #     messages = ChatMessage.query.filter_by(recipient_id=recipient_id).order_by(ChatMessage.timestamp.desc()).all()
 #     return jsonify([message.serialize() for message in messages]), 200
 
-
 @api.route("/get_single_message", methods=["GET"])
 @jwt_required()
-def get_single_message():
+async def get_single_message():
     recipient_id = request.args.get("recipient_id")
     sender_id = get_jwt_identity()  # Get the logged-in user's ID
 
     if not recipient_id:
         return jsonify({"error": "Missing required parameters"}), 400
 
-    try:
-        messages = ChatMessage.query.filter(
-            ((ChatMessage.sender_id == sender_id) & (ChatMessage.recipient_id == recipient_id)) |
-            ((ChatMessage.sender_id == recipient_id) & (ChatMessage.recipient_id == sender_id))
-        ).order_by(ChatMessage.timestamp.asc()).all()
+    # Fetch messages between the sender and recipient
+    messages = await ChatMessage.query.filter(
+        ((ChatMessage.sender_id == sender_id) & (ChatMessage.recipient_id == recipient_id)) |
+        ((ChatMessage.sender_id == recipient_id) & (ChatMessage.recipient_id == sender_id))
+    ).order_by(ChatMessage.timestamp.asc()).all()
 
-        return jsonify([message.serialize() for message in messages]), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-
+    return jsonify([message.serialize() for message in messages]), 200
 
 
 
@@ -526,7 +479,7 @@ def mark_as_read():
 
 @api.route("/send_message", methods=["POST"])
 @jwt_required()  # Ensure the user is authenticated
-def send_message():
+async def send_message():
     data = request.get_json()
     print("Received data:", data)  # Log received data for debugging
 
@@ -539,22 +492,16 @@ def send_message():
     if not recipient_id or not text:
         return jsonify({"error": "Missing required fields: recipient_id and text are required"}), 400
 
-    try:
-        # Create and save the new message
-        new_message = ChatMessage(sender_id=sender_id, recipient_id=recipient_id, text=text, read=False)
-        db.session.add(new_message)
-        db.session.commit()
+    # Create and save the new message
+    new_message = ChatMessage(sender_id=sender_id, recipient_id=recipient_id, text=text, read=False)
+    db.session.add(new_message)
+    db.session.commit()
 
-        return jsonify({
-            "message": "Message sent successfully",
-            "data": new_message.serialize()
-        }), 201
-    except Exception as e:
-        db.session.rollback()  # Rollback in case of an error
-        return jsonify({"error": str(e)}), 500
+    return jsonify({
+        "message": "Message sent successfully",
+        "data": new_message.serialize()
+    }), 201
 
-
-    
 
 
 
@@ -570,54 +517,44 @@ def get_single_cat(cat_id):
 
 
 @api.route('/request_reset', methods=['POST'])
-def request_reset():
-    try:
-        email = request.json.get("email")
-        if not email:
-            return jsonify({"error": "Email is required"}), 400
-        user = User.query.filter_by(email=email).first()
-        if user:
-            token = create_access_token(identity=email, expires_delta=timedelta(hours=1))
-            reset_link = f"{os.getenv('FRONTEND_URL')}/reset-Password?token={token}"
-            email_sent = send_email(email, f"Click here to reset your password:\n{reset_link}", "Password Recovery")
-            if email_sent:
-                return jsonify({"message": "If your email is in our system, you will receive a password reset link."}), 200
-            return jsonify({"error": "Failed to send email"}), 500
-        return jsonify({"message": "If your email is in our system, you will receive a password reset link."}), 200
-    except Exception as e:
-        logging.error(f"Error in request_reset: {str(e)}")
-        return jsonify({"error": "An unexpected error occurred"}), 500
+async def request_reset():
+    email = request.json.get("email")
+    if not email:
+        return jsonify({"error": "Email is required"}), 400
+
+    user = await User.query.filter_by(email=email).first()
+    if user:
+        token = create_access_token(identity=email, expires_delta=timedelta(hours=1))
+        reset_link = f"{os.getenv('FRONTEND_URL')}/reset-Password?token={token}"
+        email_sent = send_email(email, f"Click here to reset your password:\n{reset_link}", "Password Recovery")
+        if email_sent:
+            return jsonify({"message": "If your email is in our system, you will receive a password reset link."}), 200
+        return jsonify({"error": "Failed to send email"}), 500
+    
+    return jsonify({"message": "If your email is in our system, you will receive a password reset link."}), 200
 
 
 @api.route("/upload_image", methods=["POST"])
-def upload_image():
-    try:
-        file_to_upload = request.files["file"]
-        upload_result = cloudinary.uploader.upload(file_to_upload)
-        return jsonify({"success": True, "url": upload_result["secure_url"]}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
+async def upload_image():
+    file_to_upload = request.files["file"]
+    upload_result = cloudinary.uploader.upload(file_to_upload)
+    return jsonify({"success": True, "url": upload_result["secure_url"]}), 200
 
 # ---------------------------------------------
 # PUT Routes
 # ---------------------------------------------
-
 @api.route("/reset-password", methods=["PUT"])
 @jwt_required()
-def reset_password():
+async def reset_password():
     email = get_jwt_identity()
-    user = User.query.filter_by(email=email).first_or_404()
+    user = await User.query.filter_by(email=email).first_or_404()
     new_password = request.json.get("new_password")
     if not new_password:
         return jsonify({"error": "New password is required"}), 400
     user.password = hashlib.sha256((new_password + user.salt).encode()).hexdigest()
-    try:
-        db.session.commit()
-        return jsonify({"message": "Password has been reset successfully"}), 200
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+
+    db.session.commit()
+    return jsonify({"message": "Password has been reset successfully"}), 200
 
 
 # ---------------------------------------------
@@ -626,26 +563,22 @@ def reset_password():
 
 @api.route("/delete-cat/<int:cat_id>", methods=["DELETE"])
 @jwt_required()
-def delete_cat(cat_id):
+async def delete_cat(cat_id):
     current_user_id = get_jwt_identity()
-    cat = Cat.query.get(cat_id)
+    cat = await Cat.query.get(cat_id)
     if not cat:
         return jsonify({"error": "Cat not found"}), 404
     if cat.user_id != current_user_id:
         return jsonify({"error": "Unauthorized: You do not own this cat"}), 403
-    try:
-        db.session.delete(cat)
-        db.session.commit()
-        return jsonify({"message": "Cat deleted successfully"}), 200
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
-
+    
+    db.session.delete(cat)
+    db.session.commit()
+    return jsonify({"message": "Cat deleted successfully"}), 200
 
 
 @api.route("/add-cat", methods=["POST"])
 @jwt_required()  # Ensure the user is authenticated
-def add_cat():
+async def add_cat():
     data = request.get_json()
 
     # Get the user ID from the JWT token
@@ -662,31 +595,22 @@ def add_cat():
     if not name or not breed or not age or not image_url:
         return jsonify({"error": "Missing required fields"}), 400
 
-    try:
-        # Create a new Cat instance
-        new_cat = Cat(
-            name=name,
-            breed=breed,
-            age=age,
-            price=price,
-            image_url=image_url,
-            user_id=user_id,  # Assign the logged-in user as the owner
-        )
-        db.session.add(new_cat)
-        db.session.commit()
+    # Create a new Cat instance
+    new_cat = Cat(
+        name=name,
+        breed=breed,
+        age=age,
+        price=price,
+        image_url=image_url,
+        user_id=user_id,  # Assign the logged-in user as the owner
+    )
+    db.session.add(new_cat)
+    db.session.commit()
 
-        return jsonify({
-            "message": "Cat added successfully",
-            "cat": new_cat.serialize()
-        }), 201
-
-    except Exception as e:
-        return jsonify({
-            "error": "Failed to add cat",
-            "details": str(e)
-        }), 500
-
-
+    return jsonify({
+        "message": "Cat added successfully",
+        "cat": new_cat.serialize()
+    }), 201
 
 
 
@@ -694,53 +618,44 @@ def add_cat():
 
 
 @api.route('/create-payment-intent', methods=['OPTIONS', 'POST'])
-def create_payment_intent():
+async def create_payment_intent():
     if request.method == 'OPTIONS':
         return '', 204
-    try:
-        data = request.get_json()
-        intent = stripe.PaymentIntent.create(
-            amount=data['amount'],  # amount in cents
-            currency='usd',
-            metadata={'integration_check': 'accept_a_payment'},
-        )
-        return jsonify({
-            'clientSecret': intent['client_secret']
-        })
-    except Exception as e:
-        return jsonify(error=str(e)), 403
+
+    data = request.get_json()
+    intent = stripe.PaymentIntent.create(
+        amount=data['amount'],  # amount in cents
+        currency='usd',
+        metadata={'integration_check': 'accept_a_payment'},
+    )
+
+    return jsonify({
+        'clientSecret': intent['client_secret']
+    })
 
 @api.route('/payout', methods=['POST'])
 @jwt_required() 
-def create_payout():
-    try:
-        current_user_id = get_jwt_identity()
-        data = request.get_json()
+async def create_payout():
+    current_user_id = get_jwt_identity()
+    data = request.get_json()
 
+    # Here you would typically look up the Stripe account ID for the current user
+    # This is just an example - replace with your actual logic
+    # provider_stripe_account = get_provider_stripe_account(current_user_id)
 
-        # Here you would typically look up the Stripe account ID for the current user
-        # This is just an example - replace with your actual logic
-        # provider_stripe_account = get_provider_stripe_account(current_user_id)
+    # Create a transfer to the connected account
+    payout = stripe.Payout.create(
+        amount=data['amount'],  # amount in cents
+        currency='usd',
+        # stripe_account="acct_1Q18mE2ZAO1b3fPQ"
+        # stripe_account="acct_1QIydjIKKqBcu9li" #regular stripe acc
+        stripe_account="acct_1QIyvyIurh11jVin" #sandbox stripe acc
 
-        # Create a transfer to the connected account
-        payout = stripe.Payout.create(
-            amount=data['amount'],  # amount in cents
-            currency='usd',
-            # stripe_account="acct_1Q18mE2ZAO1b3fPQ"
-            # stripe_account="acct_1QIydjIKKqBcu9li" #regular stripe acc
-            stripe_account="acct_1QIyvyIurh11jVin" #sandbox stripe acc
-            
-            # stripe_account=data['providerId']  # Stripe Account ID of the provider
-            # stripe_account=provider_stripe_account
-        )
+        # stripe_account=data['providerId']  # Stripe Account ID of the provider
+        # stripe_account=provider_stripe_account
+    )
 
-        return jsonify({
-            'success': True,
-            'payoutId': payout.id
-        })
-
-    except Exception as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 403
+    return jsonify({
+        'success': True,
+        'payoutId': payout.id
+    })

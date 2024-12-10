@@ -13,41 +13,37 @@ export const ResetPassword = () => {
 
     const onSubmit = async (event) => {
         event.preventDefault();
-
+      
         if (!token) {
-            setErrorMessage("Token is required.");
-            return;
+          setErrorMessage("Token is required.");
+          return;
         }
-
+      
         if (password !== confirmPassword) {
-            setErrorMessage("Passwords do not match.");
-            return;
+          setErrorMessage("Passwords do not match.");
+          return;
         }
-
-        try {
-            const response = await fetch(`${process.env.BACKEND_URL}/api/reset-password`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    new_password: password,
-                }),
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                navigate("/login");
-            } else {
-                setErrorMessage(data.error || "An error occurred during password reset.");
-            }
-        } catch (error) {
-            setErrorMessage("An error occurred while resetting the password.");
-            console.error("Error during password reset:", error);
+      
+        const response = await fetch(`${process.env.BACKEND_URL}/api/reset-password`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            new_password: password,
+          }),
+        });
+      
+        const data = await response.json();
+      
+        if (response.ok) {
+          navigate("/login");
+        } else {
+          setErrorMessage(data.error || "An error occurred during password reset.");
         }
-    };
+      };
+      
 
     return (
         <div className="container">

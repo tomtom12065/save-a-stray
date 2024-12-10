@@ -22,31 +22,29 @@ const ProfilePage = () => {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      try {
-        setIsLoading(true);
-
-        // Fetch user profile
-        const userProfile = await actions.getUserProfile();
-        if (!userProfile) {
-          setError("Failed to fetch user profile.");
-          return;
-        }
-
-        // Fetch user's cats
-        const success = await actions.getSelfCats();
-        if (!success) {
-          setError("Failed to fetch your cats.");
-        }
-
-        setUsername(userProfile.username);
-        setEmail(userProfile.email);
-      } catch (err) {
-        console.error("Error fetching data:", err);
-        setError("An error occurred while fetching data.");
-      } finally {
+      setIsLoading(true);
+    
+      // Fetch user profile
+      const userProfile = await actions.getUserProfile();
+      if (!userProfile) {
+        setError("Failed to fetch user profile.");
         setIsLoading(false);
+        return;
       }
+    
+      // Fetch user's cats
+      const success = await actions.getSelfCats();
+      if (!success) {
+        setError("Failed to fetch your cats.");
+        setIsLoading(false);
+        return;
+      }
+    
+      setUsername(userProfile.username);
+      setEmail(userProfile.email);
+      setIsLoading(false);
     };
+    
 
     fetchUserData();
   }, [actions]);
@@ -61,24 +59,25 @@ const ProfilePage = () => {
       username: type === "username" ? username : store.user.username, // Use updated or current value
       email: type === "email" ? email : store.user.email, // Use updated or current value
     };
-
-    try {
+    
+    const updateProfile = async () => {
       const response = await actions.updateUser(updatedInfo);
-
+    
       if (response) {
         setUpdateMessage(`${type === "username" ? "Username" : "Email"} updated successfully!`);
         if (type === "username") setShowUsernameInput(false);
         if (type === "email") setShowEmailInput(false);
-
+    
         // Ensure store updates with new user data
         await actions.getUserProfile();
       } else {
         setUpdateMessage(`Failed to update ${type}. Please try again.`);
       }
-    } catch (err) {
-      console.error("Error updating profile:", err);
-      setError("An error occurred while updating your profile. Please try again.");
-    }
+    };
+    
+    // Call updateProfile to execute the update process
+    updateProfile();
+    
   };
 
   const handleDeleteCat = async (catId) => {

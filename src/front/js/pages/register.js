@@ -29,24 +29,19 @@ const Register = () => {
     }
 
     setIsUploading(true);
-    try {
-      console.log("Uploading image...");
-      const uploadedImageUrl = await actions.uploadImage(file); // Call uploadImage action
-      console.log("Image uploaded successfully:", uploadedImageUrl);
-      setIsUploading(false);
-
-      if (uploadedImageUrl) {
-        setProfilepic(uploadedImageUrl); // Set the profile pic URL
-        setError(null); // Clear error if successful
-      } else {
-        setError("Failed to upload image. Please try again.");
-        console.log("Error: Failed to upload image.");
-      }
-    } catch (err) {
-      console.error("Image upload error:", err);
-      setIsUploading(false);
-      setError("An unexpected error occurred during image upload.");
+    console.log("Uploading image...");
+    const uploadedImageUrl = await actions.uploadImage(file); // Call uploadImage action
+    console.log("Image uploaded successfully:", uploadedImageUrl);
+    setIsUploading(false);
+    
+    if (uploadedImageUrl) {
+      setProfilepic(uploadedImageUrl); // Set the profile pic URL
+      setError(null); // Clear error if successful
+    } else {
+      setError("Failed to upload image. Please try again.");
+      console.log("Error: Failed to upload image.");
     }
+    
   };
 
   const handleSubmit = async (event) => {
@@ -81,34 +76,30 @@ const Register = () => {
     }
 
     if (isUsernameValid && isEmailValid && isPasswordValid) {
-      try {
-        const userData = {
-          email,
-          password,
-          username,
-          profilepic, // Include profile picture URL
-        };
-
-        console.log("Submitting user data:", userData);
-
-        const response = await actions.registerUser(userData);
-        console.log("Registration response:", response);
-
-        if (response.success) {
-          setSuccess("Registration successful!");
-          console.log("Registration successful. Redirecting...");
-          navigate("/"); // Redirect on successful registration
-        } else {
-          setError(response.message || "Failed to register. Please try again.");
-          console.log("Error: Registration failed with message:", response.message);
-        }
-      } catch (error) {
-        console.error("Error registering user:", error);
-        setError("An unexpected error occurred.");
+      const userData = {
+        email,
+        password,
+        username,
+        profilepic, // Include profile picture URL
+      };
+    
+      console.log("Submitting user data:", userData);
+    
+      const response = await actions.registerUser(userData);
+      console.log("Registration response:", response);
+    
+      if (response.success) {
+        setSuccess("Registration successful!");
+        console.log("Registration successful. Redirecting...");
+        navigate("/"); // Redirect on successful registration
+      } else {
+        setError(response.message || "Failed to register. Please try again.");
+        console.log("Error: Registration failed with message:", response.message);
       }
     } else {
       console.log("Validation failed. Invalid items:", invaliditems);
     }
+    
   };
 
   return (
