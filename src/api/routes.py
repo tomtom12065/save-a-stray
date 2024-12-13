@@ -129,6 +129,14 @@ def get_sent_applications():
 
 
 
+
+
+
+
+
+
+
+
 @api.route("/applications/<int:application_id>/status", methods=["PUT"])
 @jwt_required()
 def update_application_status(application_id):
@@ -136,10 +144,11 @@ def update_application_status(application_id):
     data = request.get_json()
     new_status = data.get("status")
 
-    # Validate new status input
+    # Validate the status input
     if new_status not in ["approved", "rejected"]:
         return jsonify({"error": "Invalid status"}), 400
 
+    # Fetch the application and related cat
     application = Application.query.get(application_id)
     if not application:
         return jsonify({"error": "Application not found"}), 404
@@ -148,20 +157,66 @@ def update_application_status(application_id):
     if not cat:
         return jsonify({"error": "Cat not found"}), 404
 
-    # Verify that the logged-in user owns the cat
+    # Verify the logged-in user owns the cat
     if cat.user_id != int(user_id):
-        return jsonify({"error": "Unauthorized," ,"userid": user_id ,"cat_user":cat.user_id}), 403
+        return jsonify({"error": "Unauthorized"}), 403
 
-    # If approving, ensure no other approved application exists for this cat
+    # Prevent multiple approvals for the same cat
     if new_status == "approved":
         existing_approved = Application.query.filter_by(cat_id=application.cat_id, status="approved").first()
         if existing_approved and existing_approved.id != application.id:
             return jsonify({"error": "This cat already has an approved application"}), 400
 
+        # Generate payment link
+        payment_link = generate_payment_link(cat.price, application.user_id, application.id)
+
+        # Send notification email
+        email_sent = send_payment_email(application.contact_info, payment_link, cat.name)
+        if not email_sent:
+            return jsonify({"error": "Failed to send payment notification email"}), 500
+
+    # Update the application status
     application.status = new_status
     db.session.commit()
 
-    return jsonify({"message": "Application status updated", "application": application.serialize()}), 200
+    return jsonify({
+        "message": f"Application status updated to {new_status}",
+        "application": application.serialize(),
+    }), 200
+
+
+def generate_payment_link(amount, user_id, application_id):
+    try:
+        # Set the Stripe secret key from the environment variable
+        stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+
+        # Create a PaymentIntent with the provided amount and metadata
+        intent = stripe.PaymentIntent.create(
+            amount=int(amount * 100),  # Convert to cents
+            currency="usd",
+            metadata={"application_id": application_id, "user_id": user_id},
+        )
+
+        # Use FRONTEND_URL to construct the payment link
+        frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
+        return f"{frontend_url}/payment?clientSecret={intent['client_secret']}&appId={application_id}"
+    except Exception as e:
+        print(f"Error generating payment link: {str(e)}")
+        return None
+    
+
+
+def send_payment_email(recipient, payment_link, cat_name):
+    subject = "Your Cat Adoption Application Has Been Approved!"
+    body = f"""
+    Congratulations! Your application to adopt {cat_name} has been approved.
+
+    Please complete the adoption process by making a payment at the following link:
+    {payment_link}
+
+    Thank you for helping us save a stray!
+    """
+    return send_email(recipient, body, subject)
 
 
 
