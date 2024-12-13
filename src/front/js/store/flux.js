@@ -183,7 +183,38 @@ const getState = ({ getStore, getActions, setStore }) => {
       },
     
   
-
+      sendConfirmationEmail: async (applicationId) => {
+        const token = localStorage.getItem("token"); // Retrieve JWT token
+        if (!token) {
+          console.error("No token found. User not authenticated.");
+          return { success: false, message: "User not authenticated." };
+        }
+      
+        try {
+          const response = await fetch(`${process.env.BACKEND_URL}/api/send-confirmation-email`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ application_id: applicationId }),
+          });
+      
+          const data = await response.json();
+      
+          if (!response.ok) {
+            console.error("Error sending confirmation email:", data.error);
+            return { success: false, message: data.error || "Failed to send confirmation email." };
+          }
+      
+          console.log("Confirmation email sent successfully:", data.message);
+          return { success: true, message: data.message };
+        } catch (error) {
+          console.error("Error during confirmation email request:", error);
+          return { success: false, message: "An error occurred while sending the confirmation email." };
+        }
+      },
+      
 
 
 
@@ -434,39 +465,48 @@ const getState = ({ getStore, getActions, setStore }) => {
       updateApplicationStatus: async (applicationId, newStatus) => {
         const store = getStore();
         const token = store.token;
-    
+      
         if (!token) {
-            console.error("No token found, user not authenticated");
-            return { success: false, message: "Not authenticated" };
+          console.error("No token found, user not authenticated");
+          return { success: false, message: "Not authenticated" };
         }
-    
+      
         try {
-            const response = await fetch(`${process.env.BACKEND_URL}/api/applications/${applicationId}/status`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ status: newStatus }),
-            });
-    
-            const data = await response.json();
-            if (!response.ok) {
-                console.error("Error updating application status:", data.error);
-                return { success: false, message: data.error || "Failed to update status" };
+          const response = await fetch(`${process.env.BACKEND_URL}/api/applications/${applicationId}/status`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ status: newStatus }),
+          });
+      
+          const data = await response.json();
+          if (!response.ok) {
+            console.error("Error updating application status:", data.error);
+            return { success: false, message: data.error || "Failed to update status" };
+          }
+      
+          // Refresh applications after updating
+          const actions = getActions();
+          await actions.getCatApplications();
+      
+          // Send confirmation email if status is approved
+          if (newStatus === "approved") {
+            const emailResponse = await actions.sendConfirmationEmail(applicationId);
+            if (!emailResponse.success) {
+              console.error("Error sending confirmation email:", emailResponse.message);
+              return { success: false, message: emailResponse.message };
             }
-    
-            // Refresh the applications after updating to reflect changes
-            const actions = getActions();
-            await actions.getCatApplications();
-    
-            return { success: true, message: "Status updated successfully" };
+          }
+      
+          return { success: true, message: "Status updated successfully" };
         } catch (error) {
-            console.error("Exception while updating application status:", error);
-            return { success: false, message: error.message };
+          console.error("Exception while updating application status:", error);
+          return { success: false, message: error.message };
         }
-    },
-    
+      },
+      
       
       
       

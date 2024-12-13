@@ -218,6 +218,79 @@ def send_payment_email(recipient, payment_link, cat_name):
     """
     return send_email(recipient, body, subject)
 
+@api.route('/payout', methods=['POST'])
+@jwt_required()
+def create_payout():
+    try:
+        data = request.get_json()
+        amount = data['amount']  # Amount in cents
+        owner_stripe_account = data['stripe_account_id']  # Cat owner's Stripe account ID
+
+        # Create a transfer to the owner's connected account
+        transfer = stripe.Transfer.create(
+            amount=amount,
+            currency="usd",
+            destination=owner_stripe_account,
+        )
+
+        return jsonify({"success": True, "transfer_id": transfer.id}), 200
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@api.route('/send-confirmation-email', methods=['POST'])
+@jwt_required()
+def send_confirmation_email():
+    try:
+        # Get the logged-in user
+        user_id = get_jwt_identity()
+
+        # Parse the JSON payload
+        data = request.get_json()
+        application_id = data.get('application_id')
+
+        # Fetch the application and cat details
+        application = Application.query.get(application_id)
+        if not application:
+            return jsonify({"error": "Application not found"}), 404
+
+        cat = Cat.query.get(application.cat_id)
+        if not cat:
+            return jsonify({"error": "Cat not found"}), 404
+
+        # Ensure the user is the one who paid for the adoption
+        if application.user_id != int(user_id):
+            return jsonify({"error": "Unauthorized"}), 403
+
+        # Prepare email content
+        subject = f"Adoption Confirmation for {cat.name}"
+        body = f"""
+        Thank you for completing the payment for {cat.name}!
+
+        We are thrilled to confirm your adoption request. Our team will contact you shortly with the next steps.
+        
+        Cat Details:
+        - Name: {cat.name}
+        - Breed: {cat.breed}
+        - Age: {cat.age} years
+        
+        Thank you for helping us save a stray!
+
+        Best regards,
+        Save a Stray Team
+        """
+
+        # Send the confirmation email
+        email_sent = send_email(application.contact_info, body, subject)
+        if not email_sent:
+            return jsonify({"error": "Failed to send confirmation email"}), 500
+
+        return jsonify({"message": "Confirmation email sent successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
+
 
 
 
@@ -777,37 +850,3 @@ def create_payment_intent():
     except Exception as e:
         return jsonify(error=str(e)), 403
 
-@api.route('/payout', methods=['POST'])
-@jwt_required() 
-def create_payout():
-    try:
-        current_user_id = get_jwt_identity()
-        data = request.get_json()
-
-
-        # Here you would typically look up the Stripe account ID for the current user
-        # This is just an example - replace with your actual logic
-        # provider_stripe_account = get_provider_stripe_account(current_user_id)
-
-        # Create a transfer to the connected account
-        payout = stripe.Payout.create(
-            amount=data['amount'],  # amount in cents
-            currency='usd',
-            # stripe_account="acct_1Q18mE2ZAO1b3fPQ"
-            # stripe_account="acct_1QIydjIKKqBcu9li" #regular stripe acc
-            stripe_account="acct_1QIyvyIurh11jVin" #sandbox stripe acc
-            
-            # stripe_account=data['providerId']  # Stripe Account ID of the provider
-            # stripe_account=provider_stripe_account
-        )
-
-        return jsonify({
-            'success': True,
-            'payoutId': payout.id
-        })
-
-    except Exception as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 403
