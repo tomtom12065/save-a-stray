@@ -21,7 +21,7 @@ app = Flask(__name__)
 app.url_map.strict_slashes = False
 
 # Enable CORS for the specified frontend origin
-CORS(app, resources={r"/*": {"origins": "https://jubilant-space-happiness-gv6j7wgppjw3wx77-3000.app.github.dev"}})
+CORS(app, resources={r"/*": {"origins": "https://orange-doodle-9gwrj4px566h9v9w-3000.app.github.dev/"}})
 
 # Database configuration
 db_url = os.getenv("DATABASE_URL")

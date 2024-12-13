@@ -20,10 +20,9 @@ const Layout = () => {
   const basename = process.env.BASENAME || "";
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      actions.getUserProfile(token); // Ensure user profile is fetched if token exists
-    }
+
+      actions.getUserProfile(); // Ensure user profile is fetched if token exists
+    
   
   }, [actions]);
 

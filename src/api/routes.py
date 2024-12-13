@@ -18,6 +18,13 @@ import cloudinary.uploader
 import cloudinary
 from datetime import timedelta
 import stripe
+from flask_cors import CORS
+
+
+
+
+
+
 #completely overall the routes to deal with the new models
 #try it all in postman
 #make sure to get jwt token(taken care o by layout)gives the sender id
@@ -33,6 +40,13 @@ cloudinary.config(
 )
 
 api = Blueprint("api", __name__)
+CORS(api)
+
+
+
+
+
+
 
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 # ---------------------------------------------
@@ -47,10 +61,7 @@ def handle_hello():
 @jwt_required()
 def get_user_data():
     try:
-        # Get the identity of the current user from the JWT token
-        current_user_id = get_jwt_identity()
-        
-        # Fetch user data from the database
+        current_user_id = int(get_jwt_identity())
         user = User.query.get(current_user_id)
         
         if user:
@@ -138,8 +149,8 @@ def update_application_status(application_id):
         return jsonify({"error": "Cat not found"}), 404
 
     # Verify that the logged-in user owns the cat
-    if cat.user_id != user_id:
-        return jsonify({"error": "Unauthorized"}), 403
+    if cat.user_id != int(user_id):
+        return jsonify({"error": "Unauthorized," ,"userid": user_id ,"cat_user":cat.user_id}), 403
 
     # If approving, ensure no other approved application exists for this cat
     if new_status == "approved":
@@ -367,7 +378,8 @@ def login():
     hashed_attempt = hashlib.sha256((password + user.salt).encode()).hexdigest()
     if hashed_attempt != user.password:
         return jsonify({"error": "Invalid password"}), 401
-    access_token = create_access_token(identity=user.id, additional_claims={"role": user.username})
+    access_token = create_access_token(identity=str(user.id), additional_claims={"role": user.username})
+
     refresh_token = create_refresh_token(identity=user.id)
 
     # Include the serialized user data in the response

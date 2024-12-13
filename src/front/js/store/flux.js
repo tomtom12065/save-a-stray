@@ -143,7 +143,7 @@ const getState = ({ getStore, getActions, setStore }) => {
             headers: {
               "Content-Type": "application/json"
             },
-            body: JSON.stringify(email)
+            body: JSON.stringify(email,password)
           });
 
           if (!response.ok) {
@@ -166,7 +166,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 
       fetchSentApplications: async () => {
         const token = localStorage.getItem("token"); // Get the token for authentication
-        const response = await fetch(`${process.env.BACKEND_URL}/applications/sent`, {
+        const response = await fetch(`${process.env.BACKEND_URL}/api/applications/sent`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -870,18 +870,18 @@ const getState = ({ getStore, getActions, setStore }) => {
           return { success: false, message: "An error occurred while resetting the password." };
         }
       },
-
       getUserProfile: async () => {
+        const token = localStorage.getItem("token");
+        
+        if (!token) {
+          console.error("No token found");
+          return null;
+        }
+      
+        const BACKEND_URL = process.env.BACKEND_URL;
+        console.log("Fetching user profile from:", `${BACKEND_URL}/api/user`);
+      
         try {
-          const token = localStorage.getItem("token");
-          if (!token) {
-            console.error("No token found");
-            return null;
-          }
-
-          const BACKEND_URL = process.env.BACKEND_URL;
-          console.log("Fetching user profile from:", `${BACKEND_URL}/api/user`);
-
           const response = await fetch(`${BACKEND_URL}/api/user`, {
             method: "GET",
             headers: {
@@ -889,36 +889,24 @@ const getState = ({ getStore, getActions, setStore }) => {
               "Authorization": `Bearer ${token}`,
             },
           });
-
-          const responseText = await response.text();
-          console.log("Response Text:", responseText);
-
+          console.log(response);
+      
           if (!response.ok) {
-            console.error(
-              `Failed to fetch user profile: ${response.status} ${response.statusText}`
-            );
-            console.error("Error details:", responseText);
-            return null;
+            const errorData = await response.json();
+            console.error("Error fetching user profile:", errorData);
+            // Use errorData.error instead of errorData.msg since the backend returns "error"
+            throw new Error(errorData.error || 'Failed to fetch user profile');
           }
-
-          let data;
-          try {
-            data = JSON.parse(responseText);
-          } catch (parseError) {
-            console.error("Error parsing JSON response:", parseError);
-            console.error("Response Text:", responseText); // Log the response again
-            return null;
-          }
-
-          setStore({ user: data });
-          console.log("Fetched user profile:", data);
+      
+          const data = await response.json();
+          console.log("getUserProfile data", data);
           return data;
         } catch (error) {
-          console.error("Error fetching user profile:", error);
-          return null;
+          console.error("Error in getUserProfile:", error);
+          throw error;
         }
       },
-
+      
 
 
       requestPasswordReset: async (email) => {
