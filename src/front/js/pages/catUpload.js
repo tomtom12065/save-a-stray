@@ -1,25 +1,41 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
+
 import { Context } from "../store/appContext";
 import "../../styles/catUpload.css";
 import { useNavigate } from "react-router-dom";
 const CatUpload = () => {
-  const { actions } = useContext(Context);
+  const { store, actions } = useContext(Context);
   const navigate = useNavigate();
   // State for form fields
   const [catName, setCatName] = useState("");
   const [breed, setBreed] = useState("");
+
   const [age, setAge] = useState("");
   const [price, setPrice] = useState("");
   const [image, setImage] = useState(null);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    if (store.breeds.length === 0) { // Fetch breeds only if not already in store
+      actions.getBreeds();
+    }
+  }, [store.breeds, actions]);
+
+
+
+
+
   // Form submit handler
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+
+  
+
+
     // Validate input fields
     if (!catName || !breed || !age || !price || !image) {
-      console.log(catName,breed,age,price,image)
+      console.log(catName, breed, age, price, image)
       setError("All fields are required.");
       return;
     }
@@ -38,7 +54,7 @@ const CatUpload = () => {
     // Upload cat using the action
     const result = await actions.postCatData2(formData);
 
-    if (result) {
+    if (result && result.success) {
       alert("Cat uploaded successfully!");
       // Reset form fields
       setCatName("");
@@ -50,7 +66,7 @@ const CatUpload = () => {
     } else {
       setError("Failed to upload cat. Please try again.");
     }
-    
+
   };
 
   return (
@@ -77,11 +93,13 @@ const CatUpload = () => {
           required
         >
           <option value="">Select a breed</option>
-          <option value="Persian">Persian</option>
-          <option value="Siamese">Siamese</option>
-          <option value="Maine Coon">Maine Coon</option>
-          {/* Add other breed options here */}
+          {store.breeds.map((breedName) => (
+            <option key={breedName} value={breedName}>
+              {breedName}
+            </option>
+          ))}
         </select>
+
 
         <label htmlFor="age">Age (years):</label>
         <input

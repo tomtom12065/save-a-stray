@@ -22,7 +22,8 @@ const Layout = () => {
   useEffect(() => {
 
       actions.getUserProfile(); // Ensure user profile is fetched if token exists
-    
+      actions.getBreeds();
+
   
   }, [actions]);
 

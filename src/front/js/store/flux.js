@@ -15,7 +15,8 @@ const getState = ({ getStore, getActions, setStore }) => {
       catApplications:[],
       currentChatRecipientId: null, // New field for chat context
       currentChatRecipientName: "",
-      sentApplications: [] 
+      sentApplications: [],
+      breeds: [] 
     },
 
     actions: {
@@ -30,26 +31,27 @@ const getState = ({ getStore, getActions, setStore }) => {
           console.error("Error loading message from backend", error);
         }
       },
-      getBreeds: async () => {
-        try {
+    
+      
+        getBreeds: async () => {
           const response = await fetch("https://api.thecatapi.com/v1/breeds", {
             headers: {
               "x-api-key": process.env.CAT_API_KEY, // Securely retrieved API key
             },
           });
-
-          if (!response.ok) {
-            throw new Error(`Error fetching breeds: ${response.statusText}`);
+  
+          if (response.ok) {
+            const breedData = await response.json();
+            const breedNames = breedData.map((breed) => breed.name);
+            setStore({ breeds: breedNames }); // Use the same logic as other actions
+            console.log("Breeds fetched successfully:", breedNames);
+            return breedNames;
+          } else {
+            console.error("Error fetching cat breeds:", response.statusText);
+            return null;
           }
-
-          const breeds = await response.json();
-          // Map the response to only the breed names
-          setStore({ breeds: breeds.map((breed) => breed.name) });
-          console.log("Breeds fetched successfully:", breeds.map((breed) => breed.name));
-        } catch (error) {
-          console.error("Error fetching cat breeds:", error);
-        }
-      },
+        },
+      
 
       setChatRecipient: (recipientId, recipientName) => {
         setStore({
