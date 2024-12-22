@@ -48,7 +48,7 @@ class User(db.Model):
             "username":self.username,
             "profilepic":self.profilepic
         }
-
+# 
 class Cat(db.Model):
     __tablename__ = 'cats'  # Explicit table name for clarity
 
@@ -57,7 +57,7 @@ class Cat(db.Model):
     breed = db.Column(db.String(50), nullable=False)
     age = db.Column(db.Integer, nullable=False)
     price = db.Column(db.Float, nullable=False, default=0.0)
-    image_url = db.Column(db.String(255), nullable=True)
+    image_urls = db.Column(db.Text(), nullable=True)
 
     # Foreign key linking each cat to a specific user (owner)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -75,7 +75,7 @@ class Cat(db.Model):
             "breed": self.breed,
             "age": self.age,
             "price": self.price,
-            "image_url": self.image_url,
+           "image_urls": self.image_urls,
             "user_id": self.user_id,  # Foreign key reference
             "owner": {
                 "id": self.owner.id,
@@ -83,6 +83,11 @@ class Cat(db.Model):
                 "username": self.owner.username
             } if self.owner else None  # Include owner details if available
         }
+
+
+
+
+
 class ChatMessage(db.Model):
     __tablename__ = 'chat_messages'  # Explicit table name
 

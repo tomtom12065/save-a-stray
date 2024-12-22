@@ -412,6 +412,29 @@ def upload_profile_picture():
         return jsonify({"error": str(e)}), 500
 
 
+
+
+
+@api.route("/upload_image", methods=["POST"])
+def upload_image():
+    try:
+        # Loop through each uploaded file
+        files_to_upload = request.files.getlist("image")
+        upload_urls = []
+
+        for file_to_upload in files_to_upload:
+            upload_result = cloudinary.uploader.upload(file_to_upload)
+            upload_urls.append(upload_result["secure_url"])
+
+        return jsonify({"success": True, "urls": upload_urls}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
+
+
 # @api.route('/user/<int:user_id>', methods=['GET'])
 # @jwt_required()
 # def get_user_profile(user_id):
@@ -460,7 +483,7 @@ def register_user():
     email = data.get("email")
     password = data.get("password")
     username = data.get("username")
-    profilepic = data.get("profilepic")  # Optional profile picture
+    profilepic = data.get("profilepic")  # optional
 
     # Validate required fields
     if not all([email, password, username]):
@@ -472,23 +495,37 @@ def register_user():
     salt = secrets.token_hex(16)
     hashed_password = hashlib.sha256((password + salt).encode()).hexdigest()
 
-    # Create the new user
+    # Create user
     new_user = User(
         username=username,
         email=email,
         password=hashed_password,
         is_active=True,
         salt=salt,
-        profilepic=profilepic  # Add profile picture if provided
+        profilepic=profilepic
     )
     try:
         db.session.add(new_user)
         db.session.commit()
-        return jsonify({"success": True, "message": "User registered successfully", "user": new_user.serialize()}), 201
+
+        # >>> CREATE TOKENS RIGHT AWAY <<<
+        access_token = create_access_token(
+            identity=str(new_user.id),
+            additional_claims={"role": new_user.username}
+        )
+        refresh_token = create_refresh_token(identity=new_user.id)
+
+        return jsonify({
+            "success": True,
+            "message": "User registered successfully",
+            "user": new_user.serialize(),
+            "access_token": access_token,
+            "refresh_token": refresh_token
+        }), 201
+
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
-
 
 
 
@@ -729,15 +766,6 @@ def request_reset():
         return jsonify({"error": "An unexpected error occurred"}), 500
 
 
-@api.route("/upload_image", methods=["POST"])
-def upload_image():
-    try:
-        file_to_upload = request.files["file"]
-        upload_result = cloudinary.uploader.upload(file_to_upload)
-        return jsonify({"success": True, "url": upload_result["secure_url"]}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
 
 # ---------------------------------------------
 # PUT Routes
@@ -784,33 +812,42 @@ def delete_cat(cat_id):
 
 
 @api.route("/add-cat", methods=["POST"])
-@jwt_required()  # Ensure the user is authenticated
+@jwt_required()
 def add_cat():
     data = request.get_json()
-
-    # Get the user ID from the JWT token
     user_id = get_jwt_identity()
 
-    # Extract fields from request data
+    # Get fields
     name = data.get("name")
     breed = data.get("breed")
     age = data.get("age")
-    price = data.get("price", 0.0)  # Default price to 0.0 if not provided
-    image_url = data.get("image_url")
+    price = data.get("price", 0.0)
+    image_urls = data.get("image_urls")  # This can be a list or a single string
 
-    # Validate required fields
-    if not name or not breed or not age or not image_url:
+    # Validate
+    if not (name and breed and age and image_urls):
         return jsonify({"error": "Missing required fields"}), 400
 
+    # If image_urls is an array, convert it to a string
+    if isinstance(image_urls, list):
+        # Option A: Comma-separated
+        # image_urls_str = ",".join(image_urls)
+
+        # Option B: JSON-encoded
+        import json
+        image_urls_str = json.dumps(image_urls)
+    else:
+        # It's already a string
+        image_urls_str = image_urls
+
     try:
-        # Create a new Cat instance
         new_cat = Cat(
             name=name,
             breed=breed,
             age=age,
             price=price,
-            image_url=image_url,
-            user_id=user_id,  # Assign the logged-in user as the owner
+            image_urls=image_urls_str,
+            user_id=user_id
         )
         db.session.add(new_cat)
         db.session.commit()
@@ -825,7 +862,6 @@ def add_cat():
             "error": "Failed to add cat",
             "details": str(e)
         }), 500
-
 
 
 

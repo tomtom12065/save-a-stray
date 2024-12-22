@@ -16,12 +16,12 @@ from datetime import timedelta
 # Set environment and static file directory
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../public/')
-
+# https://orange-space-engine-p594pqx6pgq26qq9-3001.app.github.dev/
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 
 # Enable CORS for the specified frontend origin
-CORS(app, resources={r"/*": {"origins": "https://orange-doodle-9gwrj4px566h9v9w-3000.app.github.dev/"}})
+CORS(app, resources={r"/*": {"origins": "https://orange-space-engine-p594pqx6pgq26qq9-3001.app.github.dev/"}})
 
 # Database configuration
 db_url = os.getenv("DATABASE_URL")

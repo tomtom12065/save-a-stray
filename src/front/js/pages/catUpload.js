@@ -6,67 +6,54 @@ import { useNavigate } from "react-router-dom";
 const CatUpload = () => {
   const { store, actions } = useContext(Context);
   const navigate = useNavigate();
-  // State for form fields
+  
   const [catName, setCatName] = useState("");
   const [breed, setBreed] = useState("");
-
   const [age, setAge] = useState("");
   const [price, setPrice] = useState("");
-  const [image, setImage] = useState(null);
+  const [image, setImage] = useState([]); // to store multiple or single file
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (store.breeds.length === 0) { // Fetch breeds only if not already in store
+    if (store.breeds.length === 0) {
       actions.getBreeds();
     }
   }, [store.breeds, actions]);
 
-
-
-
-
-  // Form submit handler
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-
-  
-
-
-    // Validate input fields
-    if (!catName || !breed || !age || !price || !image) {
-      console.log(catName, breed, age, price, image)
+    if (!catName || !breed || !age || !price || !image.length) {
       setError("All fields are required.");
       return;
     }
 
-    // Reset error
     setError("");
 
-    // Prepare data for submission
     const formData = new FormData();
     formData.append("name", catName);
     formData.append("breed", breed);
     formData.append("age", age);
     formData.append("price", price);
-    formData.append("image", image);
 
-    // Upload cat using the action
+    // Append each file
+    for (let i = 0; i < image.length; i++) {
+      formData.append("image", image[i]);
+    }
+
     const result = await actions.postCatData2(formData);
 
     if (result && result.success) {
       alert("Cat uploaded successfully!");
-      // Reset form fields
       setCatName("");
       setBreed("");
       setAge("");
       setPrice("");
-      setImage(null);
+      setImage([]);
       navigate("/");
     } else {
       setError("Failed to upload cat. Please try again.");
     }
-
   };
 
   return (
@@ -100,7 +87,6 @@ const CatUpload = () => {
           ))}
         </select>
 
-
         <label htmlFor="age">Age (years):</label>
         <input
           id="age"
@@ -121,11 +107,14 @@ const CatUpload = () => {
           required
         />
 
-        <label htmlFor="upload-image">Upload Image:</label>
+        <label htmlFor="upload-image">Upload Image(s):</label>
         <input
           id="upload-image"
           type="file"
-          onChange={(e) => setImage(e.target.files[0])}
+          multiple
+          onChange={(e) => {
+            setImage(e.target.files); 
+          }}
           required
         />
 
