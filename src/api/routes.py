@@ -795,10 +795,14 @@ def reset_password():
 @api.route("/delete-cat/<int:cat_id>", methods=["DELETE"])
 @jwt_required()
 def delete_cat(cat_id):
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())
     cat = Cat.query.get(cat_id)
+
+    print(cat.user_id)
+    print(current_user_id)
     if not cat:
         return jsonify({"error": "Cat not found"}), 404
+    
     if cat.user_id != current_user_id:
         return jsonify({"error": "Unauthorized: You do not own this cat"}), 403
     try:

@@ -1,17 +1,18 @@
 import React, { useState, useContext, useEffect } from "react";
-
 import { Context } from "../store/appContext";
 import "../../styles/catUpload.css";
 import { useNavigate } from "react-router-dom";
+
 const CatUpload = () => {
   const { store, actions } = useContext(Context);
   const navigate = useNavigate();
-  
+
   const [catName, setCatName] = useState("");
   const [breed, setBreed] = useState("");
   const [age, setAge] = useState("");
   const [price, setPrice] = useState("");
-  const [image, setImage] = useState([]); // to store multiple or single file
+  const [image, setImage] = useState([]);
+  const [previewImages, setPreviewImages] = useState([]);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -36,7 +37,6 @@ const CatUpload = () => {
     formData.append("age", age);
     formData.append("price", price);
 
-    // Append each file
     for (let i = 0; i < image.length; i++) {
       formData.append("image", image[i]);
     }
@@ -50,9 +50,10 @@ const CatUpload = () => {
       setAge("");
       setPrice("");
       setImage([]);
+      setPreviewImages([]);
       navigate("/");
     } else {
-      setError("Failed to upload cat. Please try again.");
+      setError(result.message || "Failed to upload cat. Please try again.");
     }
   };
 
@@ -113,10 +114,25 @@ const CatUpload = () => {
           type="file"
           multiple
           onChange={(e) => {
-            setImage(e.target.files); 
+            const newFiles = Array.from(e.target.files);
+            setImage((prevFiles) => [...prevFiles, ...newFiles]);
+
+            const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
+            setPreviewImages((prevPreviews) => [...prevPreviews, ...newPreviews]);
           }}
           required
         />
+
+        <div className="image-preview">
+          {previewImages.map((src, index) => (
+            <img
+              key={index}
+              src={src}
+              alt={`Preview ${index}`}
+              style={{ width: "100px", marginRight: "10px" }}
+            />
+          ))}
+        </div>
 
         <button type="submit">Upload Cat</button>
       </form>

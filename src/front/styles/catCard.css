@@ -29,6 +29,16 @@
   .card-body {
     padding: 20px;
   }
+
+
+  .carousel-control-prev-icon,
+.carousel-control-next-icon {
+  filter: invert(0) brightness(0); /* Makes the icon black */
+  background-color: rgba(255, 255, 255, 0.7); /* Adds a subtle background for contrast */
+  border-radius: 50%; /* Makes the background circular */
+  border: 1px solid black; /* Adds a black outline */
+}
+
   
   /* Title Styling */
   .card-title {
