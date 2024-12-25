@@ -1,39 +1,39 @@
 /* layout.css */
 .app-layout {
   min-height: 100vh;
+  background-color: #E3F2FD; /* Light blue-gray */
 }
 
 .layout-container {
   display: flex;
+  flex-direction: column;
   min-height: 100vh;
+  background-color: #FFF; /* White */
 }
 
 .main-content {
   flex-grow: 1;
   padding: 20px;
-  margin-left: 0; /* Start with no margin */
-  transition: margin-left 0.3s ease;
-}
-
-/* When sidebar is open */
-.main-content.sidebar-open {
-  margin-left: 300px; /* Width of the sidebar */
-}
-
-/* styles/sidebar.css */
-
-.sidebar.open {
-  transform: translateX(0);
+  background-color: #E3F2FD; /* Light blue-gray */
+  color: #555; /* Neutral gray for text */
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Adjustments for mobile */
 @media (max-width: 768px) {
-  .main-content.sidebar-open {
-    margin-left: 0;
+  .main-content {
+    padding: 15px;
   }
-  
-  .sidebar {
-    width: 100%;
-    max-width: 300px;
-  }
+}
+
+/* Ensure full page height and background consistency */
+html, body {
+  height: 100%;
+  margin: 0;
+  background-color: #E3F2FD; /* Light blue-gray */
+}
+
+.app-layout {
+  min-height: 100vh;
+  background-color: #E3F2FD; /* Light blue-gray */
 }
