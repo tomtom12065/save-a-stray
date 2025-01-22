@@ -2,20 +2,37 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh; /* Full viewport height */
-  background-color: #f9f9f9; /* Optional background color */
+  height: 100vh;
+  /* Full viewport height */
+  background-color: #f9f9f9;
+  /* Optional background color */
 }
 
+/* .cat-template {
+  justify-content: center;
+  display: flex;
+} */
+
+
+p{
+  color:black
+}
 .cat-upload-form {
   display: flex;
-  flex-direction: column; /* Stack inputs vertically */
-  align-items: center; /* Center inputs horizontally */
+  flex-direction: column;
+  /* Stack inputs vertically */
+  align-items: center;
+  /* Center inputs horizontally */
   width: 100%;
-  max-width: 400px; /* Optional max width for the form */
+  max-width: 400px;
+  /* Optional max width for the form */
   padding: 20px;
-  background-color: #fff; /* Optional form background */
-  border-radius: 8px; /* Rounded corners */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional shadow for depth */
+  background-color: #fff;
+  /* Optional form background */
+  border-radius: 8px;
+  /* Rounded corners */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  /* Optional shadow for depth */
 }
 
 .cat-upload-form label {
@@ -30,7 +47,8 @@
 .cat-upload-form textarea,
 .cat-upload-form button {
   width: 100%;
-  margin-bottom: 15px; /* Space between inputs */
+  margin-bottom: 15px;
+  /* Space between inputs */
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 5px;

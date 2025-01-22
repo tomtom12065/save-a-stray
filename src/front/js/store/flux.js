@@ -138,14 +138,14 @@ let getState = ({ getStore, getActions, setStore }) => {
         }
       },
 
-      loginUser: async (email, password) => {
+      loginUser: async (username, password) => {
         try {
           let response = await fetch(`${process.env.BACKEND_URL}/api/login`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json"
             },
-            body: JSON.stringify(email, password)
+            body: JSON.stringify(username, password)
           });
 
           if (!response.ok) {
@@ -626,31 +626,31 @@ let getState = ({ getStore, getActions, setStore }) => {
       },
 
       // **Cat Actions**
-      postCatData: async (cat) => {
-        let data = JSON.stringify({ name: cat.name, breed: cat.breed, age: cat.age, price: cat.price, image_url: cat.imageUrl });
+      // postCatData: async (cat) => {
+      //   let data = JSON.stringify({ name: cat.name, breed: cat.breed, age: cat.age, price: cat.price, image_url: cat.imageUrl });
 
-        let response = await fetch(`${process.env.BACKEND_URL}/api/add-cat`, {
-          method: "POST",
-          headers: {
-            "Authorization": "Bearer " + localStorage.getItem("token"),
-            "Content-Type": "application/json"
-          },
-          body: data
-        });
+      //   let response = await fetch(`${process.env.BACKEND_URL}/api/add-cat`, {
+      //     method: "POST",
+      //     headers: {
+      //       "Authorization": "Bearer " + localStorage.getItem("token"),
+      //       "Content-Type": "application/json"
+      //     },
+      //     body: data
+      //   });
 
-        if (response.status === 201) {
-          return {
-            success: true,
-            message: "Cat added successfully",
-            data: response.cat
-          };
-        } else {
-          return {
-            success: false,
-            message: response.error || "Failed to add cat"
-          };
-        }
-      },
+      //   if (response.status === 201) {
+      //     return {
+      //       success: true,
+      //       message: "Cat added successfully",
+      //       data: response.cat
+      //     };
+      //   } else {
+      //     return {
+      //       success: false,
+      //       message: response.error || "Failed to add cat"
+      //     };
+      //   }
+      // },
 
       postCatData2: async (catFormData) => {
         try {
@@ -678,7 +678,8 @@ let getState = ({ getStore, getActions, setStore }) => {
             age: catFormData.get("age"),
             price: catFormData.get("price"),
             // Send the array of image URLs to the backend
-            image_urls: uploadedUrls
+            image_urls: uploadedUrls,
+            description: catFormData.get("description")
           });
       
           let response = await fetch(`${process.env.BACKEND_URL}/api/add-cat`, {

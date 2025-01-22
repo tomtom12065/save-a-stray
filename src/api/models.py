@@ -46,7 +46,7 @@ class User(db.Model):
             "cats": [cat.serialize() for cat in self.cats],
             "is_active": self.is_active,
             "username":self.username,
-            "profilepic":self.profilepic
+            "profilepic":self.profilepic,
         }
 # 
 class Cat(db.Model):
@@ -58,6 +58,7 @@ class Cat(db.Model):
     age = db.Column(db.Integer, nullable=False)
     price = db.Column(db.Float, nullable=False, default=0.0)
     image_urls = db.Column(db.Text(), nullable=True)
+    description = db.Column(db.String(250),unique=False,nullable = True)
 
     # Foreign key linking each cat to a specific user (owner)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -75,8 +76,10 @@ class Cat(db.Model):
             "breed": self.breed,
             "age": self.age,
             "price": self.price,
-           "image_urls": self.image_urls,
+            "image_urls": self.image_urls,
             "user_id": self.user_id,  # Foreign key reference
+            "description":self.description,
+
             "owner": {
                 "id": self.owner.id,
                 "email": self.owner.email,

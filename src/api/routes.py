@@ -536,8 +536,8 @@ def register_user():
 @api.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
-    email, password = data.get("email"), data.get("password")
-    user = User.query.filter_by(email=email).first()
+    username, password = data.get("username"), data.get("password")
+    user = User.query.filter_by(username=username).first()
     if not user:
         return jsonify({"error": "Invalid email or password"}), 401
     hashed_attempt = hashlib.sha256((password + user.salt).encode()).hexdigest()
@@ -827,9 +827,9 @@ def add_cat():
     age = data.get("age")
     price = data.get("price", 0.0)
     image_urls = data.get("image_urls")  # This can be a list or a single string
-
+    description = data.get("description")
     # Validate
-    if not (name and breed and age and image_urls):
+    if not (name and breed and age and image_urls and description):
         return jsonify({"error": "Missing required fields"}), 400
 
     # If image_urls is an array, convert it to a string
@@ -851,7 +851,9 @@ def add_cat():
             age=age,
             price=price,
             image_urls=image_urls_str,
-            user_id=user_id
+            user_id=user_id,
+            description=description
+            
         )
         db.session.add(new_cat)
         db.session.commit()

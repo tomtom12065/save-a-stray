@@ -18,7 +18,7 @@ import "../../styles/login.css";
 
 const Login = () => {
   const { actions } = useContext(Context);
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -28,7 +28,7 @@ const Login = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError(null);
-    const response = await actions.loginUser({ email, password });
+    const response = await actions.loginUser({ username, password });
 
     if (response.success) {
       navigate("/"); // Redirect to home on success
@@ -42,11 +42,11 @@ const Login = () => {
       <h2>Login</h2>
       {/* {error && <p className="error">{error}</p>} */}
       <form onSubmit={handleSubmit}>
-        <label>Email:</label>
+        <label>username:</label>
         <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          type="text"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
           required
         />
         <label>Password:</label>

@@ -13,6 +13,7 @@ const CatUpload = () => {
   const [price, setPrice] = useState("");
   const [image, setImage] = useState([]);
   const [previewImages, setPreviewImages] = useState([]);
+  const [description, setDescription] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -36,6 +37,7 @@ const CatUpload = () => {
     formData.append("breed", breed);
     formData.append("age", age);
     formData.append("price", price);
+    formData.append("description", description);
 
     for (let i = 0; i < image.length; i++) {
       formData.append("image", image[i]);
@@ -50,6 +52,7 @@ const CatUpload = () => {
       setAge("");
       setPrice("");
       setImage([]);
+      setDescription("");
       setPreviewImages([]);
       navigate("/");
     } else {
@@ -107,6 +110,17 @@ const CatUpload = () => {
           placeholder="Enter price"
           required
         />
+
+        <label htmlFor="description">description:</label>
+        <input
+          id="description"
+          type="text"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Enter description"
+          required
+        />
+
 
         <label htmlFor="upload-image">Upload Image(s):</label>
         <input

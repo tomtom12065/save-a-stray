@@ -94,13 +94,14 @@ const CatCard = ({ cat }) => {
           </p>
           <div className="d-flex align-items-center justify-content-center">
             <button
-              className="btn btn-primary"
+              className="btn btn-primary me-2"
               onClick={() => navigate(`/cat-template/${cat.id}`)}
             >
               View Details
             </button>
             <button
-              className="btn btn-danger"
+          //  add btn-sm to make the buttons smaller to both of the buttons
+           className="btn btn-danger "
               onClick={() => handleDeleteCat(cat.id)}
             >
               Delete
