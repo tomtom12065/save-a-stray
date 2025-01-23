@@ -1,37 +1,44 @@
+// (1) Importing necessary React hooks, our global Context, and styling
 import React, { useState, useContext, useEffect } from "react";
 import { Context } from "../store/appContext";
 import "../../styles/catUpload.css";
 import { useNavigate } from "react-router-dom";
 
+// (2) This component handles uploading a new cat's data, including images.
 const CatUpload = () => {
+  // (2a) Destructuring to gain access to store and actions from our global context
   const { store, actions } = useContext(Context);
   const navigate = useNavigate();
 
+  // (3) Local state to hold cat details
   const [catName, setCatName] = useState("");
   const [breed, setBreed] = useState("");
   const [age, setAge] = useState("");
   const [price, setPrice] = useState("");
-  const [image, setImage] = useState([]);
-  const [previewImages, setPreviewImages] = useState([]);
+  const [image, setImage] = useState([]);           // Array of image files
+  const [previewImages, setPreviewImages] = useState([]); // Array of image URLs for preview
   const [description, setDescription] = useState("");
   const [error, setError] = useState("");
 
+  // (4) Fetch breed data from the store if not already loaded
   useEffect(() => {
     if (store.breeds.length === 0) {
       actions.getBreeds();
     }
   }, [store.breeds, actions]);
 
+  // (5) Submit handler for the cat upload form
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // (5a) Basic validations to ensure all required fields have a value
     if (!catName || !breed || !age || !price || !image.length) {
       setError("All fields are required.");
       return;
     }
-
     setError("");
 
+    // (5b) Construct a FormData object to send to the server
     const formData = new FormData();
     formData.append("name", catName);
     formData.append("breed", breed);
@@ -43,10 +50,13 @@ const CatUpload = () => {
       formData.append("image", image[i]);
     }
 
+    // (5c) Call the action to upload the cat data
     const result = await actions.postCatData2(formData);
 
+    // (5d) Handle the response accordingly
     if (result && result.success) {
       alert("Cat uploaded successfully!");
+      // Reset local state and navigate to home
       setCatName("");
       setBreed("");
       setAge("");
@@ -60,6 +70,7 @@ const CatUpload = () => {
     }
   };
 
+  // (6) Render the upload form, along with previews of any selected images
   return (
     <div className="cat-upload-container">
       <h2>Upload Cat</h2>
@@ -121,16 +132,17 @@ const CatUpload = () => {
           required
         />
 
-
         <label htmlFor="upload-image">Upload Image(s):</label>
         <input
           id="upload-image"
           type="file"
           multiple
           onChange={(e) => {
+            // (6a) Convert FileList to an array so we can append them to state
             const newFiles = Array.from(e.target.files);
             setImage((prevFiles) => [...prevFiles, ...newFiles]);
 
+            // (6b) Generate preview URLs
             const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
             setPreviewImages((prevPreviews) => [...prevPreviews, ...newPreviews]);
           }}

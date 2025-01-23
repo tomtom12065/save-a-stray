@@ -58,7 +58,7 @@ class Cat(db.Model):
     age = db.Column(db.Integer, nullable=False)
     price = db.Column(db.Float, nullable=False, default=0.0)
     image_urls = db.Column(db.Text(), nullable=True)
-    description = db.Column(db.String(250),unique=False,nullable = True)
+    description = db.Column(db.String(1000),unique=False,nullable = True)
 
     # Foreign key linking each cat to a specific user (owner)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)

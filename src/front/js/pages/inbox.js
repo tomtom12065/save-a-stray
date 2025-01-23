@@ -1,12 +1,19 @@
+// (1) Importing React and hooks, plus Context from our store and React Router
 import React, { useEffect, useState, useContext } from "react";
 import { Context } from "../store/appContext";
 import { useLocation } from "react-router-dom";
 import "../../styles/inbox.css";
 import ApplicationCard from "../component/applicationCard";
 
+// (2) The Inbox component manages messages (conversations) and cat applications.
 function Inbox() {
+  // (2a) Destructure store and actions from our global context
   const { store, actions } = useContext(Context);
+
+  // (2b) We'll use useLocation to retrieve any state passed via route navigation
   const location = useLocation();
+
+  // (2c) Local state variables for managing conversations, applications, and current selections
   const [conversations, setConversations] = useState({});
   const [selectedParticipant, setSelectedParticipant] = useState(null);
   const [selectedParticipantUsername, setSelectedParticipantUsername] = useState("");
@@ -14,10 +21,13 @@ function Inbox() {
   const [activeTab, setActiveTab] = useState("conversations");
   const [catApplications, setCatApplications] = useState({});
   const [selectedCat, setSelectedCat] = useState(null);
+  const [AppliedCat, setAppliedCat] = useState(null);
 
+  // (2d) These values may come from route state to open a specific conversation
   const recipientIdFromProps = location.state?.recipientId || null;
   const recipientNameFromProps = location.state?.recipientName || null;
 
+  // (3) useEffect to fetch all messages on component mount
   useEffect(() => {
     const fetchMessages = async () => {
       await actions.getMessages();
@@ -25,11 +35,15 @@ function Inbox() {
     fetchMessages();
   }, [actions]);
 
+  // (4) Once messages are fetched, build a conversations object grouping by participant.
+  //     If a recipientId is passed, we auto-select that conversation.
   useEffect(() => {
     if (store.messages && store.messages.length > 0) {
       const convos = store.messages.reduce((acc, message) => {
-        const otherUserId = message.sender_id === store.user.id ? message.recipient_id : message.sender_id;
-        const otherUsername = message.sender_id === store.user.id ? message.recipient : message.sender;
+        const otherUserId =
+          message.sender_id === store.user.id ? message.recipient_id : message.sender_id;
+        const otherUsername =
+          message.sender_id === store.user.id ? message.recipient : message.sender;
 
         if (!acc[otherUserId]) acc[otherUserId] = { username: otherUsername, messages: [] };
         acc[otherUserId].messages.push(message);
@@ -40,11 +54,15 @@ function Inbox() {
       if (recipientIdFromProps) {
         setSelectedParticipant(recipientIdFromProps);
         setSelectedParticipantUsername(recipientNameFromProps || "Unknown User");
-        actions.setChatRecipient(recipientIdFromProps, recipientNameFromProps || "Unknown User");
+        actions.setChatRecipient(
+          recipientIdFromProps,
+          recipientNameFromProps || "Unknown User"
+        );
       }
     }
   }, [store.messages, store.user, recipientIdFromProps, recipientNameFromProps, actions]);
 
+  // (5) useEffect to fetch cat applications
   useEffect(() => {
     const fetchApplications = async () => {
       const data = await actions.getCatApplications();
@@ -53,17 +71,31 @@ function Inbox() {
     fetchApplications();
   }, [actions]);
 
+  // ################################ SENT APPLICATIONS FUNCTIONALITY ################################
+  // (6) Function to fetch applications that the user has sent out
+  const fetchSentApplications = async () => {
+    const sentApps = await actions.fetchSentApplications(); // Adjust to your action function
+    if (sentApps) setAppliedCat(sentApps);
+  };
+  // ################################ END OF SENT APPLICATIONS FUNCTIONALITY ################################
+
+  // (7) Selecting a conversation sets the participant and marks messages as read.
   const handleSelectConversation = async (participantId) => {
     setSelectedParticipant(participantId);
     setSelectedParticipantUsername(conversations[participantId]?.username || "Unknown User");
     await actions.markMessagesAsRead(store.user.id, participantId);
-    actions.setChatRecipient(participantId, conversations[participantId]?.username || "Unknown User");
+    actions.setChatRecipient(
+      participantId,
+      conversations[participantId]?.username || "Unknown User"
+    );
   };
 
+  // (8) Selecting a cat application sets that cat in state to display its applications
   const handleSelectApplication = (catId) => {
     setSelectedCat(catId);
   };
 
+  // (9) Sending a message calls an action and updates local conversations state if successful
   const handleSendMessage = async () => {
     if (messageText.trim() && selectedParticipant) {
       const result = await actions.sendMessage(selectedParticipant, messageText);
@@ -72,7 +104,10 @@ function Inbox() {
         setConversations((prevConversations) => {
           const updatedConversations = { ...prevConversations };
           if (!updatedConversations[selectedParticipant]) {
-            updatedConversations[selectedParticipant] = { username: selectedParticipantUsername, messages: [] };
+            updatedConversations[selectedParticipant] = {
+              username: selectedParticipantUsername,
+              messages: [],
+            };
           }
           updatedConversations[selectedParticipant].messages.push(newMessage);
           return updatedConversations;
@@ -82,28 +117,35 @@ function Inbox() {
     }
   };
 
+  // (10) Rendering the Inbox with tabs for conversations, applications, and sent applications
   return (
     <div className="container-fluid">
       <div className="row">
         <div className="col-4">
-          <div className="tab-navigation">
+          <div className="dflex justify-content-center tab-navigation">
             <button
-              className={`btn btn-light ${activeTab === "conversations" ? "active" : ""}`}
+              className={`border rounded m-2 btn btn-light ${
+                activeTab === "conversations" ? "active" : ""
+              }`}
               onClick={() => setActiveTab("conversations")}
             >
               Conversations
             </button>
             <button
-              className={`btn btn-light ${activeTab === "applications" ? "active" : ""}`}
+              className={`border rounded m-2 btn btn-light ${
+                activeTab === "applications" ? "active" : ""
+              }`}
               onClick={() => setActiveTab("applications")}
             >
               Applications
             </button>
             <button
-              className={`btn btn-light ${activeTab === "sentApplications" ? "active" : ""}`}
+              className={`border rounded m-2 btn btn-light ${
+                activeTab === "sentApplications" ? "active" : ""
+              }`}
               onClick={() => {
                 setActiveTab("sentApplications");
-                actions.fetchSentApplications();
+                fetchSentApplications();
               }}
             >
               Sent Applications
@@ -141,17 +183,22 @@ function Inbox() {
               ))}
             </div>
           ) : (
+            // ################################ SENT APPLICATIONS FUNCTIONALITY ################################
             <div className="application-list">
               <h3>Sent Applications</h3>
-              {store.sentApplications.map((application, index) => (
-                <div key={index} className="list-group-item">
-                  <h5>{application.applicant_name}</h5>
-                  <p>Contact: {application.contact_info}</p>
-                  <p>Reason: {application.reason}</p>
-                  <p>Status: {application.status}</p>
+              {Object.keys(AppliedCat || {}).map((catId) => (
+                <div
+                  key={catId}
+                  className={`list-group-item list-group-item-action ${
+                    catId === selectedCat ? "active" : ""
+                  }`}
+                  onClick={() => handleSelectApplication(catId)}
+                >
+                  Sent Applications for {AppliedCat[catId]?.cat?.name}
                 </div>
               ))}
             </div>
+            // ################################ END OF SENT APPLICATIONS FUNCTIONALITY ################################
           )}
         </div>
 
@@ -193,7 +240,7 @@ function Inbox() {
                 </div>
               </div>
             ) : (
-              <div className="card">
+              <div className="card my-2">
                 <div className="card-body">
                   <h2 className="card-title">Select a conversation to start chatting</h2>
                 </div>

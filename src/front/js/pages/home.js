@@ -1,4 +1,4 @@
-// Home.js
+// (1) Importing necessary modules and components from React and our application's Context
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Context } from "../store/appContext";
@@ -6,45 +6,28 @@ import "../../styles/saveAStray.css";
 import CatCard from "../component/catCard";  // Import the CatCard component
 
 
-
-
 // classmate collaborations?
 // also helps practicing wit collaboration
 // allows for biggr projects
-// use more third party api's 
+// use more third party api's
 // study stripe more
 // go deeper into payments
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// (2) Home component displays a list of available cats and allows deletion (if user has permissions).
 export const Home = () => {
+  // (2a) useNavigate from React Router for navigation
   const navigate = useNavigate();
+  // (2b) Destructuring the global 'store' and 'actions'
   const { store, actions } = useContext(Context);
-  // const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  // (3) On mount, fetch the list of cats by calling 'actions.getCats()'
   useEffect(() => {
     actions.getCats();
-  }, []);
+  }, [actions]);
 
-  // const toggleSidebar = () => {
-  //   setIsSidebarOpen(!isSidebarOpen);
-  // };
-
-  // Handler to delete cat by ID
+  // (4) Handler to delete a cat using the cat's ID
+  //     Called when a user clicks a delete button in CatCard
   const handleDeleteCat = async (catId) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this cat?");
     if (confirmDelete) {
@@ -58,11 +41,14 @@ export const Home = () => {
     }
   };
 
+  // (5) Handler to log the user out and navigate to the login page
   const handleLogout = () => {
-    actions.logout(); // Trigger logout action
-    navigate("/login"); // Redirect to login page after logging out
+    actions.logout();
+    navigate("/login");
   };
 
+  // (6) Rendering the home page with a grid of CatCard components
+  //     The 'onDelete' prop is passed to CatCard for cat deletion
   return (
     <div className="home-container">
       {/* <button className="sidebar-toggle-btn" onClick={toggleSidebar}>
@@ -73,7 +59,7 @@ export const Home = () => {
 
       <h1 className="title">Save a Stray</h1>
 
-      <div className="row cat-grid  ">
+      <div className="row cat-grid">
         {store.cats.length > 0 ? (
           store.cats.map((cat) => (
             <CatCard key={cat.id} cat={cat} onDelete={handleDeleteCat} />
