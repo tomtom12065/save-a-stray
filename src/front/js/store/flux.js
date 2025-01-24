@@ -74,6 +74,7 @@ let getState = ({ getStore, getActions, setStore }) => {
       },
 
       fetchSentApplications: async () => {
+        try{
         let token = localStorage.getItem("token"); // Get the token for authentication
         let response = await fetch(`${process.env.BACKEND_URL}/api/applications/sent`, {
           method: "GET",
@@ -82,13 +83,19 @@ let getState = ({ getStore, getActions, setStore }) => {
             Authorization: `Bearer ${token}`, // Add the token to the request
           },
         });
-
-        if (response.ok) {
-          let data = await response.json();
-          setStore({ sentApplications: data }); // Update store with fetched data
-        } else {
-          console.error(`Failed to fetch sent applications: ${response.statusText}`);
+        if (!response.ok){
+          throw new Error(`failed to fetch sent applications: ${response.statusText
+            
+          }`)
         }
+        let data = await response.json();
+        setStore({ sentApplications: data }); // Update store with fetched data
+        return data
+      } catch (error) {
+        console.error("error fetching sent applications:", error)
+        return null
+      }
+
       },
 
       getMessages: async () => {

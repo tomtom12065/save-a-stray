@@ -114,6 +114,23 @@ def get_applications():
         return jsonify({"error": str(e)}), 500
 
 
+# @api.route('/applications/sent', methods=['GET'])
+# @jwt_required()
+# def get_sent_applications():
+#     """
+#     GET /applications/sent
+#     Retrieve all applications the current user has sent to adopt a cat.
+#     """
+#     user_id = get_jwt_identity()
+#     sent_applications = Application.query.filter_by(user_id=user_id).all()
+
+#     if not sent_applications:
+#         return jsonify({'message': 'No sent applications found'}), 404
+
+#     serialized_applications = [application.serialize() for application in sent_applications]
+#     return jsonify(serialized_applications), 200
+
+
 @api.route('/applications/sent', methods=['GET'])
 @jwt_required()
 def get_sent_applications():
@@ -121,14 +138,32 @@ def get_sent_applications():
     GET /applications/sent
     Retrieve all applications the current user has sent to adopt a cat.
     """
-    user_id = get_jwt_identity()
-    sent_applications = Application.query.filter_by(user_id=user_id).all()
+    try : 
+        user_id = get_jwt_identity()
+        applications = db.session.query(Application, Cat)\
+            .join(Cat, Application.cat_id == Cat.id)\
+            .filter(Application.user_id == user_id)\
+            .all()
+        if not applications:
+            return jsonify([]), 200
+        
+        serialized_applications = []
+        for app, cat in applications:
+            app_data = app.serialize()
+            app_data["cat_name"] = cat.name
+            app_data["cat_breed"] = cat.breed
+            app_data["cat_age"] = cat.age
+            serialized_applications.append(app_data)
+        return jsonify(serialized_applications), 200
+    
+    except Exception as e: 
+        return jsonify({
+            "error": str(e)
+        }), 500
+    
+    
 
-    if not sent_applications:
-        return jsonify({'message': 'No sent applications found'}), 404
 
-    serialized_applications = [application.serialize() for application in sent_applications]
-    return jsonify(serialized_applications), 200
 
 
 @api.route("/get_messages", methods=["GET"])

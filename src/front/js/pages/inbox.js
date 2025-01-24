@@ -21,6 +21,8 @@ function Inbox() {
   const [activeTab, setActiveTab] = useState("conversations");
   const [catApplications, setCatApplications] = useState({});
   const [selectedCat, setSelectedCat] = useState(null);
+  const [sentApplications,setSentApplications] = useState([]);
+  
   const [AppliedCat, setAppliedCat] = useState(null);
 
   // (2d) These values may come from route state to open a specific conversation
@@ -71,11 +73,28 @@ function Inbox() {
     fetchApplications();
   }, [actions]);
 
+  useEffect(()=>{
+    if (activeTab === "sentApplications") {
+      const loadSentApplications = async ()=>{
+        const data = await actions.fetchSentApplications()
+        if (data) {
+          setSentApplications(data)
+        }
+      }
+      loadSentApplications()
+    }
+  }, [activeTab])
+
+
+
+
+
+
   // ################################ SENT APPLICATIONS FUNCTIONALITY ################################
   // (6) Function to fetch applications that the user has sent out
   const fetchSentApplications = async () => {
     const sentApps = await actions.fetchSentApplications(); // Adjust to your action function
-    if (sentApps) setAppliedCat(sentApps);
+    if (sentApps) setAppliedCat(store.sentApplications);
   };
   // ################################ END OF SENT APPLICATIONS FUNCTIONALITY ################################
 
@@ -93,6 +112,7 @@ function Inbox() {
   // (8) Selecting a cat application sets that cat in state to display its applications
   const handleSelectApplication = (catId) => {
     setSelectedCat(catId);
+    
   };
 
   // (9) Sending a message calls an action and updates local conversations state if successful
@@ -184,9 +204,31 @@ function Inbox() {
             </div>
           ) : (
             // ################################ SENT APPLICATIONS FUNCTIONALITY ################################
-            <div className="application-list">
+            activeTab === "sentApplications" && (
+              <div className="application-list">
               <h3>Sent Applications</h3>
-              {Object.keys(AppliedCat || {}).map((catId) => (
+             {sentApplications.length >0  ? (
+              sentApplications.map((application)=> (
+                <div key = {application.id} className="list-group-item list-group-item-action"> 
+               <h5>application for {application.cat_name}
+                <p>status: <span className={`badge bg-${application.status === "pending" ? "warning" : application.status === "approved" ? "success" : "danger"}`}>
+                  "application.status"
+                  </span></p>
+                  <p>submitted: {new Date(application.created_at).toLocaleDateString()}</p>
+               </h5>
+                </div>
+              ))
+            ) :(
+              <p>no applications sent</p>
+            
+             )}
+             
+             
+             
+             
+             
+             
+              {/* {Object.keys(AppliedCat || {}).map((catId) => (
                 <div
                   key={catId}
                   className={`list-group-item list-group-item-action ${
@@ -196,8 +238,10 @@ function Inbox() {
                 >
                   Sent Applications for {AppliedCat[catId]?.cat?.name}
                 </div>
-              ))}
+              ))} */}
             </div>
+          )
+           
             // ################################ END OF SENT APPLICATIONS FUNCTIONALITY ################################
           )}
         </div>
