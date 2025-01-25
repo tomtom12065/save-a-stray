@@ -22,6 +22,8 @@ function Inbox() {
   const [catApplications, setCatApplications] = useState({});
   const [selectedCat, setSelectedCat] = useState(null);
   const [sentApplications,setSentApplications] = useState([]);
+
+  const [sentApplication, setSentApplication] = useState(null);
   
   const [AppliedCat, setAppliedCat] = useState(null);
 
@@ -187,7 +189,9 @@ function Inbox() {
                 </div>
               ))}
             </div>
-          ) : activeTab === "applications" ? (
+          ) : 
+          // received applications tab
+          activeTab === "applications" ? (
             <div className="application-list">
               <h3>Applications</h3>
               {Object.keys(catApplications).map((catId) => (
@@ -204,12 +208,21 @@ function Inbox() {
             </div>
           ) : (
             // ################################ SENT APPLICATIONS FUNCTIONALITY ################################
+          
+          // this is third buttons left side 
             activeTab === "sentApplications" && (
-              <div className="application-list">
+              <div className="application-list"
+              >
               <h3>Sent Applications</h3>
              {sentApplications.length >0  ? (
               sentApplications.map((application)=> (
-                <div key = {application.id} className="list-group-item list-group-item-action"> 
+                <div key = {application.id} className="list-group-item list-group-item-action"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log('ApplicationCard clicked:', application.id);
+                  setSentApplication(true);
+
+                }}> 
                <h5>application for {application.cat_name}
                 <p>status: <span className={`badge bg-${application.status === "pending" ? "warning" : application.status === "approved" ? "success" : "danger"}`}>
                   "application.status"
@@ -228,17 +241,7 @@ function Inbox() {
              
              
              
-              {/* {Object.keys(AppliedCat || {}).map((catId) => (
-                <div
-                  key={catId}
-                  className={`list-group-item list-group-item-action ${
-                    catId === selectedCat ? "active" : ""
-                  }`}
-                  onClick={() => handleSelectApplication(catId)}
-                >
-                  Sent Applications for {AppliedCat[catId]?.cat?.name}
-                </div>
-              ))} */}
+        
             </div>
           )
            
@@ -291,7 +294,8 @@ function Inbox() {
               </div>
             )
           ) : selectedCat ? (
-            <div className="card">
+            <div className="card"
+            >
               <div className="card-header">
                 <h2 className="card-title">
                   Applications for {catApplications[selectedCat]?.cat?.name}
@@ -300,9 +304,15 @@ function Inbox() {
               <div className="card-body">
                 <div className="row">
                   {catApplications[selectedCat]?.applications?.map((application) => (
-                    <div className="col-12 col-md-6 col-lg-4 mb-4" key={application.id}>
+                    <div className="col-12 col-md-6 col-lg-4 mb-4" key={application.id}
+                    // onClick={()=>{
+                    //   setSentApplication(true)
+                    //   console.log(sentApplication)
+                    // }}
+                    >
                       <ApplicationCard
                         application={application}
+                        
                         catName={catApplications[selectedCat]?.cat?.name || "Unknown Cat"}
                       />
                     </div>
@@ -310,13 +320,28 @@ function Inbox() {
                 </div>
               </div>
             </div>
+   
+  
+  ) 
+  // the right side of sent applications
+  :  (sentApplication ? (
+            <div className="card">
+              <div className="card-body text-center">
+                <div className="spinner-border" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+                <p>Loading applications...</p>
+              </div>
+            </div>
           ) : (
             <div className="card">
               <div className="card-body">
+             {/* put the cat application info here */}
                 <h2 className="card-title">Select a cat to view applications</h2>
               </div>
             </div>
-          )}
+          ))}
+          
         </div>
       </div>
     </div>

@@ -22,7 +22,7 @@ const ApplicationCard = ({ application, catName }) => {
   return (
     <div className="card application-card">
       <div className="card-body">
-        <h5 className="card-title">Application for {catName}</h5>
+        <h5 className="card-title">Application for khdjvkjvibi{catName}</h5>
         <p><strong>Applicant Name:</strong> {application.applicant_name}</p>
         <p><strong>Contact Info:</strong> {application.contact_info}</p>
         <p><strong>Reason:</strong> {application.reason}</p>
@@ -32,14 +32,14 @@ const ApplicationCard = ({ application, catName }) => {
           <button
             className="btn btn-success btn-sm"
             onClick={() => handleStatusChange("approved")}
-            disabled={loading || currentStatus === "approved"}
+            // disabled={loading || currentStatus === "approved"}
           >
             Approve
           </button>
           <button
             className="btn btn-danger btn-sm"
             onClick={() => handleStatusChange("rejected")}
-            disabled={loading || currentStatus === "rejected"}
+            // disabled={loading || currentStatus === "rejected"}
           >
             Reject
           </button>
