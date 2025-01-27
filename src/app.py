@@ -16,7 +16,6 @@ from datetime import timedelta
 # Set environment and static file directory
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../public/')
-# https://orange-space-engine-p594pqx6pgq26qq9-3001.app.github.dev/
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 
