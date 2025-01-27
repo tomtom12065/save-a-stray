@@ -111,8 +111,8 @@ const CatUpload = () => {
           placeholder="Enter age"
           required
         />
-
-        <label htmlFor="price">Price (USD):</label>
+        <h5>we recommend a minimum rehome fee of $100 to discourage bad actors from applying for these pets</h5>
+        <label htmlFor="price">rehome fee (USD):</label>
         <input
           id="price"
           type="number"

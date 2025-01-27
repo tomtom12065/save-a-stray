@@ -1,3 +1,12 @@
+
+
+
+// fix the rejection approval buttons on the applications
+
+
+
+
+
 // (1) Importing React and hooks, plus Context from our store and React Router
 import React, { useEffect, useState, useContext } from "react";
 import { Context } from "../store/appContext";
@@ -21,11 +30,8 @@ function Inbox() {
   const [activeTab, setActiveTab] = useState("conversations");
   const [catApplications, setCatApplications] = useState({});
   const [selectedCat, setSelectedCat] = useState(null);
-  const [sentApplications,setSentApplications] = useState([]);
-
-  const [sentApplication, setSentApplication] = useState(null);
-  
-  const [AppliedCat, setAppliedCat] = useState(null);
+  const [sentApplications, setSentApplications] = useState([]);
+  const [selectedSentApplication, setSelectedSentApplication] = useState(null);
 
   // (2d) These values may come from route state to open a specific conversation
   const recipientIdFromProps = location.state?.recipientId || null;
@@ -40,7 +46,6 @@ function Inbox() {
   }, [actions]);
 
   // (4) Once messages are fetched, build a conversations object grouping by participant.
-  //     If a recipientId is passed, we auto-select that conversation.
   useEffect(() => {
     if (store.messages && store.messages.length > 0) {
       const convos = store.messages.reduce((acc, message) => {
@@ -75,30 +80,17 @@ function Inbox() {
     fetchApplications();
   }, [actions]);
 
-  useEffect(()=>{
+  useEffect(() => {
     if (activeTab === "sentApplications") {
-      const loadSentApplications = async ()=>{
-        const data = await actions.fetchSentApplications()
+      const loadSentApplications = async () => {
+        const data = await actions.fetchSentApplications();
         if (data) {
-          setSentApplications(data)
+          setSentApplications(data);
         }
-      }
-      loadSentApplications()
+      };
+      loadSentApplications();
     }
-  }, [activeTab])
-
-
-
-
-
-
-  // ################################ SENT APPLICATIONS FUNCTIONALITY ################################
-  // (6) Function to fetch applications that the user has sent out
-  const fetchSentApplications = async () => {
-    const sentApps = await actions.fetchSentApplications(); // Adjust to your action function
-    if (sentApps) setAppliedCat(store.sentApplications);
-  };
-  // ################################ END OF SENT APPLICATIONS FUNCTIONALITY ################################
+  }, [activeTab]);
 
   // (7) Selecting a conversation sets the participant and marks messages as read.
   const handleSelectConversation = async (participantId) => {
@@ -114,7 +106,6 @@ function Inbox() {
   // (8) Selecting a cat application sets that cat in state to display its applications
   const handleSelectApplication = (catId) => {
     setSelectedCat(catId);
-    
   };
 
   // (9) Sending a message calls an action and updates local conversations state if successful
@@ -139,36 +130,27 @@ function Inbox() {
     }
   };
 
-  // (10) Rendering the Inbox with tabs for conversations, applications, and sent applications
+  // Rendering the Inbox with tabs for conversations, applications, and sent applications
   return (
     <div className="container-fluid">
       <div className="row">
         <div className="col-4">
           <div className="dflex justify-content-center tab-navigation">
             <button
-              className={`border rounded m-2 btn btn-light ${
-                activeTab === "conversations" ? "active" : ""
-              }`}
+              className={`border rounded m-2 btn btn-light ${activeTab === "conversations" ? "active" : ""}`}
               onClick={() => setActiveTab("conversations")}
             >
               Conversations
             </button>
             <button
-              className={`border rounded m-2 btn btn-light ${
-                activeTab === "applications" ? "active" : ""
-              }`}
+              className={`border rounded m-2 btn btn-light ${activeTab === "applications" ? "active" : ""}`}
               onClick={() => setActiveTab("applications")}
             >
               Applications
             </button>
             <button
-              className={`border rounded m-2 btn btn-light ${
-                activeTab === "sentApplications" ? "active" : ""
-              }`}
-              onClick={() => {
-                setActiveTab("sentApplications");
-                fetchSentApplications();
-              }}
+              className={`border rounded m-2 btn btn-light ${activeTab === "sentApplications" ? "active" : ""}`}
+              onClick={() => setActiveTab("sentApplications")}
             >
               Sent Applications
             </button>
@@ -180,26 +162,20 @@ function Inbox() {
               {Object.keys(conversations).map((participantId) => (
                 <div
                   key={participantId}
-                  className={`list-group-item list-group-item-action ${
-                    participantId === selectedParticipant ? "active" : ""
-                  }`}
+                  className={`list-group-item list-group-item-action ${participantId === selectedParticipant ? "active" : ""}`}
                   onClick={() => handleSelectConversation(participantId)}
                 >
                   Conversation with {conversations[participantId]?.username || `User ${participantId}`}
                 </div>
               ))}
             </div>
-          ) : 
-          // received applications tab
-          activeTab === "applications" ? (
+          ) : activeTab === "applications" ? (
             <div className="application-list">
               <h3>Applications</h3>
               {Object.keys(catApplications).map((catId) => (
                 <div
                   key={catId}
-                  className={`list-group-item list-group-item-action ${
-                    catId === selectedCat ? "active" : ""
-                  }`}
+                  className={`list-group-item list-group-item-action ${catId === selectedCat ? "active" : ""}`}
                   onClick={() => handleSelectApplication(catId)}
                 >
                   Applications for {catApplications[catId]?.cat?.name}
@@ -207,45 +183,26 @@ function Inbox() {
               ))}
             </div>
           ) : (
-            // ################################ SENT APPLICATIONS FUNCTIONALITY ################################
-          
-          // this is third buttons left side 
-            activeTab === "sentApplications" && (
-              <div className="application-list"
-              >
+            <div className="application-list">
               <h3>Sent Applications</h3>
-             {sentApplications.length >0  ? (
-              sentApplications.map((application)=> (
-                <div key = {application.id} className="list-group-item list-group-item-action"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  console.log('ApplicationCard clicked:', application.id);
-                  setSentApplication(true);
-
-                }}> 
-               <h5>application for {application.cat_name}
-                <p>status: <span className={`badge bg-${application.status === "pending" ? "warning" : application.status === "approved" ? "success" : "danger"}`}>
-                  "application.status"
-                  </span></p>
-                  <p>submitted: {new Date(application.created_at).toLocaleDateString()}</p>
-               </h5>
-                </div>
-              ))
-            ) :(
-              <p>no applications sent</p>
-            
-             )}
-             
-             
-             
-             
-             
-             
-        
+              {sentApplications.length > 0 ? (
+                sentApplications.map((application) => (
+                  <div
+                    key={application.id}
+                    className={`list-group-item list-group-item-action ${application.id === selectedSentApplication?.id ? "active" : ""}`}
+                    onClick={() => setSelectedSentApplication(application)}
+                  >
+                    <h5>Application for {application.cat_name}</h5>
+                    <p>Status: <span className={`badge bg-${application.status === "pending" ? "warning" : application.status === "approved" ? "success" : "danger"}`}>
+                      {application.status}
+                    </span></p>
+                    <p>Submitted: {new Date(application.created_at).toLocaleDateString()}</p>
+                  </div>
+                ))
+              ) : (
+                <p>No applications sent</p>
+              )}
             </div>
-          )
-           
-            // ################################ END OF SENT APPLICATIONS FUNCTIONALITY ################################
           )}
         </div>
 
@@ -261,9 +218,7 @@ function Inbox() {
                     {conversations[selectedParticipant]?.messages.map((message, index) => (
                       <div
                         key={index}
-                        className={`message ${
-                          message.sender_id === store.user.id ? "sent" : "received"
-                        }`}
+                        className={`message ${message.sender_id === store.user.id ? "sent" : "received"}`}
                       >
                         {message.text}
                       </div>
@@ -293,26 +248,17 @@ function Inbox() {
                 </div>
               </div>
             )
-          ) : selectedCat ? (
-            <div className="card"
-            >
+          ) : activeTab === "applications" && selectedCat ? (
+            <div className="card">
               <div className="card-header">
-                <h2 className="card-title">
-                  Applications for {catApplications[selectedCat]?.cat?.name}
-                </h2>
+                <h2 className="card-title">Applications for {catApplications[selectedCat]?.cat?.name}</h2>
               </div>
               <div className="card-body">
                 <div className="row">
                   {catApplications[selectedCat]?.applications?.map((application) => (
-                    <div className="col-12 col-md-6 col-lg-4 mb-4" key={application.id}
-                    // onClick={()=>{
-                    //   setSentApplication(true)
-                    //   console.log(sentApplication)
-                    // }}
-                    >
+                    <div className="col-12 col-md-6 col-lg-4 mb-4" key={application.id}>
                       <ApplicationCard
                         application={application}
-                        
                         catName={catApplications[selectedCat]?.cat?.name || "Unknown Cat"}
                       />
                     </div>
@@ -320,28 +266,53 @@ function Inbox() {
                 </div>
               </div>
             </div>
-   
-  
-  ) 
-  // the right side of sent applications
-  :  (sentApplication ? (
-            <div className="card">
-              <div className="card-body text-center">
-                <div className="spinner-border" role="status">
-                  <span className="visually-hidden">Loading...</span>
+          ) : activeTab === "sentApplications" ? (
+            selectedSentApplication ? (
+              <div className="card">
+                <div className="card-header">
+                  <h2 className="card-title">Application for {selectedSentApplication.cat_name}</h2>
                 </div>
-                <p>Loading applications...</p>
+                <div className="card-body">
+                  <div className="application-details">
+                    <div className="mb-3">
+                      <h5>Status:</h5>
+                      <span className={`badge bg-${selectedSentApplication.status === "pending" ? "warning" : selectedSentApplication.status === "approved" ? "success" : "danger"}`}>
+                        {selectedSentApplication.status}
+                      </span>
+                    </div>
+                    <div className="mb-3">
+                      <h5>Submitted On:</h5>
+                      <p>{new Date(selectedSentApplication.created_at).toLocaleDateString()}</p>
+                    </div>
+                    <div className="mb-3">
+                      <h5>Applicant Name:</h5>
+                      <p>{selectedSentApplication.applicant_name}</p>
+                    </div>
+                    <div className="mb-3">
+                      <h5>Contact Information:</h5>
+                      <p>{selectedSentApplication.contact_info}</p>
+                    </div>
+                    <div className="mb-3">
+                      <h5>Application Reason:</h5>
+                      <p>{selectedSentApplication.reason}</p>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="card my-2">
+                <div className="card-body">
+                  <h2 className="card-title">Select an application to view details</h2>
+                </div>
+              </div>
+            )
           ) : (
-            <div className="card">
+            <div className="card my-2">
               <div className="card-body">
-             {/* put the cat application info here */}
                 <h2 className="card-title">Select a cat to view applications</h2>
               </div>
             </div>
-          ))}
-          
+          )}
         </div>
       </div>
     </div>

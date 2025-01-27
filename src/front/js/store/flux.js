@@ -2,17 +2,17 @@ let getState = ({ getStore, getActions, setStore }) => {
   //  getaction lets you use functions within the flux in other functions
 
   // Helper function to retrieve token
-  let getToken = () => localStorage.getItem("token");
+  let getToken = () => sessionStorage.getItem("token");
   console.log(getStore.token);
 
   return {
     store: {
       message: null,
       cats: [],
-      user: JSON.parse(localStorage.getItem("user")) || null,
+      user: JSON.parse(sessionStorage.getItem("user")) || null,
       selfcats: [],
       singleCat: [],
-      token: localStorage.getItem("token") || null,
+      token: sessionStorage.getItem("token") || null,
       isChatboxOpen: false,
       catApplications: [],
       currentChatRecipientId: null, // New field for chat context
@@ -22,7 +22,7 @@ let getState = ({ getStore, getActions, setStore }) => {
     },
 
     actions: {
-      //############################ LOCAL/STORE ACTIONS ############################
+      //############################ session/STORE ACTIONS ############################
       setChatRecipient: (recipientId, recipientName) => {
         setStore({
           currentChatRecipientId: recipientId,
@@ -36,9 +36,9 @@ let getState = ({ getStore, getActions, setStore }) => {
 
       logout: () => {
         console.log("Logging out...");
-        localStorage.removeItem("token"); // Remove token from local
-        localStorage.removeItem("refresh_token");
-        localStorage.removeItem("user");
+        sessionStorage.removeItem("token"); // Remove token from session
+        sessionStorage.removeItem("refresh_token");
+        sessionStorage.removeItem("user");
         setStore({ user: null, token: null }); // Reset user and token in store
       },
 
@@ -75,7 +75,7 @@ let getState = ({ getStore, getActions, setStore }) => {
 
       fetchSentApplications: async () => {
         try{
-        let token = localStorage.getItem("token"); // Get the token for authentication
+        let token = sessionStorage.getItem("token"); // Get the token for authentication
         let response = await fetch(`${process.env.BACKEND_URL}/api/applications/sent`, {
           method: "GET",
           headers: {
@@ -104,7 +104,7 @@ let getState = ({ getStore, getActions, setStore }) => {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              Authorization: `Bearer ${sessionStorage.getItem("token")}`,
             },
           });
 
@@ -122,7 +122,7 @@ let getState = ({ getStore, getActions, setStore }) => {
       },
 
       getConversationWithOwner: async (ownerId) => {
-        let token = localStorage.getItem("token"); // Retrieve JWT token
+        let token = sessionStorage.getItem("token"); // Retrieve JWT token
         try {
           let response = await fetch(
             `${process.env.BACKEND_URL}/api/get_single_message?recipient_id=${ownerId}`,
@@ -143,7 +143,7 @@ let getState = ({ getStore, getActions, setStore }) => {
 
           let data = await response.json();
           setStore({ messages: data }); // Save the specific conversation in the global store
-          return data; // Return the conversation for local use if needed
+          return data; // Return the conversation for session use if needed
         } catch (error) {
           console.error("Fetch conversation failed:", error);
           return null; // Return null on failure
@@ -243,7 +243,7 @@ let getState = ({ getStore, getActions, setStore }) => {
 
       getSelfCats: async () => {
         try {
-          let token = localStorage.getItem("token");
+          let token = sessionStorage.getItem("token");
           if (!token) {
             console.error("No token found. User might not be logged in.");
             return { success: false, message: "Unauthorized access: No token provided." };
@@ -294,7 +294,7 @@ let getState = ({ getStore, getActions, setStore }) => {
       },
 
       getUserProfile: async () => {
-        let token = localStorage.getItem("token");
+        let token = sessionStorage.getItem("token");
 
         if (!token) {
           console.error("No token found");
@@ -336,7 +336,7 @@ let getState = ({ getStore, getActions, setStore }) => {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              Authorization: `Bearer ${sessionStorage.getItem("token")}`,
             },
             body: JSON.stringify({ sender_id: senderId, recipient_id: recipientId }),
           });
@@ -359,7 +359,7 @@ let getState = ({ getStore, getActions, setStore }) => {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              Authorization: `Bearer ${sessionStorage.getItem("token")}`,
             },
             body: JSON.stringify({ recipient_id: recipientId }),
           });
@@ -379,7 +379,7 @@ let getState = ({ getStore, getActions, setStore }) => {
       },
 
       sendConfirmationEmail: async (applicationId) => {
-        let token = localStorage.getItem("token"); // Retrieve JWT token
+        let token = sessionStorage.getItem("token"); // Retrieve JWT token
         if (!token) {
           console.error("No token found. User not authenticated.");
           return { success: false, message: "User not authenticated." };
@@ -428,7 +428,7 @@ let getState = ({ getStore, getActions, setStore }) => {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              Authorization: `Bearer ${sessionStorage.getItem("token")}`,
             },
             body: JSON.stringify(payload),
           });
@@ -471,10 +471,10 @@ let getState = ({ getStore, getActions, setStore }) => {
 
           // data will now contain "user", "access_token", and "refresh_token"
           if (data && data.user) {
-            // Store user and tokens in localStorage
-            localStorage.setItem("token", data.access_token);
-            localStorage.setItem("refresh_token", data.refresh_token);
-            localStorage.setItem("user", JSON.stringify(data.user));
+            // Store user and tokens in sessionStorage
+            sessionStorage.setItem("token", data.access_token);
+            sessionStorage.setItem("refresh_token", data.refresh_token);
+            sessionStorage.setItem("user", JSON.stringify(data.user));
 
             // Update your store
             setStore({
@@ -564,15 +564,15 @@ let getState = ({ getStore, getActions, setStore }) => {
             token: data.access_token,
           });
 
-          // Save the tokens to localStorage
-          localStorage.setItem("token", data.access_token);
-          localStorage.setItem("refresh_token", data.refresh_token);
-          localStorage.setItem("user", JSON.stringify(data.user));
+          // Save the tokens to sessionStorage
+          sessionStorage.setItem("token", data.access_token);
+          sessionStorage.setItem("refresh_token", data.refresh_token);
+          sessionStorage.setItem("user", JSON.stringify(data.user));
           setStore({ user: data.user, token: data.access_token });
 
           let actions = getActions();
           actions.getMessages(data.user.id);
-          console.log("Tokens saved to localStorage:", data.access_token, data.refresh_token);
+          console.log("Tokens saved to sessionStorage:", data.access_token, data.refresh_token);
 
           return { success: true, message: "Login successful" };
         } catch (error) {
@@ -583,7 +583,7 @@ let getState = ({ getStore, getActions, setStore }) => {
 
       postCatData2: async (catFormData) => {
         try {
-          let token = localStorage.getItem("token");
+          let token = sessionStorage.getItem("token");
           if (!token) {
             return { success: false, message: "User is not authenticated" };
           }
@@ -649,7 +649,7 @@ let getState = ({ getStore, getActions, setStore }) => {
           let response = await fetch(`${process.env.BACKEND_URL}/api/upload_profile_picture`, {
             method: "POST",
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`, // Assuming the user is authenticated
+              Authorization: `Bearer ${sessionStorage.getItem("token")}`, // Assuming the user is authenticated
             },
             body: formData,
           });
@@ -664,7 +664,7 @@ let getState = ({ getStore, getActions, setStore }) => {
           console.log("Profile picture uploaded successfully:", data);
 
           // Update the user's profile picture in the store
-          setStore({ user: { ...getStore().user, image_url: data.url } });
+          setStore({ user: { ...getStore().user,  profilepic: data.url} });
 
           return { success: true, message: "Profile picture updated successfully" };
         } catch (error) {
@@ -762,7 +762,7 @@ let getState = ({ getStore, getActions, setStore }) => {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              Authorization: `Bearer ${sessionStorage.getItem("token")}`,
             },
             body: JSON.stringify(userInfo),
           });
@@ -780,10 +780,10 @@ let getState = ({ getStore, getActions, setStore }) => {
           return false; // Indicate failure
         }
       },
-
+      // the problem is with the send email confirmation 
       updateApplicationStatus: async (applicationId, newStatus) => {
-        let store = getStore();
-        let token = store.token;
+        
+        let token = sessionStorage.getItem("token");
 
         if (!token) {
           console.error("No token found, user not authenticated");
@@ -865,7 +865,7 @@ let getState = ({ getStore, getActions, setStore }) => {
 
       //############################ DELETE ACTIONS ############################
       deleteCat: async (catId) => {
-        let token = localStorage.getItem("token");
+        let token = sessionStorage.getItem("token");
 
         if (!token) {
           console.error("Token is missing. Please log in.");

@@ -656,7 +656,7 @@ def create_payment_intent():
 ############################
 # PUT Routes
 ############################
-
+######################################the roblem is here
 @api.route("/applications/<int:application_id>/status", methods=["PUT"])
 @jwt_required()
 def update_application_status(application_id):
@@ -688,6 +688,8 @@ def update_application_status(application_id):
             return jsonify({"error": "This cat already has an approved application"}), 400
 
         payment_link = generate_payment_link(cat.price, application.user_id, application.id)
+        if not payment_link:
+            return jsonify({"error": "Failed to create payment link"}), 500
         email_sent = send_payment_email(application.contact_info, payment_link, cat.name)
         if not email_sent:
             return jsonify({"error": "Failed to send payment notification email"}), 500

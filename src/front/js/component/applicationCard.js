@@ -1,6 +1,7 @@
 // ApplicationCard.js
 import React, { useState, useContext } from "react";
 import { Context } from "../store/appContext";
+// why is application/rejection not working not working 
 
 const ApplicationCard = ({ application, catName }) => {
   const { actions } = useContext(Context);
@@ -19,10 +20,12 @@ const ApplicationCard = ({ application, catName }) => {
     }
   };
 
+  
+
   return (
     <div className="card application-card">
       <div className="card-body">
-        <h5 className="card-title">Application for khdjvkjvibi{catName}</h5>
+        <h5 className="card-title">Application for {catName}</h5>
         <p><strong>Applicant Name:</strong> {application.applicant_name}</p>
         <p><strong>Contact Info:</strong> {application.contact_info}</p>
         <p><strong>Reason:</strong> {application.reason}</p>
