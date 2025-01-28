@@ -21,7 +21,7 @@ const ProfilePage = () => {
   const [showEmailInput, setShowEmailInput] = useState(false);
   const [uploadingProfilePic, setUploadingProfilePic] = useState(false);
   const [profilePicError, setProfilePicError] = useState("");
-
+  const [pofilepic,setProfilePic] = useState("");
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -36,6 +36,7 @@ const ProfilePage = () => {
         
         setUsername(userProfile.username);
         setEmail(userProfile.email);
+        setProfilePic(userProfile.profilepic)
       } catch (err) {
         console.error("Error fetching data:", err);
         setError("An error occurred while fetching data.");
