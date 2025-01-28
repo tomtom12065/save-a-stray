@@ -117,6 +117,7 @@ const CatUpload = () => {
           id="price"
           type="number"
           value={price}
+          min="100"
           onChange={(e) => setPrice(e.target.value)}
           placeholder="Enter price"
           required
