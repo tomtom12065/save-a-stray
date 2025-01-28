@@ -21,7 +21,7 @@ const ProfilePage = () => {
   const [showEmailInput, setShowEmailInput] = useState(false);
   const [uploadingProfilePic, setUploadingProfilePic] = useState(false);
   const [profilePicError, setProfilePicError] = useState("");
-  const [pofilepic,setProfilePic] = useState("");
+  const [profilepic,setProfilePic] = useState("");
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -113,7 +113,7 @@ const ProfilePage = () => {
       <div className="profile-picture-section">
         <div className="profile-pic-container">
           <img 
-            src={store.user.profilepic || "https://via.placeholder.com/150"} 
+            src= {profilepic || "https://via.placeholder.com/150"}
             alt="Profile" 
             className="profile-picture"
           />
