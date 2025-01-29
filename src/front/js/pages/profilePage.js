@@ -113,7 +113,7 @@ const ProfilePage = () => {
       <div className="profile-picture-section">
         <div className="profile-pic-container">
           <img 
-            src= {profilepic || "https://via.placeholder.com/150"}
+            src={JSON.parse(profilepic) || "https://via.placeholder.com/150"}
             alt="Profile" 
             className="profile-picture"
           />
