@@ -106,7 +106,7 @@ const ProfilePage = () => {
     navigate("/login");
     return null;
   }
-  const profilepicture = store.user.profilepic;
+  const profilepicture = store.user.profilepic.slice(1,-1);
 
   return (
     <div className="profile-page">
