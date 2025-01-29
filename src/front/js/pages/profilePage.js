@@ -112,7 +112,7 @@ const ProfilePage = () => {
       {/* Profile Picture Section */}
       <div className="profile-picture-section">
         <div className="profile-pic-container">
-          <h1>{user.name}</h1>
+          {/* <h1>{user.name}</h1> */}
           <img 
             src={user.profilepic|| "https://via.placeholder.com/150"}
             alt="Profile" 
