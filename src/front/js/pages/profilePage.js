@@ -106,6 +106,7 @@ const ProfilePage = () => {
     navigate("/login");
     return null;
   }
+  const profilepicture = store.user.profilepic;
 
   return (
     <div className="profile-page">
@@ -114,7 +115,7 @@ const ProfilePage = () => {
         <div className="profile-pic-container">
           <h1>{store.user.username}</h1>
           <img 
-            src={store.user.profilepic|| "https://via.placeholder.com/150"}
+            src={profilepicture|| "https://via.placeholder.com/150"}
             alt="Profile" 
             className="profile-picture"
           />
