@@ -59,6 +59,7 @@ export const Home = () => {
 
       <h1 className="title">Save a Stray</h1>
       <h3>the price is set to minimum $100 to discourage dog fighters from adopting the pets</h3>
+      <h3>site updates weekly</h3>
       <h3>if the site doesn't load give it a minute, its all running on free services,im broke</h3>
       <div className="row cat-grid">
         {store.cats.length > 0 ? (
