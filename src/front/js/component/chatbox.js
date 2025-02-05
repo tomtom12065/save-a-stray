@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useContext,useRef } from "react";
 import { Context } from "../store/appContext";
 import "../../styles/chatbox.css";
-
+// need a way to pull converasations 
+// 
 const Chatbox = () => {
   const { store, actions } = useContext(Context);
   const [messages, setMessages] = useState([]);

@@ -501,8 +501,7 @@ let getState = ({ getStore, getActions, setStore }) => {
       },
 
       submitApplication: async (applicationData) => {
-        let store = getStore();
-        let token = store.token; // Assumes the JWT token is stored in the store
+        let token = sessionStorage.getItem("token"); // Assumes the JWT token is stored in the store
 
         let response = await fetch(`${process.env.BACKEND_URL}/api/applications`, {
           method: "POST",

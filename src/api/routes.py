@@ -361,9 +361,12 @@ def send_confirmation_email():
         if not cat:
             return jsonify({"error": "Cat not found"}), 404
 
-        if application.user_id != int(user_id):
-            return jsonify({"error": "Unauthorized"}), 403
+        if not cat or cat.user_id != int(user_id):
+            return jsonify({"error": "unauthorized"}), 403
 
+        # if application.user_id != int(user_id):
+            # return jsonify({"error": "Unauthorized"}), 403
+        
         subject = f"Adoption Confirmation for {cat.name}"
         body = f"""
         Thank you for completing the payment for {cat.name}!
@@ -688,8 +691,8 @@ def update_application_status(application_id):
             return jsonify({"error": "This cat already has an approved application"}), 400
 
         payment_link = generate_payment_link(cat.price, application.user_id, application.id)
-        if not payment_link:
-            return jsonify({"error": "Failed to create payment link"}), 500
+        # if not payment_link:
+        #     return jsonify({"error": "Failed to create payment link"}), 500
         email_sent = send_payment_email(application.contact_info, payment_link, cat.name)
         if not email_sent:
             return jsonify({"error": "Failed to send payment notification email"}), 500
