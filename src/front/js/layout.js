@@ -11,6 +11,7 @@ import Inbox from "./pages/inbox"; // Import Inbox.js
 import { ResetPassword } from "./pages/resetpassword";
 import { Sendtoken } from "./pages/requestingreset";
 import Chatbox from "./component/chatbox";
+import PaymentPage from "./component/PaymentForm";
 import { Context } from "./store/appContext"; 
 import { Navbar } from "./component/navbar";
 import "../styles/layout.css";
@@ -61,7 +62,7 @@ const Layout = () => {
               <Route path="/application" element={<ApplicationPage />} />
               <Route path="/requesting-reset" element={<Sendtoken />} />
               <Route path="/reset-password" element={<ResetPassword />} />
-
+              <Route path="/payment" element ={<PaymentPage/>}/>
 
               {/* New route for Inbox page */}
               <Route
