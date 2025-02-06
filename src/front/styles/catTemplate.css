@@ -2,7 +2,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  /* height: 100vh; */
   /* Full viewport height */
   background-color: #f9f9f9;
   /* Optional background color */
@@ -14,9 +14,10 @@
 } */
 
 
-p{
-  color:black
+p {
+  color: black
 }
+
 .cat-upload-form {
   display: flex;
   flex-direction: column;

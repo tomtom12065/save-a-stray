@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, useRef } from "react";
 import { Context } from "../store/appContext";
 import "../../styles/chatbox.css";
-
+// dont use the store to pull the information, use the logic thats in the inbox.js to properly grab the messages.
 const Chatbox = () => {
   const { store, actions } = useContext(Context);
   const [messages, setMessages] = useState([]);
@@ -30,6 +30,8 @@ const Chatbox = () => {
   }, [isCollapsed, messages]);
 
   // Conversation list functionality
+  // fix this use actions.getmessages and save them as a variable and then use the foreach on that variable
+  // double check where this action is getting called
   const getUniqueConversations = () => {
     const conversations = {};
     store.messages.forEach((msg) => {

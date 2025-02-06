@@ -1,5 +1,5 @@
 import React, { useEffect, useContext } from "react";
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate , useLocation} from "react-router-dom";
 import { BackendURL } from "./component/backendURL";
 import Home from "./pages/home";
 import Register from "./pages/register";
@@ -7,6 +7,7 @@ import CatUpload from "./pages/catUpload";
 import CatTemplate from "./pages/catTemplate";
 import ProfilePage from "./pages/profilePage";
 import Login from "./pages/login";
+
 import Inbox from "./pages/inbox"; // Import Inbox.js
 import { ResetPassword } from "./pages/resetpassword";
 import { Sendtoken } from "./pages/requestingreset";
@@ -16,6 +17,18 @@ import { Context } from "./store/appContext";
 import { Navbar } from "./component/navbar";
 import "../styles/layout.css";
 import ApplicationPage from "./pages/applicationPage";
+
+
+const ChatboxWrapper = ()=>{
+  const location = useLocation();
+  const {store} = useContext(Context);
+
+  if (location.pathname === "/inbox" ) {
+    return null;
+  }
+
+  return store.token ? <Chatbox /> : null;
+};
 const Layout = () => {
   const { store, actions } = useContext(Context);
   const basename = process.env.BASENAME || "";
@@ -39,11 +52,13 @@ const Layout = () => {
     <div className="app-layout">
       <BrowserRouter basename={basename}>
         <div className="layout-container">
-
+        <ChatboxWrapper />
           {/* <Sidebar /> Sidebar component always visible */}
 
           {/* Display Chatbox only if user is logged in */}
-          {store.token && <Chatbox />}
+      
+      
+     
 
           <main className="main-content">
             <Navbar></Navbar>
@@ -77,6 +92,7 @@ const Layout = () => {
             </Routes>
           </main>
         </div>
+
       </BrowserRouter>
     </div>
   );
