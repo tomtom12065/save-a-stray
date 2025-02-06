@@ -12,7 +12,7 @@ import { ResetPassword } from "./pages/resetpassword";
 import { Sendtoken } from "./pages/requestingreset";
 import Chatbox from "./component/chatbox";
 import PaymentPage from "./component/PaymentForm";
-import { Context } from "./store/appContext"; 
+import { Context } from "./store/appContext";
 import { Navbar } from "./component/navbar";
 import "../styles/layout.css";
 import ApplicationPage from "./pages/applicationPage";
@@ -21,30 +21,32 @@ const Layout = () => {
   const basename = process.env.BASENAME || "";
 
   useEffect(() => {
+    actions.getBreeds();
 
-      actions.getUserProfile(); // Ensure user profile is fetched if token exists
-      actions.getBreeds();
+    actions.getUserProfile(); // Ensure user profile is fetched if token exists
+    if (actions.getUserProfile() === "")
+      actions.getMessages(data.user.id)
 
-  
+
   }, [actions]);
 
   // Ensure the backend URL is configured
   if (!process.env.BACKEND_URL || process.env.BACKEND_URL === "") {
     return <BackendURL />;
   }
-  
+
   return (
     <div className="app-layout">
       <BrowserRouter basename={basename}>
         <div className="layout-container">
-        
+
           {/* <Sidebar /> Sidebar component always visible */}
 
           {/* Display Chatbox only if user is logged in */}
           {store.token && <Chatbox />}
 
           <main className="main-content">
-          <Navbar></Navbar>
+            <Navbar></Navbar>
             <Routes>
               <Route index element={<Home />} />
 
@@ -62,7 +64,7 @@ const Layout = () => {
               <Route path="/application" element={<ApplicationPage />} />
               <Route path="/requesting-reset" element={<Sendtoken />} />
               <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/payment" element ={<PaymentPage/>}/>
+              <Route path="/payment" element={<PaymentPage />} />
 
               {/* New route for Inbox page */}
               <Route

@@ -177,7 +177,7 @@ const Register = () => {
           </label>
         )}
 
-        <label>Profile Picture (optional):</label>
+        <label>Profile Picture:</label>
         <input
           type="file"
           onChange={handleProfilePicChange}
