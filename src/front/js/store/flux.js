@@ -760,6 +760,56 @@ let getState = ({ getStore, getActions, setStore }) => {
       },
 
       //############################ PUT ACTIONS ############################
+    
+      appendCatImages: async (catId, newImageFiles) => {
+        try {
+          let token = sessionStorage.getItem("token");
+          if (!token) {
+            return { success: false, message: "User is not authenticated" };
+          }
+      
+          // Upload new images using existing logic
+          let uploadedUrls = await getActions().uploadImage(newImageFiles);
+          
+          if (!uploadedUrls || uploadedUrls.length === 0) {
+            return { success: false, message: "Failed to upload new images" };
+          }
+      
+          // Send request to append URLs
+          let response = await fetch(`${process.env.BACKEND_URL}/api/cats/${catId}/images`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ new_image_urls: uploadedUrls }),
+          });
+      
+          let responseData = await response.json();
+      
+          if (response.status === 200) {
+            return { 
+              success: true, 
+              message: "Images added successfully",
+              data: responseData.cat 
+            };
+          }
+          return { 
+            success: false, 
+            message: responseData.error || "Failed to update images" 
+          };
+        } catch (error) {
+          console.error("Error appending images:", error);
+          return { 
+            success: false, 
+            message: "An unexpected error occurred" 
+          };
+        }
+      },
+    
+    
+    
+    
       updateUser: async (userInfo) => {
         try {
           let response = await fetch(`${process.env.BACKEND_URL}/api/update_user`, {

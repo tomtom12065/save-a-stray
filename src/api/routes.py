@@ -5,6 +5,7 @@ import hashlib
 import stripe
 import cloudinary.uploader
 import cloudinary
+import json
 from datetime import timedelta
 from flask import request, jsonify, Blueprint
 from flask_cors import CORS
@@ -660,6 +661,63 @@ def create_payment_intent():
 # PUT Routes
 ############################
 ######################################the roblem is here
+
+
+
+@api.route("/cats/<int:cat_id>/images", methods=["PUT"])
+@jwt_required()
+def append_cat_images(cat_id):
+    """
+    PUT /cats/<cat_id>/images
+    Append new image URLs to an existing cat listing
+    """
+    try:
+        user_id = get_jwt_identity()
+        cat = Cat.query.get(cat_id)
+
+        if not cat:
+            return jsonify({"error": "Cat not found"}), 404
+
+        if cat.user_id != user_id:
+            return jsonify({"error": "Unauthorized"}), 403
+
+        data = request.get_json()
+        new_image_urls = data.get("new_image_urls")
+        if not new_image_urls or not isinstance(new_image_urls, list):
+            return jsonify({"error": "Invalid or missing image URLs"}), 400
+
+        # Safely parse the existing image URLs
+        try:
+            existing_urls = json.loads(cat.image_urls) if cat.image_urls else []
+            if not isinstance(existing_urls, list):
+                existing_urls = []
+        except (json.JSONDecodeError, TypeError):
+            existing_urls = []
+
+        # Merge and remove duplicates
+        updated_urls = list(set(existing_urls + new_image_urls))
+
+        # Update the cat record
+        cat.image_urls = json.dumps(updated_urls)
+        db.session.commit()
+
+        return jsonify({
+            "message": "Images updated successfully",
+            "cat": cat.serialize()
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            "error": "Failed to update images",
+            "details": str(e)
+        }), 500
+
+
+
+
+
+
 @api.route("/applications/<int:application_id>/status", methods=["PUT"])
 @jwt_required()
 def update_application_status(application_id):
