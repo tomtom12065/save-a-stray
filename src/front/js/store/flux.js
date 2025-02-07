@@ -502,6 +502,11 @@ let getState = ({ getStore, getActions, setStore }) => {
 
       submitApplication: async (applicationData) => {
         let token = sessionStorage.getItem("token"); // Assumes the JWT token is stored in the store
+        if (!token) {
+          console.error("Missing authentication token");
+          alert("Missing authentication token");
+          return false;
+        }
 
         let response = await fetch(`${process.env.BACKEND_URL}/api/applications`, {
           method: "POST",
