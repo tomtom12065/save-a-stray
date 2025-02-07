@@ -2,6 +2,18 @@ import React, { useState } from "react";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 
+
+
+// how is the this page getting the cat's information
+// 
+
+
+
+
+
+
+
+
 // Load Stripe with your public key
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY);
 
@@ -146,7 +158,9 @@ const PaymentForm = ({ clientSecret, ownerStripeAccountId, catName, amount }) =>
                 Processing...
               </>
             ) : (
-              `Pay $${(amount / 100).toFixed(2)}`
+             <>`Pay $${(amount / 100).toFixed(2)}`
+              <p>payment submit button </p>
+              </>
             )}
           </button>
         </form>
