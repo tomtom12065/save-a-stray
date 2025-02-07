@@ -1,7 +1,7 @@
 // (1) Importing necessary modules from React and React Router
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+// make this bigger on the mobile version
 // (2) This component allows users to request a password reset via email.
 export const Sendtoken = () => {
   // (3) useState hooks for managing form data and messages

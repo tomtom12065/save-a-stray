@@ -69,13 +69,13 @@ export const Navbar = () => {
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <button
-                    className="nav-link btn btn-link"
+                  <Link
+                    className="nav-link"
                    
                     onClick={() => actions.logout()}
                   >
                     Logout
-                  </button>
+                  </Link>
                 </li>
               </>
             )}

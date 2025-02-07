@@ -13,7 +13,7 @@ import { Context } from "../store/appContext";
 import { useLocation } from "react-router-dom";
 import "../../styles/inbox.css";
 import ApplicationCard from "../component/applicationCard";
-
+import useWindowDimensions from "../hooks/windowDimensions";
 // (2) The Inbox component manages messages (conversations) and cat applications.
 function Inbox() {
   // (2a) Destructure store and actions from our global context
@@ -32,7 +32,10 @@ function Inbox() {
   const [selectedCat, setSelectedCat] = useState(null);
   const [sentApplications, setSentApplications] = useState([]);
   const [selectedSentApplication, setSelectedSentApplication] = useState(null);
-
+  const {width}= useWindowDimensions();
+  // if the width is below a ceratin number display the mobile version of the state
+  // use an if statement
+  // cry
   // (2d) These values may come from route state to open a specific conversation
   const recipientIdFromProps = location.state?.recipientId || null;
   const recipientNameFromProps = location.state?.recipientName || null;
@@ -132,10 +135,15 @@ function Inbox() {
 
   // Rendering the Inbox with tabs for conversations, applications, and sent applications
   return (
-    <div className="container-fluid">
+  //  recreate the inbox page so that it shows a different screen if the user is on mobile
+  // create a react hook
+  // create a new chatbox with increased functionality of pulling applications and sent applications if the width is too small
+  // this chatbox will function the exact way it normally does but will need to be a new component specifically for the inbox
+   
+   <div className="container-fluid">
       <div className="row">
         <div className="col-4">
-          <div className="dflex justify-content-center tab-navigation">
+          <div className="d-flex justify-content-center tab-navigation">
             <button
               className={`border rounded m-2 btn btn-light ${activeTab === "conversations" ? "active" : ""}`}
               onClick={() => setActiveTab("conversations")}

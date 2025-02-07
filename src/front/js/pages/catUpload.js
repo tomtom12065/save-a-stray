@@ -3,7 +3,8 @@ import React, { useState, useContext, useEffect } from "react";
 import { Context } from "../store/appContext";
 import "../../styles/catUpload.css";
 import { useNavigate } from "react-router-dom";
-
+// only display if user is logged in with the bar
+// also put in user verification to enter the page
 // (2) This component handles uploading a new cat's data, including images.
 const CatUpload = () => {
   // (2a) Destructuring to gain access to store and actions from our global context

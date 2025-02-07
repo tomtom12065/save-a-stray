@@ -27,11 +27,13 @@ const Chatbox = () => {
 
   useEffect(() => {
     if (!isCollapsed) scrollToBottom();
+    actions.getMessages();
   }, [isCollapsed, messages]);
 
   // Conversation list functionality
   // fix this use actions.getmessages and save them as a variable and then use the foreach on that variable
   // double check where this action is getting called
+  // ################################################################
   const getUniqueConversations = () => {
     const conversations = {};
     store.messages.forEach((msg) => {

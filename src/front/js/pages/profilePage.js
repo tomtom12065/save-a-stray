@@ -111,13 +111,13 @@ const ProfilePage = () => {
   return (
     <div className="profile-page">
       {/* Profile Picture Section */}
-      <div className="profile-picture-section">
+      <div className="profile-picture-section ">
         <div className="profile-pic-container">
           <h1>{store.user.username}</h1>
           <img 
             src={profilepicture|| "https://via.placeholder.com/150"}
             alt="Profile" 
-            className="profile-picture"
+            className="profile-picture img-fluid w-25 h-25"
           />
           <div className="profile-pic-upload">
             <label htmlFor="profilePicInput" className="upload-label">

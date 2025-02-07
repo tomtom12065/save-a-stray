@@ -1,5 +1,8 @@
 /* General container styling */
 .home-container {
+  display:flex;
+  align-items: center;
+  flex-direction: column;
   padding: 20px;
   text-align: center;
   background-color: #E3F2FD; /* Light blue-gray */
