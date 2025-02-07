@@ -6,6 +6,11 @@ import "../../styles/saveAStray.css";
 import CatCard from "../component/catCard";  // Import the CatCard component
 
 
+
+
+// in local site need to change the pipfile the yaml pip file
+// delte pnpm.yaml and package-lock.json and do pnpm install 
+
 // classmate collaborations?
 // also helps practicing wit collaboration
 // allows for biggr projects
