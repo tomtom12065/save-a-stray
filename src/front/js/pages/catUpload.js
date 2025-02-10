@@ -6,10 +6,35 @@ import { useNavigate } from "react-router-dom";
 // only display if user is logged in with the bar
 // also put in user verification to enter the page
 // (2) This component handles uploading a new cat's data, including images.
+
+//     align-items: center;
+// width: 60%;
+// height: 100%;
+// background-color: #f9f9f9;
+// margin-top: 60px;
+// border-radius: 10px;
+// padding-top:20px;
+//padding-bottom:20px;
+// possibly put in ads onto this page
+
+
+
+
+
+
+
+
+
 const CatUpload = () => {
   // (2a) Destructuring to gain access to store and actions from our global context
   const { store, actions } = useContext(Context);
   const navigate = useNavigate();
+
+
+
+
+
+
 
   // (3) Local state to hold cat details
   const [catName, setCatName] = useState("");

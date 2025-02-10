@@ -1,9 +1,13 @@
 // CatCard.js
+
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import { Context } from "../store/appContext";
 import "../../styles/catCard.css";
+// modal to update info on the profile page
+// do a conditional on the catTemplate page  for an edit button
+// potentially make an edit mode
 const CatCard = ({ cat }) => {
   const navigate = useNavigate();
   const { actions } = useContext(Context);
@@ -20,6 +24,30 @@ const CatCard = ({ cat }) => {
       }
     }
   };
+
+  const handleAddImages = async () => {
+    // Create a hidden file input element
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = "image/*";
+    fileInput.multiple = true;
+    fileInput.onchange = async (event) => {
+      const files = Array.from(event.target.files);
+      if (files.length === 0) return;
+      // Call the flux action that handles image uploading and updating
+      const response = await actions.appendCatImages(cat.id, files);
+      if (response.success) {
+        alert("Images updated successfully");
+        // Optionally, refresh the cat data here
+      } else {
+        alert("Error updating images: " + response.message);
+      }
+    };
+    fileInput.click(); // Open the file dialog
+  };
+
+
+
 
   // Safely parse image URLs (if stored as JSON array)
   let imagesArray;
@@ -100,12 +128,25 @@ const CatCard = ({ cat }) => {
               View Details
             </button>
             <button
-          //  add btn-sm to make the buttons smaller to both of the buttons
-           className="btn btn-danger "
+              //  add btn-sm to make the buttons smaller to both of the buttons
+              className="btn btn-danger "
               onClick={() => handleDeleteCat(cat.id)}
             >
               Delete
             </button>
+{/* 
+            {user.id &&
+              cat.user &&
+              user.id === cat.user.id && (
+                <button
+                  className="btn btn-secondary ms-2"
+                  onClick={handleAddImages}
+                >
+                  Add Images
+                </button>
+              )} */}
+
+
           </div>
         </div>
       </div>

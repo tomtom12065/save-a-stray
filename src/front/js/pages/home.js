@@ -17,7 +17,8 @@ import CatCard from "../component/catCard";  // Import the CatCard component
 // use more third party api's
 // study stripe more
 // go deeper into payments
-
+// add a search bar for breeds on home page
+// 
 
 // (2) Home component displays a list of available cats and allows deletion (if user has permissions).
 export const Home = () => {

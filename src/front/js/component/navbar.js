@@ -2,6 +2,7 @@ import React, { useContext } from "react";
 import { Link } from "react-router-dom";
 import "../../styles/navbar.css";
 import { Context } from "../store/appContext";
+// add modal for login/forget password to reduce clutter and pages
 
 export const Navbar = () => {
   const { store, actions } = useContext(Context); // Access global state and actions
