@@ -7,6 +7,7 @@ import CatUpload from "./pages/catUpload";
 import CatTemplate from "./pages/catTemplate";
 import ProfilePage from "./pages/profilePage";
 import Login from "./pages/login";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 import Inbox from "./pages/inbox"; // Import Inbox.js
 import { ResetPassword } from "./pages/resetpassword";

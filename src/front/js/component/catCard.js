@@ -33,7 +33,7 @@ const CatCard = ({ cat }) => {
   if (!Array.isArray(imagesArray)) {
     imagesArray = [imagesArray];
   }
-
+//check this out with julie 
   return (
     <div className="col-12 col-md-10 col-lg-10 mb-4">
       <div className="card w-100 short-card">

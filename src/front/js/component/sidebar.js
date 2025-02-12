@@ -4,7 +4,7 @@ import { Context } from "../store/appContext";
 import "../../styles/sidebar.css";
 
 const Sidebar = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigatje();
   const { store, actions } = useContext(Context);
 
   const toggleSidebar = () => {

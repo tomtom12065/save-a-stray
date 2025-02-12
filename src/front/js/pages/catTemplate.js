@@ -60,6 +60,7 @@ const CatTemplate = () => {
   }
 
   // (9) Rendering the cat details within a carousel if multiple images exist
+  // need to add conditional buttons  that allow for the cat cards to be modified
   return (
     <div className="d-flex justify-content-center">
       <div className="cat-template">
