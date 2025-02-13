@@ -83,19 +83,19 @@ const CatCard = ({ cat }) => {
             <strong>Age:</strong> {cat.age} years <br />
             <strong>Price:</strong> ${cat.price.toFixed(2)}
           </p>
-          <div className="d-flex align-items-center justify-content-center">
-            <div className="d-flex align-items-center justify-content-center">
+          <div className="d-flex align-items-center justify-content-center ">
+            <div className="d-flex align-items-center justify-content-center ">
               {store.user && store.user.id === cat.owner.id ? (
                 <>
-                  <button className="btn btn-secondary me-2" onClick={() => navigate(`/cat-template/${cat.id}`)}>
+                  <button className="custom-btn me-2" onClick={() => navigate(`/cat-template/${cat.id}`)}>
                     Edit Mode
                   </button>
-                  <button className="btn btn-danger" onClick={() => handleDeleteCat(cat.id)}>
+                  <button className="custom-btn" onClick={() => handleDeleteCat(cat.id)}>
                     Delete
                   </button>
                 </>
               ) : (
-                <button className="btn btn-primary" onClick={() => navigate(`/cat-template/${cat.id}`)}>
+                <button className="custom-btn" onClick={() => navigate(`/cat-template/${cat.id}`)}>
                   View Details
                 </button>
               )}

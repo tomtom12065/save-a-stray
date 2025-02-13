@@ -210,7 +210,7 @@ const CatTemplate = () => {
 
           <p>
             <strong>Age:</strong>{" "}
-            {editingAge ? (
+            {`editingAge` ? (
               <div className="edit-group">
                 <input
                   type="number"

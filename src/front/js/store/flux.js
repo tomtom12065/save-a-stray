@@ -830,13 +830,16 @@ let getState = ({ getStore, getActions, setStore }) => {
 
       // In your actions object
       editCat: async (catId, updatedData) => {
+        const token = sessionStorage.getItem("token");;
+        
         try {
           const response = await fetch(`${process.env.BACKEND_URL}/api/edit_cat/${catId}`, {
             method: "PUT",
             headers: {
-              "Content-Type": "application/json"
-            },
+              "Content-Type": "application/json",
+              "Authorization": "Bearer " + token},
             body: JSON.stringify(updatedData)
+            
           });
           const data = await response.json();
           if (response.ok) {

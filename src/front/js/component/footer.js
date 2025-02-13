@@ -8,7 +8,7 @@ const Footer = () => {
 			<div className="container">
 				<p>
 					<span
-						className="text-primary cursor-pointer"
+						className="text-primary footer-link"
 						data-bs-toggle="modal"
 						data-bs-target="#termsModal"
 						onClick={() => setModalType("terms")}
@@ -17,7 +17,7 @@ const Footer = () => {
 					</span>
 					{" | "}
 					<span
-						className="text-primary cursor-pointer"
+						className="text-primary footer-link"
 						data-bs-toggle="modal"
 						data-bs-target="#privacyModal"
 						onClick={() => setModalType("privacy")}

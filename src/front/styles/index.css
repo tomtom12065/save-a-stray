@@ -1,3 +1,31 @@
 /* 
-    General Styles used on every website (Don't Repeat Yourself)
+  button{
+  background
+
+
+General Styles used on every website (Don't Repeat Yourself)
 */
+
+
+.custom-btn{
+    background-color: #e8e8e8;
+    line-height:  1.5;
+    color: #ff7e9f;
+    padding-left:.75rem;
+    padding-right:.75rem;
+    padding-top:.375rem;
+    padding-bottom:.375rem;
+    font-size:1rem;
+    font-weight:400;
+    border-radius:.375rem;
+    border: 1px solid #e86b8d;
+
+}
+.custom-btn:hover{
+    background-color:#ff7e9f;
+    color:#e8e8e8;
+    border-color:#ff7e9f;
+}
+.footer-link:hover{
+    cursor: pointer !important;
+}

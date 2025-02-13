@@ -785,7 +785,7 @@ def update_user():
 
 
 
-@api.route('/api/edit_cat/<int:cat_id>', methods=['PUT'])
+@api.route('/edit_cat/<int:cat_id>', methods=['PUT'])
 @jwt_required()
 def edit_cat(cat_id):
     current_user_id = get_jwt_identity()  # Get the identity from JWT
