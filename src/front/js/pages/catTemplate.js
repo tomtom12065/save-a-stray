@@ -1,72 +1,138 @@
-// (1) Importing needed dependencies and contextual data
 import React, { useEffect, useContext, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Context } from "../store/appContext";
 import "../../styles/catTemplate.css";
-import { array } from "prop-types";
 
-// (2) This component displays detailed information about a single cat (including images and info).
 const CatTemplate = () => {
-  // (2a) Extracting 'id' from URL parameters
   const { id } = useParams();
-  // (2b) Destructuring our global Context for store and actions
   const { store, actions } = useContext(Context);
-  // (2c) Local state for loading
-  const [loading, setLoading] = useState(true);
-  // (2d) For navigation to other routes
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
 
-  // (3) useEffect to fetch cat data when the component mounts or id changes
+
+
+
+
+// loook at how the edit buttons are woring
+// why is chatbox not opening up when i click message owner
+
+  // Inline editing states
+  const [editingName, setEditingName] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [editingBreed, setEditingBreed] = useState(false);
+  const [newBreed, setNewBreed] = useState("");
+  const [editingAge, setEditingAge] = useState(false);
+  const [newAge, setNewAge] = useState("");
+  const [editingPrice, setEditingPrice] = useState(false);
+  const [newPrice, setNewPrice] = useState("");
+  const [editingDescription, setEditingDescription] = useState(false);
+  const [newDescription, setNewDescription] = useState("");
+
   useEffect(() => {
+    let isMounted = true;
     const fetchCat = async () => {
       await actions.getCatById(id);
-      setLoading(false);
+      if (isMounted) setLoading(false);
     };
     fetchCat();
+    return () => { isMounted = false; };
   }, [id, actions]);
 
-  // (4) Show a loading message until the cat data is fetched
-  if (loading) {
-    return <p>Loading...</p>;
-  }
+  useEffect(() => {
+    if (store.singleCat) {
+      setNewName(store.singleCat.name || '');
+      setNewBreed(store.singleCat.breed || '');
+      setNewAge(store.singleCat.age?.toString() || '');
+      setNewPrice(store.singleCat.price?.toString() || '');
+      setNewDescription(store.singleCat.description || '');
+    }
+  }, [store.singleCat]);
 
-  // (5) Retrieve the single cat data from our global store
+  if (loading) return <p>Loading...</p>;
+  if (!store.singleCat) return <p>Cat not found.</p>;
   const cat = store.singleCat;
 
-  // (6) If no cat is found in store, show a fallback message
-  if (!cat) {
-    return <p>Cat not found.</p>;
-  }
+  const isOwner = store.user?.id === cat.owner?.id;
 
-  // (7) Handler to set chat recipient and open chatbox to message the cat's owner
+  const handleSaveField = async (field, value, setEditingFn) => {
+    let parsedValue = value;
+    
+    try {
+      if (field === 'age') {
+        parsedValue = parseInt(value, 10);
+        if (isNaN(parsedValue)) throw new Error('Invalid age'); // Added missing )
+      }
+      else if (field === 'price') {
+        parsedValue = parseFloat(value);
+        if (isNaN(parsedValue)) throw new Error('Invalid price'); // Removed extra )
+      }
+    } catch (error) {
+      alert(error.message);
+      return;
+    }
+
+    const response = await actions.editCat(cat.id, { [field]: parsedValue });
+    if (response.success) {
+      setEditingFn(false);
+      await actions.getCatById(id);
+    } else {
+      alert(response.message || "Update failed");
+    }
+  };
+
+  const handleCancelEdit = (setEditingFn) => {
+    setEditingFn(false);
+  };
+
   const handleMessageOwner = () => {
-    console.log("message owner button clicked");
-    actions.setChatRecipient(cat.user_id, cat.owner.username || "Owner");
+    actions.setChatRecipient(cat.owner.id, cat.owner.username || "Owner");
     actions.toggleChatboxOpen(true);
   };
 
-  // (8) Handling image URLs (some might be stored as JSON array or single string)
-  let imagesArray;
+  // Process images
+  let imagesArray = [];
   try {
-    // Attempt to parse image URLs if it's a JSON string
     imagesArray = JSON.parse(cat.image_urls);
-  } catch (error) {
-    // If parse fails, treat the field as a single URL
-    imagesArray = [cat.image_urls];
+  } catch {
+    imagesArray = cat.image_urls ? [cat.image_urls] : [];
   }
-  // (8a) Ensure the result is an array, if not, wrap in an array
-  if (!Array.isArray(imagesArray)) {
-    imagesArray = [imagesArray];
-  }
+  if (!Array.isArray(imagesArray)) imagesArray = [];
 
-  // (9) Rendering the cat details within a carousel if multiple images exist
-  // need to add conditional buttons  that allow for the cat cards to be modified
   return (
     <div className="d-flex justify-content-center">
       <div className="cat-template">
-        <h1 className="mx-auto text-center">{cat.name}</h1>
+        {/* Name section */}
+        <div className="text-center">
+          <h1>
+            <strong>Name:</strong>{" "}
+            {editingName ? (
+              <div className="edit-group">
+                <input
+                  type="text"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                />
+                <button className="btn-sm btn-success" onClick={() => handleSaveField("name", newName, setEditingName)}>
+                  Save
+                </button>
+                <button className="btn-sm btn-secondary" onClick={() => handleCancelEdit(setEditingName)}>
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <>
+                {cat.name}{" "}
+                {isOwner && (
+                  <button className="btn-sm btn-warning" onClick={() => setEditingName(true)}>
+                    Edit
+                  </button>
+                )}
+              </>
+            )}
+          </h1>
+        </div>
 
-        {/* (9a) Carousel for cat images */}
+        {/* Image carousel */}
         <div
           id={`carouselExampleFade-${cat.id}`}
           className="carousel slide carousel-fade"
@@ -88,8 +154,6 @@ const CatTemplate = () => {
               </div>
             ))}
           </div>
-
-          {/* (9b) Show carousel controls only if multiple images */}
           {imagesArray.length > 1 && (
             <>
               <button
@@ -98,10 +162,7 @@ const CatTemplate = () => {
                 data-bs-target={`#carouselExampleFade-${cat.id}`}
                 data-bs-slide="prev"
               >
-                <span
-                  className="carousel-control-prev-icon"
-                  aria-hidden="true"
-                ></span>
+                <span className="carousel-control-prev-icon" aria-hidden="true"></span>
                 <span className="visually-hidden">Previous</span>
               </button>
               <button
@@ -110,41 +171,138 @@ const CatTemplate = () => {
                 data-bs-target={`#carouselExampleFade-${cat.id}`}
                 data-bs-slide="next"
               >
-                <span
-                  className="carousel-control-next-icon"
-                  aria-hidden="true"
-                ></span>
+                <span className="carousel-control-next-icon" aria-hidden="true"></span>
                 <span className="visually-hidden">Next</span>
               </button>
             </>
           )}
         </div>
 
-        {/* (10) Cat information and actions */}
-        <div className="text-center">
+        {/* Details section */}
+        <div className="cat-details">
           <p>
-            <strong>Breed:</strong> {cat.breed}
-          </p>
-          <p>
-            <strong>Age:</strong> {cat.age} years
-          </p>
-          <p>
-            <strong>Price:</strong> ${cat.price.toFixed(2)}
-          </p>
-          <p>
-            <strong>Description:</strong>
-          </p>
-          <p>
-            <strong>{cat.description}</strong>
+            <strong>Breed:</strong>{" "}
+            {editingBreed ? (
+              <div className="edit-group">
+                <input
+                  type="text"
+                  value={newBreed}
+                  onChange={(e) => setNewBreed(e.target.value)}
+                />
+                <button className="btn-sm btn-success" onClick={() => handleSaveField("breed", newBreed, setEditingBreed)}>
+                  Save
+                </button>
+                <button className="btn-sm btn-secondary" onClick={() => handleCancelEdit(setEditingBreed)}>
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <>
+                {cat.breed}{" "}
+                {isOwner && (
+                  <button className="btn-sm btn-warning" onClick={() => setEditingBreed(true)}>
+                    Edit
+                  </button>
+                )}
+              </>
+            )}
           </p>
 
-          {/* (10a) Buttons to message owner or apply for adoption */}
-          <button className="m-1" onClick={handleMessageOwner}>
+          <p>
+            <strong>Age:</strong>{" "}
+            {editingAge ? (
+              <div className="edit-group">
+                <input
+                  type="number"
+                  min="0"
+                  value={newAge}
+                  onChange={(e) => setNewAge(e.target.value)}
+                />
+                <button className="btn-sm btn-success" onClick={() => handleSaveField("age", newAge, setEditingAge)}>
+                  Save
+                </button>
+                <button className="btn-sm btn-secondary" onClick={() => handleCancelEdit(setEditingAge)}>
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <>
+                {cat.age} years{" "}
+                {isOwner && (
+                  <button className="btn-sm btn-warning" onClick={() => setEditingAge(true)}>
+                    Edit
+                  </button>
+                )}
+              </>
+            )}
+          </p>
+
+          <p>
+            <strong>Price:</strong>{" "}
+            {editingPrice ? (
+              <div className="edit-group">
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={newPrice}
+                  onChange={(e) => setNewPrice(e.target.value)}
+                />
+                <button className="btn-sm btn-success" onClick={() => handleSaveField("price", newPrice, setEditingPrice)}>
+                  Save
+                </button>
+                <button className="btn-sm btn-secondary" onClick={() => handleCancelEdit(setEditingPrice)}>
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <>
+                ${cat.price.toFixed(2)}{" "}
+                {isOwner && (
+                  <button className="btn-sm btn-warning" onClick={() => setEditingPrice(true)}>
+                    Edit
+                  </button>
+                )}
+              </>
+            )}
+          </p>
+
+          <p>
+            <strong>Description:</strong>{" "}
+            {editingDescription ? (
+              <div className="edit-group">
+                <textarea
+                  value={newDescription}
+                  onChange={(e) => setNewDescription(e.target.value)}
+                  rows="3"
+                />
+                <button className="btn-sm btn-success" onClick={() => handleSaveField("description", newDescription, setEditingDescription)}>
+                  Save
+                </button>
+                <button className="btn-sm btn-secondary" onClick={() => handleCancelEdit(setEditingDescription)}>
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <>
+                {cat.description}{" "}
+                {isOwner && (
+                  <button className="btn-sm btn-warning" onClick={() => setEditingDescription(true)}>
+                    Edit
+                  </button>
+                )}
+              </>
+            )}
+          </p>
+        </div>
+
+        {/* Action buttons */}
+        <div className="cat-actions text-center">
+          <button className="btn btn-primary m-1" onClick={handleMessageOwner}>
             Message Owner
           </button>
           <button
-            className="m-1"
-            id="applyButton"
+            className="btn btn-success m-1"
             onClick={() => navigate(`/application?catId=${cat.id}`)}
           >
             Apply for Adoption

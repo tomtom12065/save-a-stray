@@ -7,6 +7,7 @@ import CatUpload from "./pages/catUpload";
 import CatTemplate from "./pages/catTemplate";
 import ProfilePage from "./pages/profilePage";
 import Login from "./pages/login";
+import Footer from "./component/footer";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 import Inbox from "./pages/inbox"; // Import Inbox.js
@@ -37,7 +38,7 @@ const Layout = () => {
   useEffect(() => {
     actions.getBreeds();
 
-    actions.getUserProfile(); // Ensure user profile is fetched if token exists
+    actions.getUserProfile(sessionStorage.token); // Ensure user profile is fetched if token exists
     if (actions.getUserProfile() === "")
       actions.getMessages(data.user.id)
 
@@ -91,6 +92,7 @@ const Layout = () => {
               {/* Fallback for undefined routes */}
               <Route path="*" element={<h1>Page Not Found</h1>} />
             </Routes>
+            <Footer></Footer>
           </main>
         </div>
 
