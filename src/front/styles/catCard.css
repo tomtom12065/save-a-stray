@@ -1,102 +1,118 @@
 /* General reset */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-  
-  /* Card Styling */
-  .cat-card {
-    background-color: white;
-    border-radius: 10px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow */
-    overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-  }
-  
-  .cat-card:hover {
-    transform: translateY(-10px); /* Slight lift on hover */
-    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.15); /* Stronger shadow on hover */
-  }
-  
-  .cat-image {
-    width: 100%;
-    height: 200px; /* Fixed height for images */
-    object-fit: cover;
-    border-radius: 10px 10px 0 0; /* Round top corners */
-  }
-  
-  .card-body {
-    padding: 20px;
-  }
-
-
-  .carousel-control-prev-icon,
-.carousel-control-next-icon {
-  filter: invert(0) brightness(0); /* Makes the icon black */
-  background-color: rgba(255, 255, 255, 0.7); /* Adds a subtle background for contrast */
-  border-radius: 50%; /* Makes the background circular */
-  border: 1px solid black; /* Adds a black outline */
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-  
-  /* Title Styling */
-  .card-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 1rem;
+.cat-card.container .card {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Card Styling */
+.cat-card {
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  /* Soft shadow */
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  height: 450px !important;
+}
+
+.cat-card:hover {
+  transform: translateY(-10px);
+  /* Slight lift on hover */
+  box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.15);
+  /* Stronger shadow on hover */
+}
+
+.cat-image {
+  width: 100%;
+  height: 200px;
+  /* Fixed height for images */
+  object-fit: cover;
+
+  border-radius: 10px 10px 0 0;
+  /* Round top corners */
+}
+
+.card-body {
+  padding: 20px;
+  margin-top: auto;
+}
+
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  filter: invert(0) brightness(0);
+  /* Makes the icon black */
+  background-color: rgba(255, 255, 255, 0.7);
+  /* Adds a subtle background for contrast */
+  border-radius: 50%;
+  /* Makes the background circular */
+  border: 1px solid black;
+  /* Adds a black outline */
+}
+
+
+/* Title Styling */
+.card-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+/* Text Styling for details */
+.card-text {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 1.5rem;
+}
+
+.card-text strong {
+  color: #333;
+}
+
+/* Button Styling */
+.view-details-btn {
+  background-color: #3498db;
+  color: white;
+  padding: 0.625rem 1.25rem;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.view-details-btn:hover {
+  background-color: #2980b9;
+}
+
+.delete-btn {
+  background-color: #e74c3c;
+  color: white;
+  padding: 0.625rem 1.25rem;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  margin-top: 0.75rem;
+  transition: background-color 0.3s ease;
+}
+
+.delete-btn:hover {
+  background-color: #c0392b;
+}
+
+/* Responsiveness: Adjust layout for smaller screens */
+@media (max-width: 768px) {
+  .cat-card {
+    margin: 0 10px;
   }
-  
-  /* Text Styling for details */
-  .card-text {
-    font-size: 1rem;
-    color: #555;
-    margin-bottom: 1.5rem;
+
+  .card-body {
+    padding: 15px;
   }
-  
-  .card-text strong {
-    color: #333;
-  }
-  
-  /* Button Styling */
-  .view-details-btn {
-    background-color: #3498db;
-    color: white;
-    padding: 0.625rem 1.25rem;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .view-details-btn:hover {
-    background-color: #2980b9;
-  }
-  
-  .delete-btn {
-    background-color: #e74c3c;
-    color: white;
-    padding: 0.625rem 1.25rem;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-    margin-top: 0.75rem;
-    transition: background-color 0.3s ease;
-  }
-  
-  .delete-btn:hover {
-    background-color: #c0392b;
-  }
-  
-  /* Responsiveness: Adjust layout for smaller screens */
-  @media (max-width: 768px) {
-    .cat-card {
-      margin: 0 10px;
-    }
-  
-    .card-body {
-      padding: 15px;
-    }
-  }
-  
+}

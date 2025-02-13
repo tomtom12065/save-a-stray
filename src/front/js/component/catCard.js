@@ -10,7 +10,7 @@ import "../../styles/catCard.css";
 // potentially make an edit mode
 const CatCard = ({ cat }) => {
   const navigate = useNavigate();
-  const { actions } = useContext(Context);
+  const { store, actions } = useContext(Context);
 
   const handleDeleteCat = async (catId) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this cat?");
@@ -63,21 +63,13 @@ const CatCard = ({ cat }) => {
   }
 
   return (
-    <div className="col-12 col-md-10 col-lg-10 mb-4">
-      <div className="card w-100 short-card">
-
+    <div className="col-12 col-md-4 col-lg-3 mb-4 cat-card-container">
+      <div className="card h-100" style={{ maxWidth: "300px" }}>
         {/* Bootstrap carousel */}
-        <div
-          id={`carouselExampleFade-${cat.id}`}
-          className="carousel slide carousel-fade"
-          data-bs-ride="carousel"
-        >
+        <div id={`carouselExampleFade-${cat.id}`} className="carousel slide carousel-fade" data-bs-ride="carousel">
           <div className="carousel-inner">
             {imagesArray.map((imageUrl, idx) => (
-              <div
-                className={`carousel-item ${idx === 0 ? "active" : ""}`}
-                key={idx}
-              >
+              <div className={`carousel-item ${idx === 0 ? "active" : ""}`} key={idx}>
                 <img
                   src={imageUrl || "https://via.placeholder.com/150"}
                   className="d-block w-100"
@@ -86,7 +78,6 @@ const CatCard = ({ cat }) => {
               </div>
             ))}
           </div>
-
           {/* Show Prev/Next only if there's more than one image */}
           {imagesArray.length > 1 && (
             <>
@@ -112,7 +103,6 @@ const CatCard = ({ cat }) => {
           )}
         </div>
         {/* End Bootstrap carousel */}
-
         <div className="card-body">
           <h5 className="card-title">{cat.name}</h5>
           <p className="card-text">
@@ -120,32 +110,23 @@ const CatCard = ({ cat }) => {
             <strong>Age:</strong> {cat.age} years <br />
             <strong>Price:</strong> ${cat.price.toFixed(2)}
           </p>
-          <div className="d-flex align-items-center justify-content-center">
-            <button
-              className="btn btn-primary me-2"
-              onClick={() => navigate(`/cat-template/${cat.id}`)}
-            >
-              View Details
-            </button>
-            <button
-              //  add btn-sm to make the buttons smaller to both of the buttons
-              className="btn btn-danger "
-              onClick={() => handleDeleteCat(cat.id)}
-            >
-              Delete
-            </button>
-{/* 
-            {user.id &&
-              cat.user &&
-              user.id === cat.user.id && (
-                <button
-                  className="btn btn-secondary ms-2"
-                  onClick={handleAddImages}
-                >
-                  Add Images
+          <div className="d-flex align-items-center justify-content-center ">
+            <div className="d-flex align-items-center justify-content-center ">
+              {store.user && store.user.id === cat.owner.id ? (
+                <>
+                  <button className="custom-btn me-2" onClick={() => navigate(`/cat-template/${cat.id}`)}>
+                    Edit Mode
+                  </button>
+                  <button className="custom-btn" onClick={() => handleDeleteCat(cat.id)}>
+                    Delete
+                  </button>
+                </>
+              ) : (
+                <button className="custom-btn" onClick={() => navigate(`/cat-template/${cat.id}`)}>
+                  View Details
                 </button>
-              )} */}
-
+              )}
+            </div>
 
           </div>
         </div>

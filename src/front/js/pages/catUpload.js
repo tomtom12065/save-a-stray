@@ -98,97 +98,102 @@ const CatUpload = () => {
 
   // (6) Render the upload form, along with previews of any selected images
   return (
-    <div className="cat-upload-container">
-      <h2>Upload Cat</h2>
-      <form className="cat-upload-form" onSubmit={handleSubmit}>
-        {error && <p className="error-message">{error}</p>}
+    // <div className="cat-upload-container">
+    <div className="container cat-upload-div mt-4">
+      <div className="text-center mb-4">
+        <h2>Upload Cat</h2>
+      </div>
+      <div className="d-flex justify-content-center">
+        <form className="cat-upload-form" onSubmit={handleSubmit}>
+          {error && <p className="error-message">{error}</p>}
 
-        <label htmlFor="cat-name">Cat Name:</label>
-        <input
-          id="cat-name"
-          type="text"
-          value={catName}
-          onChange={(e) => setCatName(e.target.value)}
-          placeholder="Enter the cat's name"
-          required
-        />
+          <label htmlFor="cat-name">Cat Name:</label>
+          <input
+            id="cat-name"
+            type="text"
+            value={catName}
+            onChange={(e) => setCatName(e.target.value)}
+            placeholder="Enter the cat's name"
+            required
+          />
 
-        <label htmlFor="breed">Breed:</label>
-        <select
-          id="breed"
-          value={breed}
-          onChange={(e) => setBreed(e.target.value)}
-          required
-        >
-          <option value="">Select a breed</option>
-          {store.breeds.map((breedName) => (
-            <option key={breedName} value={breedName}>
-              {breedName}
-            </option>
-          ))}
-        </select>
+          <label htmlFor="breed">Breed:</label>
+          <select
+            id="breed"
+            value={breed}
+            onChange={(e) => setBreed(e.target.value)}
+            required
+          >
+            <option value="">Select a breed</option>
+            {store.breeds.map((breedName) => (
+              <option key={breedName} value={breedName}>
+                {breedName}
+              </option>
+            ))}
+          </select>
 
-        <label htmlFor="age">Age (years):</label>
-        <input
-          id="age"
-          type="number"
-          value={age}
-          onChange={(e) => setAge(e.target.value)}
-          placeholder="Enter age"
-          required
-        />
-        <h5>we recommend a minimum rehome fee of $100 to discourage bad actors from applying for these pets</h5>
-        <label htmlFor="price">rehome fee (USD):</label>
-        <input
-          id="price"
-          type="number"
-          value={price}
-          min="100"
-          onChange={(e) => setPrice(e.target.value)}
-          placeholder="Enter price"
-          required
-        />
+          <label htmlFor="age">Age (years):</label>
+          <input
+            id="age"
+            type="number"
+            value={age}
+            onChange={(e) => setAge(e.target.value)}
+            placeholder="Enter age"
+            required
+          />
+          <h5>we recommend a minimum rehome fee of $100 to discourage bad actors from applying for these pets</h5>
+          <label htmlFor="price">rehome fee (USD):</label>
+          <input
+            id="price"
+            type="number"
+            value={price}
+            min="100"
+            onChange={(e) => setPrice(e.target.value)}
+            placeholder="Enter price"
+            required
+          />
 
-        <label htmlFor="description">description:</label>
-        <input
-          id="description"
-          type="text"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Enter description"
-          required
-        />
+          <label htmlFor="description">description:</label>
+          <input
+            id="description"
+            type="text"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Enter description"
+            required
+          />
 
-        <label htmlFor="upload-image">Upload Image(s):</label>
-        <input
-          id="upload-image"
-          type="file"
-          multiple
-          onChange={(e) => {
-            // (6a) Convert FileList to an array so we can append them to state
-            const newFiles = Array.from(e.target.files);
-            setImage((prevFiles) => [...prevFiles, ...newFiles]);
+          <label htmlFor="upload-image">Upload Image(s):</label>
+          <input
+            id="upload-image"
+            type="file"
+            multiple
+            onChange={(e) => {
+              // (6a) Convert FileList to an array so we can append them to state
+              const newFiles = Array.from(e.target.files);
+              setImage((prevFiles) => [...prevFiles, ...newFiles]);
 
-            // (6b) Generate preview URLs
-            const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
-            setPreviewImages((prevPreviews) => [...prevPreviews, ...newPreviews]);
-          }}
-          required
-        />
+              // (6b) Generate preview URLs
+              const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
+              setPreviewImages((prevPreviews) => [...prevPreviews, ...newPreviews]);
+            }}
+            required
+          />
 
-        <div className="image-preview">
-          {previewImages.map((src, index) => (
-            <img
-              key={index}
-              src={src}
-              alt={`Preview ${index}`}
-              style={{ width: "100px", marginRight: "10px" }}
-            />
-          ))}
-        </div>
+          <div className="image-preview">
+            {previewImages.map((src, index) => (
+              <img
+                key={index}
+                src={src}
+                alt={`Preview ${index}`}
+                style={{ width: "100px", marginRight: "10px" }}
+              />
+            ))}
+          </div>
 
-        <button type="submit">Upload Cat</button>
-      </form>
+          <button type="submit">Upload Cat</button>
+        </form>
+      </div>
     </div>
   );
 };

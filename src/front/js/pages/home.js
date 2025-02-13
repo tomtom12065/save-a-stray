@@ -17,7 +17,7 @@ import CatCard from "../component/catCard";  // Import the CatCard component
 // use more third party api's
 // study stripe more
 // go deeper into payments
-// add a search bar for breeds on home page
+//color matching with julie// add a search bar for breeds on home page
 // 
 
 // (2) Home component displays a list of available cats and allows deletion (if user has permissions).
@@ -67,7 +67,9 @@ export const Home = () => {
       <h3>the price is set to minimum $100 to discourage dog fighters from adopting the pets</h3>
       <h3>site updates weekly</h3>
       <h3>if the site doesn't load give it a minute, its all running on free services,im broke</h3>
-      <div className="row cat-grid">
+      {/* <div className="row cat-grid"> */}
+     <div className="scroll-container">
+      <div className="row g-4">
         {store.cats.length > 0 ? (
           store.cats.map((cat) => (
             <CatCard key={cat.id} cat={cat} onDelete={handleDeleteCat} />
@@ -75,6 +77,7 @@ export const Home = () => {
         ) : (
           <p>No cats available.</p>
         )}
+      </div>
       </div>
     </div>
   );

@@ -206,11 +206,10 @@ const ProfilePage = () => {
       <div className="profile-cats">
         <h2 className="profile-cats-title">Your Cats</h2>
         {store.selfcats && store.selfcats.length > 0 ? (
-          <div className="cats-horizontal-grid d-flex justify-content-center">
+           <div className="row g-4 d-flex justify-content-center"> 
             {store.selfcats.map((cat) => (
-              <div key={cat.id} className="cat-card-wrapper">
-                <CatCard cat={cat} />
-              </div>
+           
+                <CatCard cat={cat} key = {cat.id} />
             ))}
           </div>
         ) : (

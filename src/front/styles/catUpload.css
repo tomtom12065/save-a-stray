@@ -1,17 +1,12 @@
-.cat-upload-container {
+/* .cat-upload-container {
   display: flex;
   flex-direction: column;
-  /* Stack items vertically */
   align-items: center;
-  /* Center items horizontally */
   justify-content: center;
-  /* height: 100vh; */
+  background-color: #c21a1d;
+} */
 
-  /* Full viewport height */
-  background-color: #f9f9f9;
-}
-
-.cat-upload-container h2 {
+.cat-upload-d h2 {
   margin-bottom: 20px;
   /* Add spacing below the header */
 }

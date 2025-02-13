@@ -228,6 +228,22 @@ def get_self_cats():
         return jsonify({"error": "Internal server error"}), 500
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @api.route('/cat/<int:cat_id>', methods=['GET'])
 def get_single_cat(cat_id):
     """
@@ -822,6 +838,44 @@ def update_user():
     db.session.commit()
 
     return jsonify({"message": "User updated successfully", "user": user.serialize()}), 200
+
+
+
+
+
+@api.route('/edit_cat/<int:cat_id>', methods=['PUT'])
+@jwt_required()
+def edit_cat(cat_id):
+    current_user_id = get_jwt_identity()  # Get the identity from JWT
+    data = request.get_json()
+    cat = Cat.query.get(cat_id)
+
+    if not cat:
+        return jsonify({"success": False, "message": "Cat not found"}), 404
+
+    # Optional: If cats have owners, enforce that only the owner can edit
+    if hasattr(cat, 'owner_id') and cat.owner_id != current_user_id:
+        return jsonify({"success": False, "message": "Unauthorized"}), 403
+
+
+    print("Received Data:", data)
+    try:
+        if "name" in data:
+            cat.name = data["name"]
+        if "price" in data:
+            cat.price = data["price"]
+        if "description" in data:
+            cat.description = data["description"]
+
+        db.session.commit()
+        return jsonify({"success": True, "cat": cat.serialize()}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+
+
 
 
 @api.route("/reset-password", methods=["PUT"])

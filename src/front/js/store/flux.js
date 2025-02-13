@@ -74,27 +74,27 @@ let getState = ({ getStore, getActions, setStore }) => {
       },
 
       fetchSentApplications: async () => {
-        try{
-        let token = sessionStorage.getItem("token"); // Get the token for authentication
-        let response = await fetch(`${process.env.BACKEND_URL}/api/applications/sent`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Add the token to the request
-          },
-        });
-        if (!response.ok){
-          throw new Error(`failed to fetch sent applications: ${response.statusText
-            
-          }`)
+        try {
+          let token = sessionStorage.getItem("token"); // Get the token for authentication
+          let response = await fetch(`${process.env.BACKEND_URL}/api/applications/sent`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`, // Add the token to the request
+            },
+          });
+          if (!response.ok) {
+            throw new Error(`failed to fetch sent applications: ${response.statusText
+
+              }`)
+          }
+          let data = await response.json();
+          setStore({ sentApplications: data }); // Update store with fetched data
+          return data
+        } catch (error) {
+          console.error("error fetching sent applications:", error)
+          return null
         }
-        let data = await response.json();
-        setStore({ sentApplications: data }); // Update store with fetched data
-        return data
-      } catch (error) {
-        console.error("error fetching sent applications:", error)
-        return null
-      }
 
       },
 
@@ -149,7 +149,7 @@ let getState = ({ getStore, getActions, setStore }) => {
           return null; // Return null on failure
         }
       },
-
+      // does this need to get the token.how does it get the toen
       getUserData: async (token) => {
         try {
           let response = await fetch(`${process.env.BACKEND_URL}/api/user`, {
@@ -668,7 +668,7 @@ let getState = ({ getStore, getActions, setStore }) => {
           console.log("Profile picture uploaded successfully:", data);
 
           // Update the user's profile picture in the store
-          setStore({ user: { ...getStore().user,  profilepic: data.url} });
+          setStore({ user: { ...getStore().user, profilepic: data.url } });
 
           return { success: true, message: "Profile picture updated successfully" };
         } catch (error) {
@@ -836,7 +836,7 @@ let getState = ({ getStore, getActions, setStore }) => {
       },
       // the problem is with the send email confirmation 
       updateApplicationStatus: async (applicationId, newStatus) => {
-        
+
         let token = sessionStorage.getItem("token");
 
         if (!token) {
@@ -882,6 +882,32 @@ let getState = ({ getStore, getActions, setStore }) => {
           return { success: false, message: error.message };
         }
       },
+
+      // In your actions object
+      editCat: async (catId, updatedData) => {
+        const token = sessionStorage.getItem("token");;
+        
+        try {
+          const response = await fetch(`${process.env.BACKEND_URL}/api/edit_cat/${catId}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer " + token},
+            body: JSON.stringify(updatedData)
+            
+          });
+          const data = await response.json();
+          if (response.ok) {
+            return { success: true, cat: data.cat };
+          } else {
+            return { success: false, message: data.message || "Failed to update cat" };
+          }
+        } catch (error) {
+          console.error("Error updating cat:", error);
+          return { success: false, message: "An error occurred." };
+        }
+      },
+
 
       resetPassword: async (newPassword, token) => {
         let baseApiUrl = process.env.BACKEND_URL;
