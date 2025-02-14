@@ -84,7 +84,7 @@ const ApplicationPage = () => {
               id="contactInfo"
               value={contactInfo}
               onChange={(e) => setContactInfo(e.target.value)}
-              placeholder="Enter your email or phone number"
+              placeholder="Enter your email"
             />
           </div>
           <div className="form-group">

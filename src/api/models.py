@@ -55,6 +55,7 @@ class Cat(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
     breed = db.Column(db.String(50), nullable=False)
+#    change this to a float at some point
     age = db.Column(db.Integer, nullable=False)
     price = db.Column(db.Float, nullable=False, default=0.0)
     image_urls = db.Column(db.Text(), nullable=True)
