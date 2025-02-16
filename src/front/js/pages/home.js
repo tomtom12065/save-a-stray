@@ -75,7 +75,7 @@ export const Home = () => {
             <CatCard key={cat.id} cat={cat} onDelete={handleDeleteCat} />
           ))
         ) : (
-          <p>No cats available.</p>
+          <p>cats loading please wait.</p>
         )}
       </div>
       </div>
