@@ -600,7 +600,7 @@ def request_reset():
     except Exception as e:
         logging.error(f"Error in request_reset: {str(e)}")
         return jsonify({"error": "An unexpected error occurred"}), 500
-e
+
 
 @api.route("/add-cat", methods=["POST"])
 @jwt_required()
