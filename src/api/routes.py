@@ -602,6 +602,23 @@ def request_reset():
         return jsonify({"error": "An unexpected error occurred"}), 500
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @api.route("/add-cat", methods=["POST"])
 @jwt_required()
 def add_cat():

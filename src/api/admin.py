@@ -1,19 +1,51 @@
-  
+# admin.py
 import os
-from flask_admin import Admin
-from .models import db, User, Cat,ChatMessage,Application
+from flask import session, redirect, url_for, request, render_template
+from flask_admin import Admin, AdminIndexView, expose
 from flask_admin.contrib.sqla import ModelView
+from .models import db, User, Cat, ChatMessage, Application
+
+class AuthenticatedModelView(ModelView):
+    def is_accessible(self):
+        return session.get('logged_in', False)
+
+    def inaccessible_callback(self, name, **kwargs):
+        return redirect(url_for('admin.login'))
+
+class AdminHomeView(AdminIndexView):
+    @expose('/')
+    def index(self):
+        if not session.get('logged_in'):
+            return redirect(url_for('admin.login'))
+        return super().index()
+
+    @expose('/login', methods=['GET', 'POST'])
+    def login(self):
+        if request.method == 'POST':
+            username = request.form.get('username')
+            password = request.form.get('password')
+            if username == os.getenv('ADMIN_USERNAME') and password == os.getenv('ADMIN_PASSWORD'):
+                session['logged_in'] = True
+                return redirect(url_for('admin.index'))
+            return render_template('admin/login.html', error='Invalid credentials')
+        return render_template('admin/login.html')
+
+    @expose('/logout')
+    def logout(self):
+        session.pop('logged_in', None)
+        return redirect(url_for('admin.login'))
 
 def setup_admin(app):
-    app.secret_key = os.environ.get('FLASK_APP_KEY', 'sample key')
-    app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'
-    admin = Admin(app, name='4Geeks Admin', template_mode='bootstrap3')
+    # Create admin interface
+    admin = Admin(
+        app,
+        name='Save-A-Stray Admin',
+        index_view=AdminHomeView(name='Home'),
+        template_mode='bootstrap3'
+    )
 
-    
-    # Add your models here, for example this is how we add a the User model to the admin
-    admin.add_view(ModelView(User, db.session))
-    admin.add_view(ModelView(Cat, db.session))
-    admin.add_view(ModelView(ChatMessage, db.session))
-    admin.add_view(ModelView(Application, db.session))
-    # You can duplicate that line to add mew models
-    # admin.add_view(ModelView(YourModelName, db.session))j
+    # Add protected views
+    admin.add_view(AuthenticatedModelView(User, db.session))
+    admin.add_view(AuthenticatedModelView(Cat, db.session))
+    admin.add_view(AuthenticatedModelView(ChatMessage, db.session))
+    admin.add_view(AuthenticatedModelView(Application, db.session))

@@ -2,6 +2,7 @@
 This module takes care of starting the API Server, Loading the DB, and Adding the endpoints
 """
 import os
+from werkzeug.middleware.proxy_fix import ProxyFix
 from flask import Flask, request, jsonify, url_for, send_from_directory
 from flask_migrate import Migrate
 from flask_swagger import swagger
@@ -19,12 +20,14 @@ import cloudinary.uploader as uploader
 # Set environment and static file directory
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../public/')
-app = Flask(__name__)
+app = Flask(__name__, template_folder='api/templates')
+app.secret_key = os.environ.get('FLASK_APP_KEY', 'fallback_secret_key')
 app.url_map.strict_slashes = False
 
 # Enable CORS for the specified frontend origin
 CORS(app, resources={r"/*": {"origins": "https://save-a-stray-1.onrender.com"}})
-
+#Flask Login page proxyfix
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 # Database configuration
 db_url = os.getenv("DATABASE_URL")
 if db_url is not None:
