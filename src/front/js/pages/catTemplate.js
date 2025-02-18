@@ -185,32 +185,6 @@ const CatTemplate = () => {
           )}
         </div>
 
-        {/* Place this block below your carousel */}
-        {isOwner && (
-          <div className="mt-3 text-center">
-            {/* Hidden file input */}
-            <input
-              type="file"
-              id="catImageUpload"
-              multiple
-              style={{ display: "none" }}
-              onChange={handleImageChange}
-            />
-            {/* Button to trigger file selection */}
-            <button
-              className="btn btn-info"
-              onClick={() => document.getElementById("catImageUpload").click()}
-            >
-              Update Cat Images
-            </button>
-            {/* Button to upload selected images (appears after file selection) */}
-            {selectedFiles.length > 0 && (
-              <button className="btn btn-success ml-2" onClick={handleUploadImages}>
-                Upload Selected Images
-              </button>
-            )}
-          </div>
-        )}
 
 
 
