@@ -13,6 +13,19 @@
   display: flex;
 } */
 
+.image-upload-section {
+  text-align: center;
+  margin: 1rem 0;
+}
+
+.image-upload-section button {
+  transition: opacity 0.3s ease;
+}
+
+.image-upload-section button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
 p {
   color: black

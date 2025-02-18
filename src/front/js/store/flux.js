@@ -760,56 +760,12 @@ let getState = ({ getStore, getActions, setStore }) => {
       },
 
       //############################ PUT ACTIONS ############################
+
+      // actions/catActions.js
+
     
-      appendCatImages: async (catId, newImageFiles) => {
-        try {
-          let token = sessionStorage.getItem("token");
-          if (!token) {
-            return { success: false, message: "User is not authenticated" };
-          }
-      
-          // Upload new images using existing logic
-          let uploadedUrls = await getActions().uploadImage(newImageFiles);
-          
-          if (!uploadedUrls || uploadedUrls.length === 0) {
-            return { success: false, message: "Failed to upload new images" };
-          }
-      
-          // Send request to append URLs
-          let response = await fetch(`${process.env.BACKEND_URL}/api/cats/${catId}/images`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ new_image_urls: uploadedUrls }),
-          });
-      
-          let responseData = await response.json();
-      
-          if (response.status === 200) {
-            return { 
-              success: true, 
-              message: "Images added successfully",
-              data: responseData.cat 
-            };
-          }
-          return { 
-            success: false, 
-            message: responseData.error || "Failed to update images" 
-          };
-        } catch (error) {
-          console.error("Error appending images:", error);
-          return { 
-            success: false, 
-            message: "An unexpected error occurred" 
-          };
-        }
-      },
-    
-    
-    
-    
+
+
       updateUser: async (userInfo) => {
         try {
           let response = await fetch(`${process.env.BACKEND_URL}/api/update_user`, {
@@ -886,15 +842,16 @@ let getState = ({ getStore, getActions, setStore }) => {
       // In your actions object
       editCat: async (catId, updatedData) => {
         const token = sessionStorage.getItem("token");;
-        
+
         try {
           const response = await fetch(`${process.env.BACKEND_URL}/api/edit_cat/${catId}`, {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
-              "Authorization": "Bearer " + token},
+              "Authorization": "Bearer " + token
+            },
             body: JSON.stringify(updatedData)
-            
+
           });
           const data = await response.json();
           if (response.ok) {

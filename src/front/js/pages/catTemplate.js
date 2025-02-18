@@ -13,8 +13,8 @@ const CatTemplate = () => {
 
 
 
-// loook at how the edit buttons are woring
-// why is chatbox not opening up when i click message owner
+  // loook at how the edit buttons are woring
+  // why is chatbox not opening up when i click message owner
 
   // Inline editing states
   const [editingName, setEditingName] = useState(false);
@@ -27,7 +27,7 @@ const CatTemplate = () => {
   const [newPrice, setNewPrice] = useState("");
   const [editingDescription, setEditingDescription] = useState(false);
   const [newDescription, setNewDescription] = useState("");
-
+  const [selectedFiles, setSelectedFiles] = useState([]);
   useEffect(() => {
     let isMounted = true;
     const fetchCat = async () => {
@@ -56,7 +56,7 @@ const CatTemplate = () => {
 
   const handleSaveField = async (field, value, setEditingFn) => {
     let parsedValue = value;
-    
+
     try {
       if (field === 'age') {
         parsedValue = parseInt(value, 10);
@@ -97,6 +97,13 @@ const CatTemplate = () => {
     imagesArray = cat.image_urls ? [cat.image_urls] : [];
   }
   if (!Array.isArray(imagesArray)) imagesArray = [];
+
+  const handleImageChange = (event) => {
+    setSelectedFiles(Array.from(event.target.files));
+  };
+
+
+  
 
   return (
     <div className="d-flex justify-content-center">
@@ -177,6 +184,36 @@ const CatTemplate = () => {
             </>
           )}
         </div>
+
+        {/* Place this block below your carousel */}
+        {isOwner && (
+          <div className="mt-3 text-center">
+            {/* Hidden file input */}
+            <input
+              type="file"
+              id="catImageUpload"
+              multiple
+              style={{ display: "none" }}
+              onChange={handleImageChange}
+            />
+            {/* Button to trigger file selection */}
+            <button
+              className="btn btn-info"
+              onClick={() => document.getElementById("catImageUpload").click()}
+            >
+              Update Cat Images
+            </button>
+            {/* Button to upload selected images (appears after file selection) */}
+            {selectedFiles.length > 0 && (
+              <button className="btn btn-success ml-2" onClick={handleUploadImages}>
+                Upload Selected Images
+              </button>
+            )}
+          </div>
+        )}
+
+
+
 
         {/* Details section */}
         <div className="cat-details">
