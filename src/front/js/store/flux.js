@@ -19,6 +19,7 @@ let getState = ({ getStore, getActions, setStore }) => {
       currentChatRecipientName: "",
       sentApplications: [],
       breeds: [],
+      appendPic:[],
     },
 
     actions: {
@@ -755,6 +756,39 @@ let getState = ({ getStore, getActions, setStore }) => {
       },
 
       //############################ PUT ACTIONS ############################
+     
+     
+     
+      appendCatImages: async (catId, newImageUrls) => {
+        try {
+          let response = await fetch(`${process.env.BACKEND_URL}/api/cats/${catId}/images`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+            },
+            body: JSON.stringify({ new_image_urls: newImageUrls }),
+          });
+      
+          if (!response.ok) {
+            let errorData = await response.json();
+            throw new Error(errorData.error || "Failed to append cat images");
+          }
+      
+          let updatedCat = await response.json();
+          setStore({ appendPic: updatedCat.cat }); // Update the cat in the store
+          return true; // Indicate success
+        } catch (error) {
+          console.error("Error appending images:", error);
+          return false; // Indicate failure
+        }
+      },
+      
+     
+     
+     
+     
+     
       updateUser: async (userInfo) => {
         try {
           let response = await fetch(`${process.env.BACKEND_URL}/api/update_user`, {

@@ -1,4 +1,5 @@
 import os
+import json
 import logging
 import secrets
 import hashlib
@@ -622,11 +623,7 @@ def add_cat():
         return jsonify({"error": "Missing required fields"}), 400
 
     # If image_urls is an array, convert it to a JSON string
-    if isinstance(image_urls, list):
-        import json
-        image_urls_str = json.dumps(image_urls)
-    else:
-        image_urls_str = image_urls
+    image_urls_str = json.dumps(image_urls) if isinstance(image_urls, list) else image_urls
 
     try:
         new_cat = Cat(
@@ -650,7 +647,6 @@ def add_cat():
             "error": "Failed to add cat",
             "details": str(e)
         }), 500
-
 
 @api.route('/create-payment-intent', methods=['OPTIONS', 'POST'])
 def create_payment_intent():
@@ -720,6 +716,75 @@ def update_application_status(application_id):
         "message": f"Application status updated to {new_status}",
         "application": application.serialize(),
     }), 200
+
+
+
+
+@api.route("/cats/<int:cat_id>/images", methods=["PUT"])
+@jwt_required()
+def append_cat_images(cat_id):
+    user_id = get_jwt_identity()
+   
+    try:
+        # Ensure the JWT identity is an integer for proper comparison
+       
+        try:
+            user_id = int(user_id)
+        except (ValueError, TypeError):
+            return jsonify({"error": "Invalid user identity"}), 400
+
+        cat = Cat.query.get(cat_id)
+        if not cat:
+            return jsonify({"error": "Cat not found"}), 404
+
+        # Compare using the underlying foreign key (assumed to be user_id)
+        if cat.user_id != user_id:
+            return jsonify({"error": "Unauthorized"}), 403
+
+        data = request.get_json()
+        new_image_urls = data.get("new_image_urls")
+        # if not new_image_urls or not isinstance(new_image_urls, list):
+        #     return jsonify({"error": "Invalid or missing image URLs"}), 400
+
+        # Safely parse the existing image URLs from the stored JSON string
+        try:
+            existing_urls = json.loads(cat.image_urls) if cat.image_urls else []
+            if not isinstance(existing_urls, list):
+                existing_urls = []
+        except (json.JSONDecodeError, TypeError):
+            existing_urls = []
+
+        # Merge new URLs with existing ones and remove duplicates
+        updated_urls = list(set(existing_urls + new_image_urls))
+
+        # Update and commit the new image URL list
+        cat.image_urls = json.dumps(updated_urls)
+        db.session.commit()
+
+        return jsonify({
+            "message": "Images updated successfully",
+            "cat": cat.serialize()
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            "error": "Failed to update images",
+            "details": str(e)
+        }), 500
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 def generate_payment_link(amount, user_id, application_id):

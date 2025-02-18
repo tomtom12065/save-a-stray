@@ -9,13 +9,6 @@ const CatTemplate = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
 
-
-
-
-
-// loook at how the edit buttons are woring
-// why is chatbox not opening up when i click message owner
-
   // Inline editing states
   const [editingName, setEditingName] = useState(false);
   const [newName, setNewName] = useState("");
@@ -28,6 +21,9 @@ const CatTemplate = () => {
   const [editingDescription, setEditingDescription] = useState(false);
   const [newDescription, setNewDescription] = useState("");
 
+  // State for selected files (for appending cat images)
+  const [selectedFiles, setSelectedFiles] = useState([]);
+
   useEffect(() => {
     let isMounted = true;
     const fetchCat = async () => {
@@ -35,36 +31,35 @@ const CatTemplate = () => {
       if (isMounted) setLoading(false);
     };
     fetchCat();
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
   }, [id, actions]);
 
   useEffect(() => {
     if (store.singleCat) {
-      setNewName(store.singleCat.name || '');
-      setNewBreed(store.singleCat.breed || '');
-      setNewAge(store.singleCat.age?.toString() || '');
-      setNewPrice(store.singleCat.price?.toString() || '');
-      setNewDescription(store.singleCat.description || '');
+      setNewName(store.singleCat.name || "");
+      setNewBreed(store.singleCat.breed || "");
+      setNewAge(store.singleCat.age?.toString() || "");
+      setNewPrice(store.singleCat.price?.toString() || "");
+      setNewDescription(store.singleCat.description || "");
     }
   }, [store.singleCat]);
 
   if (loading) return <p>Loading...</p>;
   if (!store.singleCat) return <p>Cat not found.</p>;
   const cat = store.singleCat;
-
   const isOwner = store.user?.id === cat.owner?.id;
 
   const handleSaveField = async (field, value, setEditingFn) => {
     let parsedValue = value;
-    
     try {
-      if (field === 'age') {
+      if (field === "age") {
         parsedValue = parseInt(value, 10);
-        if (isNaN(parsedValue)) throw new Error('Invalid age'); // Added missing )
-      }
-      else if (field === 'price') {
+        if (isNaN(parsedValue)) throw new Error("Invalid age");
+      } else if (field === "price") {
         parsedValue = parseFloat(value);
-        if (isNaN(parsedValue)) throw new Error('Invalid price'); // Removed extra )
+        if (isNaN(parsedValue)) throw new Error("Invalid price");
       }
     } catch (error) {
       alert(error.message);
@@ -89,7 +84,7 @@ const CatTemplate = () => {
     actions.toggleChatboxOpen(true);
   };
 
-  // Process images
+  // Process images: convert stored JSON string to an array
   let imagesArray = [];
   try {
     imagesArray = JSON.parse(cat.image_urls);
@@ -98,10 +93,43 @@ const CatTemplate = () => {
   }
   if (!Array.isArray(imagesArray)) imagesArray = [];
 
+  // --------------- Append Cat Images Functionality ---------------
+  // When files are selected, update state
+  const handleImageChange = (event) => {
+    setSelectedFiles(Array.from(event.target.files));
+  };
+
+  // Upload selected files using the uploadImage function to get secure URLs,
+  // then call the flux action appendCatImages with those URLs.
+  const handleUploadImages = async () => {
+    if (selectedFiles.length === 0) {
+      alert("No images selected");
+      return;
+    }
+
+    // Use the existing uploadImage function to convert files into URLs
+    const uploadedUrls = await actions.uploadImage(selectedFiles);
+    if (!uploadedUrls || uploadedUrls.length === 0) {
+      alert("Image upload failed");
+      return;
+    }
+
+    // Call the flux action to append the new image URLs to the cat
+    const success = await actions.appendCatImages(cat.id, uploadedUrls);
+    if (success) {
+      alert("Images updated successfully");
+      await actions.getCatById(cat.id);
+      setSelectedFiles([]);
+    } else {
+      alert("Failed to update images");
+    }
+  };
+  // --------------- End Append Cat Images Functionality ---------------
+
   return (
     <div className="d-flex justify-content-center">
       <div className="cat-template">
-        {/* Name section */}
+        {/* Name Section */}
         <div className="text-center">
           <h1>
             <strong>Name:</strong>{" "}
@@ -112,10 +140,16 @@ const CatTemplate = () => {
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                 />
-                <button className="btn-sm btn-success" onClick={() => handleSaveField("name", newName, setEditingName)}>
+                <button
+                  className="btn-sm btn-success"
+                  onClick={() => handleSaveField("name", newName, setEditingName)}
+                >
                   Save
                 </button>
-                <button className="btn-sm btn-secondary" onClick={() => handleCancelEdit(setEditingName)}>
+                <button
+                  className="btn-sm btn-secondary"
+                  onClick={() => handleCancelEdit(setEditingName)}
+                >
                   Cancel
                 </button>
               </div>
@@ -123,7 +157,10 @@ const CatTemplate = () => {
               <>
                 {cat.name}{" "}
                 {isOwner && (
-                  <button className="btn-sm btn-warning" onClick={() => setEditingName(true)}>
+                  <button
+                    className="btn-sm btn-warning"
+                    onClick={() => setEditingName(true)}
+                  >
                     Edit
                   </button>
                 )}
@@ -132,7 +169,7 @@ const CatTemplate = () => {
           </h1>
         </div>
 
-        {/* Image carousel */}
+        {/* Image Carousel */}
         <div
           id={`carouselExampleFade-${cat.id}`}
           className="carousel slide carousel-fade"
@@ -162,7 +199,10 @@ const CatTemplate = () => {
                 data-bs-target={`#carouselExampleFade-${cat.id}`}
                 data-bs-slide="prev"
               >
-                <span className="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span
+                  className="carousel-control-prev-icon"
+                  aria-hidden="true"
+                ></span>
                 <span className="visually-hidden">Previous</span>
               </button>
               <button
@@ -171,14 +211,43 @@ const CatTemplate = () => {
                 data-bs-target={`#carouselExampleFade-${cat.id}`}
                 data-bs-slide="next"
               >
-                <span className="carousel-control-next-icon" aria-hidden="true"></span>
+                <span
+                  className="carousel-control-next-icon"
+                  aria-hidden="true"
+                ></span>
                 <span className="visually-hidden">Next</span>
               </button>
             </>
           )}
         </div>
 
-        {/* Details section */}
+        {/* Append Cat Images Block (Below Carousel, Above Details) */}
+        {isOwner && (
+          <div className="mt-3 text-center">
+            {/* Hidden file input triggered by button */}
+            <input
+              type="file"
+              id="catImageUpload"
+              multiple
+              style={{ display: "none" }}
+              onChange={handleImageChange}
+              accept="image/*"
+            />
+            <button
+              className="btn btn-info"
+              onClick={() => document.getElementById("catImageUpload").click()}
+            >
+              Update Cat Images
+            </button>
+            {selectedFiles.length > 0 && (
+              <button className="btn btn-success ml-2" onClick={handleUploadImages}>
+                Upload Selected Images
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Details Section */}
         <div className="cat-details">
           <p>
             <strong>Breed:</strong>{" "}
@@ -189,10 +258,16 @@ const CatTemplate = () => {
                   value={newBreed}
                   onChange={(e) => setNewBreed(e.target.value)}
                 />
-                <button className="btn-sm btn-success" onClick={() => handleSaveField("breed", newBreed, setEditingBreed)}>
+                <button
+                  className="btn-sm btn-success"
+                  onClick={() => handleSaveField("breed", newBreed, setEditingBreed)}
+                >
                   Save
                 </button>
-                <button className="btn-sm btn-secondary" onClick={() => handleCancelEdit(setEditingBreed)}>
+                <button
+                  className="btn-sm btn-secondary"
+                  onClick={() => handleCancelEdit(setEditingBreed)}
+                >
                   Cancel
                 </button>
               </div>
@@ -200,17 +275,19 @@ const CatTemplate = () => {
               <>
                 {cat.breed}{" "}
                 {isOwner && (
-                  <button className="btn-sm btn-warning" onClick={() => setEditingBreed(true)}>
+                  <button
+                    className="btn-sm btn-warning"
+                    onClick={() => setEditingBreed(true)}
+                  >
                     Edit
                   </button>
                 )}
               </>
             )}
           </p>
-
           <p>
             <strong>Age:</strong>{" "}
-            {`editingAge` ? (
+            {editingAge ? (
               <div className="edit-group">
                 <input
                   type="number"
@@ -218,10 +295,16 @@ const CatTemplate = () => {
                   value={newAge}
                   onChange={(e) => setNewAge(e.target.value)}
                 />
-                <button className="btn-sm btn-success" onClick={() => handleSaveField("age", newAge, setEditingAge)}>
+                <button
+                  className="btn-sm btn-success"
+                  onClick={() => handleSaveField("age", newAge, setEditingAge)}
+                >
                   Save
                 </button>
-                <button className="btn-sm btn-secondary" onClick={() => handleCancelEdit(setEditingAge)}>
+                <button
+                  className="btn-sm btn-secondary"
+                  onClick={() => handleCancelEdit(setEditingAge)}
+                >
                   Cancel
                 </button>
               </div>
@@ -229,14 +312,16 @@ const CatTemplate = () => {
               <>
                 {cat.age} years{" "}
                 {isOwner && (
-                  <button className="btn-sm btn-warning" onClick={() => setEditingAge(true)}>
+                  <button
+                    className="btn-sm btn-warning"
+                    onClick={() => setEditingAge(true)}
+                  >
                     Edit
                   </button>
                 )}
               </>
             )}
           </p>
-
           <p>
             <strong>Price:</strong>{" "}
             {editingPrice ? (
@@ -248,10 +333,16 @@ const CatTemplate = () => {
                   value={newPrice}
                   onChange={(e) => setNewPrice(e.target.value)}
                 />
-                <button className="btn-sm btn-success" onClick={() => handleSaveField("price", newPrice, setEditingPrice)}>
+                <button
+                  className="btn-sm btn-success"
+                  onClick={() => handleSaveField("price", newPrice, setEditingPrice)}
+                >
                   Save
                 </button>
-                <button className="btn-sm btn-secondary" onClick={() => handleCancelEdit(setEditingPrice)}>
+                <button
+                  className="btn-sm btn-secondary"
+                  onClick={() => handleCancelEdit(setEditingPrice)}
+                >
                   Cancel
                 </button>
               </div>
@@ -259,14 +350,16 @@ const CatTemplate = () => {
               <>
                 ${cat.price.toFixed(2)}{" "}
                 {isOwner && (
-                  <button className="btn-sm btn-warning" onClick={() => setEditingPrice(true)}>
+                  <button
+                    className="btn-sm btn-warning"
+                    onClick={() => setEditingPrice(true)}
+                  >
                     Edit
                   </button>
                 )}
               </>
             )}
           </p>
-
           <p>
             <strong>Description:</strong>{" "}
             {editingDescription ? (
@@ -276,10 +369,16 @@ const CatTemplate = () => {
                   onChange={(e) => setNewDescription(e.target.value)}
                   rows="3"
                 />
-                <button className="btn-sm btn-success" onClick={() => handleSaveField("description", newDescription, setEditingDescription)}>
+                <button
+                  className="btn-sm btn-success"
+                  onClick={() => handleSaveField("description", newDescription, setEditingDescription)}
+                >
                   Save
                 </button>
-                <button className="btn-sm btn-secondary" onClick={() => handleCancelEdit(setEditingDescription)}>
+                <button
+                  className="btn-sm btn-secondary"
+                  onClick={() => handleCancelEdit(setEditingDescription)}
+                >
                   Cancel
                 </button>
               </div>
@@ -287,7 +386,10 @@ const CatTemplate = () => {
               <>
                 {cat.description}{" "}
                 {isOwner && (
-                  <button className="btn-sm btn-warning" onClick={() => setEditingDescription(true)}>
+                  <button
+                    className="btn-sm btn-warning"
+                    onClick={() => setEditingDescription(true)}
+                  >
                     Edit
                   </button>
                 )}
@@ -296,7 +398,7 @@ const CatTemplate = () => {
           </p>
         </div>
 
-        {/* Action buttons */}
+        {/* Action Buttons */}
         <div className="cat-actions text-center">
           <button className="btn btn-primary m-1" onClick={handleMessageOwner}>
             Message Owner
