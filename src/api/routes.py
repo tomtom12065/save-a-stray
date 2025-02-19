@@ -751,15 +751,11 @@ def update_application_status(application_id):
 @api.route("/cats/<int:cat_id>/images", methods=["PUT"])
 @jwt_required()
 def append_cat_images(cat_id):
-    user_id = get_jwt_identity()
+    user_id = int(get_jwt_identity())
    
     try:
         # Ensure the JWT identity is an integer for proper comparison
        
-        try:
-            user_id = int(user_id)
-        except (ValueError, TypeError):
-            return jsonify({"error": "Invalid user identity"}), 400
 
         cat = Cat.query.get(cat_id)
         if not cat:
